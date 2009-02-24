@@ -1,0 +1,16 @@
+*.class
+*.jar
+.hidden
+.classpath
+.project
+doc
+*.html
+*.jar
+\#*#
+*~
+*.DS_Store
+*.log
+/mount
+/test.mount
+/test.origin
+/test.scratch

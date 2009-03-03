@@ -25,6 +25,10 @@ public class QueryGroup {
 		return o.getType() == getType() && o.getValue().equals(getValue());
 	}
 
+	public int hashCode() {
+		return type.hashCode() + value.hashCode();
+	}
+
 	public String toString() {
 		return "<" + getType() + " " + getValue() + ">";
 	}

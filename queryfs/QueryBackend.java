@@ -18,25 +18,41 @@ import static queryfs.Util.*;
 class QueryBackend {
 	public final File root;
 	private Set<Node> nodes = new HashSet<Node>();
+	private Set<QueryGroup> knownGroups = new HashSet<QueryGroup>();
 	private QueryGroupManager manager = new QueryGroupManager();
 	private Set<QueryGroup> flagged = new HashSet<QueryGroup>();
 	private QueryCache cache = new QueryCache();
+	private boolean rebuild_root = false;
+
+	public QueryBackend(File origin) {
+		assert origin.isDirectory();
+		root = origin;
+		scan(root);
+	}
 
 	private class QueryCache {
 		// keyindex is shared by nodecache and groupcache
-		private Map<QueryGroup,Set<Set<QueryGroup>>> keyIndex;
-		private Map<Set<QueryGroup>,Set<Node>> nodeCache;
-		private Map<Set<QueryGroup>,Set<QueryGroup>> groupCache;
+		private Map<QueryGroup,Set<Set<QueryGroup>>> keyIndex = new HashMap<QueryGroup,Set<Set<QueryGroup>>>();
+		private Map<Set<QueryGroup>,Set<Node>> nodeCache = new HashMap<Set<QueryGroup>,Set<Node>>();
+		private Map<Set<QueryGroup>,Set<QueryGroup>> groupCache = new HashMap<Set<QueryGroup>,Set<QueryGroup>>();
 
 		public Set<Node> getNodes(Set<QueryGroup> groups) {
+			if (groups.isEmpty())
+				return nodes;
 			return nodeCache.get(groups);
 		}
 
 		public Set<QueryGroup> getGroups(Set<QueryGroup> groups) {
+			if (groups.isEmpty() && rebuild_root) {
+				groupCache.remove(groups);
+				rebuild_root = false;
+			}
 			return groupCache.get(groups);
 		}
 
 		public void putNodes(Set<QueryGroup> key, Set<Node> value) {
+			if (key.isEmpty()) // handled specially
+				return;
 			assert maxOneMimeGroup(key);
 			nodeCache.put(key, value);
 			for (QueryGroup group : key) {
@@ -95,6 +111,8 @@ class QueryBackend {
 	}
 
 	public Set<Node> query(Set<QueryGroup> groups) {
+		if (groups.isEmpty())
+			return nodes;
 		assert maxOneMimeGroup(groups);
 		Set<Node> output = cache.getNodes(groups);
 		if (output == null) {
@@ -118,6 +136,9 @@ class QueryBackend {
 
 	public Set<QueryGroup> subclass(Set<QueryGroup> groups) {
 		assert maxOneMimeGroup(groups);
+		for (QueryGroup q : groups)
+			if (q.getType() == Type.MIME)
+				return new HashSet<QueryGroup>();
 		Set<QueryGroup> output = cache.getGroups(groups);
 		if (output == null) {
 			Set<Node> pool = query(groups);
@@ -145,12 +166,6 @@ class QueryBackend {
 		flagged.clear();
 	}
 
-	public QueryBackend(File origin) {
-		assert origin.isDirectory();
-		root = origin;
-		scan(root);
-	}
-
 	private void scan(File dir) {
 		for (File child : dir.listFiles()) {
 			if (!child.canRead())
@@ -173,13 +188,16 @@ class QueryBackend {
 		Set<QueryGroup> groups = new HashSet<QueryGroup>();
 		for (String tag : tags)
 			groups.add(manager.create(tag, Type.TAG));
-		String ext = extensionOf(file);
-		if (ext != null)
-			groups.add(manager.create(ext, Type.MIME));
-		return new Node(root, file, groups);
+		groups.add(manager.create(extensionOf(file), Type.MIME));
+		assert maxOneMimeGroup(groups);
+		knownGroups.addAll(groups);
+		return new Node(this, file, groups);
 	}
 
 	public Node create(Set<QueryGroup> groups, String name) throws FuseException {
+		for (QueryGroup group : groups)
+			if (!knownGroups.contains(group))
+				rebuild_root = true;
 		File file = null;
 		try {
 			file = getDestination(newPath(root, groups), name);
@@ -187,6 +205,16 @@ class QueryBackend {
 		} catch (IOException e) {
 			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
 		}
-		return new Node(root, file, groups);
+		assert maxOneMimeGroup(groups);
+		knownGroups.addAll(groups);
+		return new Node(this, file, groups);
+	}
+
+	public QueryGroupManager getManager() {
+		return manager;
+	}
+
+	public void unref(Node node) {
+		nodes.remove(node);
 	}
 }

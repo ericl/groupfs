@@ -1,6 +1,7 @@
 package queryfs;
 
 public class QueryGroup {
+
 	public enum Type { TAG, MIME }
 	private final String value;
 	private final Type type;

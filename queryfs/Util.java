@@ -13,8 +13,10 @@ public class Util {
 	}
 
 	public static String extensionOf(String name) {
+		if (name.matches(".*\\.[0-9]+"))
+			name = name.substring(0, name.lastIndexOf("."));
 		if (!name.contains(".") || name.endsWith("."))
-			return null;
+			return "undefined";
 		String[] parts = name.split("\\.");
 		return parts[parts.length-1].toLowerCase();
 	}
@@ -29,7 +31,7 @@ public class Util {
 
 	public static File getDestination(String path, String name) throws IOException {
 		File dir = new File(path + "/" + name);
-		if (!dir.isDirectory())
+		if (dir.exists() && !dir.isDirectory())
 			throw new IOException("Destination path exists as a file.");
 		else if (!dir.exists())
 			if (!dir.mkdirs())

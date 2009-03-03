@@ -14,13 +14,17 @@ public class QueryGroupManager {
 		switch (type) {
 			case MIME:
 				q = mimetypes.get(value);
-				if (q == null)
+				if (q == null) {
 					mimetypes.put(value, q = new QueryGroup(value, Type.MIME));
+					QueryGroup.touchAll();
+				}
 				break;
 			case TAG:
 				q = tags.get(value);
-				if (q == null)
+				if (q == null) {
 					tags.put(value, q = new QueryGroup(value, Type.TAG));
+					QueryGroup.touchAll();
+				}
 				break;
 		}
 		assert q != null;

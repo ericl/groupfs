@@ -29,7 +29,7 @@ public class Directory implements View {
 	private final Set<QueryGroup> groups;
 	private final Map<String,View> views = new HashMap<String,View>();
 	private long time = System.currentTimeMillis();
-	private boolean populated;
+	private boolean populated = false;
 
 	public Directory(QueryBackend backend) {
 		this.backend = backend;
@@ -88,6 +88,7 @@ public class Directory implements View {
 	}
 
 	private void populateSelf() {
+		views.clear();
 		for (QueryGroup group : backend.subclass(groups)) {
 			if (group.getType() == Type.MIME)
 				resolveView("." + group.getValue(), new Directory(backend, this, group));
@@ -100,6 +101,7 @@ public class Directory implements View {
 	}
 
 	public View get(String name) {
+		update();
 		return views.get(name);
 	}
 
@@ -111,7 +113,6 @@ public class Directory implements View {
 	}
 
 	public void stat(FuseGetattrSetter setter) {
-		log.debug("test");
 		int mtime = (int)(time / 1000L);
 		setter.set(
 			0, // inode
@@ -138,10 +139,23 @@ public class Directory implements View {
 		return parent;
 	}
 
-	public synchronized void fill(FuseDirFiller filler) {
-		if (!populated)
+	private void update() {
+		if (group != null && !group.stampValid(time)) {
+			populated = false;
+			log.info("REBUILD: " + group);
+		} else if (!QueryGroup.allValid(time)) {
+			populated = false;
+			log.info("REBUILD BASE");
+		}
+		if (!populated) {
 			populateSelf();
-		populated = true;
+			populated = true;
+			time = System.currentTimeMillis();
+		}
+	}
+
+	public synchronized void fill(FuseDirFiller filler) {
+		update();
 		for (String ref : views.keySet())
 			filler.add(ref, 0, views.get(ref).getFType());
 	}

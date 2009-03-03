@@ -30,7 +30,7 @@ public class Util {
 	}
 
 	public static File getDestination(String path, String name) throws IOException {
-		File dir = new File(path + "/" + name);
+		File dir = new File(path);
 		if (dir.exists() && !dir.isDirectory())
 			throw new IOException("Destination path exists as a file.");
 		else if (!dir.exists())
@@ -38,16 +38,9 @@ public class Util {
 				throw new IOException("Could not create destination path.");
 		File dest = new File(path + "/" + name);
 		if (dest.exists()) {
-			String ext = "";
-			String base = name;
-			String[] parts = name.split("\\.");
-			if (parts.length > 1) {
-				ext = "." + parts[parts.length-1];
-				base = name.substring(0, name.length() - ext.length());
-			}
 			int counter = 0;
 			while (dest.exists()) {
-				dest = new File(path + "/" + base + "." + counter + ext);
+				dest = new File(path + "/" + name + "." + counter);
 				counter++;
 			}
 		}

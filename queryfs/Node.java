@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 
 import java.nio.channels.FileChannel;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.sun.security.auth.module.UnixSystem;
@@ -117,8 +118,8 @@ public class Node implements View {
 	}
 
 	public void unlink() throws FuseException {
-		this.file = null;
-		changeQueryGroups(null, groups);
+		changeQueryGroups(null, new HashSet<QueryGroup>(groups));
+		this.file = null; // just to be certain
 	}
 
 	public void open(int flags) throws FuseException {

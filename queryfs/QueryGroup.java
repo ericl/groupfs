@@ -1,14 +1,31 @@
 package queryfs;
 
 public class QueryGroup {
-
+	public static long alltime = System.currentTimeMillis();
 	public enum Type { TAG, MIME }
 	private final String value;
+	private long time = System.currentTimeMillis();
 	private final Type type;
 
 	public QueryGroup(String value, Type type) {
 		this.type = type;
 		this.value = value;
+	}
+
+	public static boolean allValid(long timestamp) {
+		return timestamp >= alltime;
+	}
+
+	public boolean stampValid(long timestamp) {
+		return timestamp >= time;
+	}
+
+	public void touch() {
+		time = System.currentTimeMillis();
+	}
+
+	public static void touchAll() {
+		alltime = System.currentTimeMillis();
 	}
 
 	public Type getType() {

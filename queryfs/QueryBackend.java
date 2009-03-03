@@ -11,11 +11,15 @@ import java.util.Set;
 
 import fuse.FuseException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import queryfs.QueryGroup.Type;
 
 import static queryfs.Util.*;
 
 class QueryBackend {
+	private static final Log log = LogFactory.getLog(QueryBackend.class);
 	public final File root;
 	private Set<Node> nodes = new HashSet<Node>();
 	private Set<QueryGroup> knownGroups = new HashSet<QueryGroup>();
@@ -46,6 +50,7 @@ class QueryBackend {
 			if (groups.isEmpty() && rebuild_root) {
 				groupCache.remove(groups);
 				rebuild_root = false;
+				QueryGroup.touchAll();
 			}
 			return groupCache.get(groups);
 		}
@@ -163,6 +168,8 @@ class QueryBackend {
 
 	public void flush() {
 		cache.drop(flagged);
+		for (QueryGroup q : flagged)
+			q.touch();
 		flagged.clear();
 	}
 
@@ -194,20 +201,23 @@ class QueryBackend {
 		return new Node(this, file, groups);
 	}
 
-	public Node create(Set<QueryGroup> groups, String name) throws FuseException {
+	public void create(Set<QueryGroup> groups, String name) throws FuseException {
 		for (QueryGroup group : groups)
 			if (!knownGroups.contains(group))
 				rebuild_root = true;
 		File file = null;
 		try {
 			file = getDestination(newPath(root, groups), name);
+			log.info("NEW FILE " + file);
 			file.createNewFile();
 		} catch (IOException e) {
 			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
 		}
 		assert maxOneMimeGroup(groups);
 		knownGroups.addAll(groups);
-		return new Node(this, file, groups);
+		flagged.addAll(groups);
+		flush();
+		nodes.add(new Node(this, file, groups));
 	}
 
 	public QueryGroupManager getManager() {

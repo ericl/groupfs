@@ -63,7 +63,8 @@ public class Filesystem implements Filesystem3 {
 
 
 	public Filesystem(File originDir, File mountPoint) {
-		root = new Directory(backend = new QueryBackend(originDir));
+		backend = new QueryBackend(originDir);
+		root = new Directory(backend);
 	}
 
 	private View get(String path) {
@@ -179,7 +180,7 @@ public class Filesystem implements Filesystem3 {
 				Set<QueryGroup> add = new HashSet<QueryGroup>();
 				for (String tag : tagsOf(new File(to).getParent()))
 					add.add(backend.getManager().create(tag, Type.TAG));
-				n.changeQueryGroups(add, n.getQueryGroups());
+				n.changeQueryGroups(add, new HashSet<QueryGroup>(n.getQueryGroups()));
 			}
 		}
 		return 0;
@@ -212,7 +213,7 @@ public class Filesystem implements Filesystem3 {
 			1024, // blockSize
 			Integer.MAX_VALUE, // blocks
 			Integer.MAX_VALUE, // blocksFree
-			0, // blocksAvail
+			Integer.MAX_VALUE, // blocksAvail
 			0, // files
 			0, // filesFree
 			0 // namelen

@@ -22,7 +22,6 @@ class QueryBackend {
 	private static final Log log = LogFactory.getLog(QueryBackend.class);
 	public final File root;
 	private Set<Node> nodes = new HashSet<Node>();
-	private Set<QueryGroup> knownGroups = new HashSet<QueryGroup>();
 	private QueryGroupManager manager = new QueryGroupManager();
 	private Set<QueryGroup> flagged = new HashSet<QueryGroup>();
 	private QueryCache cache = new QueryCache();
@@ -50,7 +49,6 @@ class QueryBackend {
 			if (groups.isEmpty() && rebuild_root) {
 				groupCache.remove(groups);
 				rebuild_root = false;
-				QueryGroup.touchAll();
 			}
 			return groupCache.get(groups);
 		}
@@ -148,14 +146,15 @@ class QueryBackend {
 		if (output == null) {
 			Set<Node> pool = query(groups);
 			Map<QueryGroup,Integer> gcount = new HashMap<QueryGroup,Integer>();
-			for (Node node : pool)
+			for (Node node : pool) {
 				for (QueryGroup group : node.getQueryGroups()) {
 					Integer n = gcount.get(group);
 					gcount.put(group, n == null ? 1 : n + 1);
 				}
+			}
 			output = new HashSet<QueryGroup>();
 			for (QueryGroup g : gcount.keySet())
-				if (!groups.contains(g) && gcount.get(g) < pool.size())
+				if (!groups.contains(g) && (groups.isEmpty() || gcount.get(g) < pool.size()))
 					output.add(g);
 			cache.putGroups(groups, output);
 		}
@@ -197,14 +196,10 @@ class QueryBackend {
 			groups.add(manager.create(tag, Type.TAG));
 		groups.add(manager.create(extensionOf(file), Type.MIME));
 		assert maxOneMimeGroup(groups);
-		knownGroups.addAll(groups);
-		return new Node(this, file, groups);
+		return new FileNode(this, file, groups);
 	}
 
 	public void create(Set<QueryGroup> groups, String name) throws FuseException {
-		for (QueryGroup group : groups)
-			if (!knownGroups.contains(group))
-				rebuild_root = true;
 		File file = null;
 		try {
 			file = getDestination(newPath(root, groups), name);
@@ -214,10 +209,40 @@ class QueryBackend {
 			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
 		}
 		assert maxOneMimeGroup(groups);
-		knownGroups.addAll(groups);
 		flagged.addAll(groups);
 		flush();
-		nodes.add(new Node(this, file, groups));
+		nodes.add(new FileNode(this, file, groups));
+		checkRootAdd(groups);
+	}
+
+	public void checkRoot(Set<QueryGroup> removed) {
+		log.info("CHECKREMOVED " + removed);
+		Set<QueryGroup> p = new HashSet<QueryGroup>();
+		for (QueryGroup q : removed) {
+			p.clear();
+			p.add(q);
+			if (query(p).isEmpty()) {
+				rebuild_root = true;
+				QueryGroup.touchRoot();
+				flush();
+				return;
+			}
+		}
+	}
+
+	public void checkRootAdd(Set<QueryGroup> added) {
+		log.info("CHECKADDED " + added);
+		Set<QueryGroup> p = new HashSet<QueryGroup>();
+		for (QueryGroup q : added) {
+			p.clear();
+			p.add(q);
+			if (query(p).size() == 1) {
+				rebuild_root = true;
+				QueryGroup.touchRoot();
+				flush();
+				return;
+			}
+		}
 	}
 
 	public QueryGroupManager getManager() {

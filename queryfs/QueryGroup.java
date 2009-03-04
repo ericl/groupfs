@@ -1,10 +1,10 @@
 package queryfs;
 
 public class QueryGroup {
-	public static long alltime = System.currentTimeMillis();
+	public static long alltime = System.nanoTime();
 	public enum Type { TAG, MIME }
 	private final String value;
-	private long time = System.currentTimeMillis();
+	private long time = System.nanoTime();
 	private final Type type;
 
 	public QueryGroup(String value, Type type) {
@@ -21,11 +21,11 @@ public class QueryGroup {
 	}
 
 	public void touch() {
-		time = System.currentTimeMillis();
+		time = System.nanoTime();
 	}
 
-	public static void touchAll() {
-		alltime = System.currentTimeMillis();
+	public static void touchRoot() {
+		alltime = System.nanoTime();
 	}
 
 	public Type getType() {

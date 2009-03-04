@@ -3,6 +3,8 @@ package queryfs;
 import java.io.File;
 import java.io.IOException;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import queryfs.QueryGroup.Type;
@@ -10,6 +12,14 @@ import queryfs.QueryGroup.Type;
 public class Util {
 	public static String extensionOf(File file) {
 		return extensionOf(file.getName());
+	}
+
+	public static Set<String> tagsOf(String parent) {
+		Set<String> tags = new HashSet<String>(
+			Arrays.asList(parent.split("/"))
+		);
+		tags.remove("");
+		return tags;
 	}
 
 	public static String extensionOf(String name) {

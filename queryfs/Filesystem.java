@@ -3,6 +3,7 @@ package queryfs;
 import java.io.File;
 import java.io.IOException;
 
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 
@@ -19,7 +20,10 @@ import fuse.FuseException;
 import fuse.FuseGetattrSetter;
 import fuse.FuseMount;
 import fuse.FuseOpenSetter;
+import fuse.FuseSizeSetter;
 import fuse.FuseStatfsSetter;
+import fuse.XattrLister;
+import fuse.XattrSupport;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,7 +32,7 @@ import queryfs.QueryGroup.Type;
 
 import static queryfs.Util.*;
 
-public class Filesystem implements Filesystem3 {
+public class Filesystem implements Filesystem3, XattrSupport {
 	public static final Log log = LogFactory.getLog(Filesystem.class);
 	private QueryBackend backend;
 	private ViewMapper mapper;
@@ -310,7 +314,7 @@ public class Filesystem implements Filesystem3 {
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
-		n.open(flags);
+		// not really opening file; flags aren't supported by backend anyways
 		return 0;
 	}
 
@@ -344,5 +348,25 @@ public class Filesystem implements Filesystem3 {
 
 	public int fsync(String path, Object fh, boolean isDatasync) throws FuseException {
 		return 0;
+	}
+
+	public int getxattrsize(String path, String name, FuseSizeSetter sizeSetter) throws FuseException {
+		return 0;
+	}
+
+	public int getxattr(String path, String name, ByteBuffer dst) throws FuseException, BufferOverflowException {
+		return 0;
+	}
+
+	public int listxattr(String path, XattrLister lister) throws FuseException {
+		return 0;
+	}
+
+	public int setxattr(String path, String name, ByteBuffer value, int flags) throws FuseException {
+		return fuse.Errno.EPERM;
+	}
+
+	public int removexattr(String path, String name) throws FuseException {
+		return fuse.Errno.ENOENT;
 	}
 }

@@ -48,7 +48,7 @@ for test in tests/*; do
 	echo -n "Running $test... "
 	CODE=1
 	tries=0
-	while [ $tries -lt 5 ] && [ $CODE != 0 ]; do
+	while [ $tries -lt 10 ] && [ $CODE != 0 ]; do
 		echo -n 'o'
 		fusermount -uzq $MP
 		let tries++

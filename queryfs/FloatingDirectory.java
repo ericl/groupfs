@@ -67,9 +67,7 @@ public class FloatingDirectory implements Directory {
 	public int rename(String from, String to, View v) {
 		if (v != null)
 			return fuse.Errno.EPERM;
-		// TODO mapper.remap() to handle those subdirs that otherwise disappear
-		mapper.delete(from, true);
-		mapper.createFloat(to);
+		mapper.remap(from, to);
 		return 0;
 	}
 

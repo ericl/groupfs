@@ -45,7 +45,6 @@ public class Filesystem implements Filesystem3 {
 		public void createFloat(String path) {
 			String parent = new File(path).getParent();
 			String name = new File(path).getName();
-			log.info("Creating floating directory " + path);
 			FloatingDirectory f = new FloatingDirectory(this, parent, path, backend.getManager().create(name, Type.TAG));
 			floats.put(path, f);
 			List<FloatingDirectory> s = parents.get(parent);
@@ -68,6 +67,16 @@ public class Filesystem implements Filesystem3 {
 				for (String test : new HashSet<String>(floats.keySet()))
 					if (test.startsWith(path))
 						delete(test, false);
+		}
+
+		public void remap(String from, String to) {
+			delete(from, false);
+			createFloat(to);
+			for (String test : new HashSet<String>(floats.keySet()))
+				if (test.startsWith(from)) {
+					delete(test, false);
+					createFloat(test.replaceFirst(from, to));
+				}
 		}
 
 		public void finish(String parent, Set<String> taken, FuseDirFiller filler) {
@@ -190,11 +199,12 @@ public class Filesystem implements Filesystem3 {
 	}
 
 	public int mknod(String path, int mode, int rdev) throws FuseException {
-		log.info("MKNOD " + path);
 		String name = new File(path).getName();
 		Directory d = mapper.getDir(new File(path).getParent());
 		if (d == null)
 			return fuse.Errno.ENOENT;
+		else if (d.getGroup().getType() == Type.MIME)
+			return fuse.Errno.EPERM;
 		Set<QueryGroup> groups = d.getQueryGroups();
 		if (groups.isEmpty())
 			return fuse.Errno.EPERM;
@@ -208,13 +218,15 @@ public class Filesystem implements Filesystem3 {
 	public int mkdir(String path, int mode) throws FuseException {
 		String name = new File(path).getName();
 		if (name.startsWith("."))
-			return fuse.Errno.EACCES;
+			return fuse.Errno.EPERM;
 		View v = mapper.get(path);
 		if (v != null && v instanceof Node)
-			return fuse.Errno.EACCES;
+			return fuse.Errno.EPERM;
 		Directory parent = mapper.getDir(new File(path).getParent());
 		if (parent == null)
 			return fuse.Errno.ENOENT;
+		else if (parent.getGroup() != null && parent.getGroup().getType() == Type.MIME)
+			return fuse.Errno.EPERM;
 		mapper.createFloat(path);
 		return 0;
 	}
@@ -232,9 +244,9 @@ public class Filesystem implements Filesystem3 {
 		Directory d = mapper.getDir(path);
 		if (d == null)
 			return fuse.Errno.ENOENT;
-		else
-			d.delete();
-		log.info(d);
+		else if (d.getGroup() != null && d.getGroup().getType() == Type.MIME)
+			return fuse.Errno.EPERM;
+		d.delete();
 		return 0;
 	}
 
@@ -243,11 +255,13 @@ public class Filesystem implements Filesystem3 {
 	}
 
 	public int rename(String from, String to) throws FuseException {
-		if (new File(to).getName().startsWith("."))
-			return fuse.Errno.EPERM;
 		View o = mapper.get(from);
 		if (o == null)
 			return fuse.Errno.ENOENT;
+		else if (new File(to).getName().startsWith("."))
+			return fuse.Errno.EPERM;
+		else if (new File(to).getParentFile().getName().startsWith("."))
+			return fuse.Errno.EPERM;
 		return o.rename(from, to, mapper.get(to));
 	}
 

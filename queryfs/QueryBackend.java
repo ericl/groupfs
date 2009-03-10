@@ -11,15 +11,11 @@ import java.util.Set;
 
 import fuse.FuseException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import queryfs.QueryGroup.Type;
 
 import static queryfs.Util.*;
 
 class QueryBackend {
-	private static final Log log = LogFactory.getLog(QueryBackend.class);
 	public final File root;
 	private Set<Node> nodes = new HashSet<Node>();
 	private QueryGroupManager manager = new QueryGroupManager();
@@ -203,7 +199,6 @@ class QueryBackend {
 		File file = null;
 		try {
 			file = getDestination(newPath(root, groups), name);
-			log.info("NEW FILE " + file);
 			file.createNewFile();
 		} catch (IOException e) {
 			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
@@ -216,7 +211,6 @@ class QueryBackend {
 	}
 
 	public void checkRoot(Set<QueryGroup> removed) {
-		log.info("CHECKREMOVED " + removed);
 		Set<QueryGroup> p = new HashSet<QueryGroup>();
 		for (QueryGroup q : removed) {
 			p.clear();
@@ -231,7 +225,6 @@ class QueryBackend {
 	}
 
 	public void checkRootAdd(Set<QueryGroup> added) {
-		log.info("CHECKADDED " + added);
 		Set<QueryGroup> p = new HashSet<QueryGroup>();
 		for (QueryGroup q : added) {
 			p.clear();

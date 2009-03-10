@@ -17,16 +17,11 @@ import fuse.FuseException;
 import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import queryfs.QueryGroup.Type;
 
 import static queryfs.Util.*;
 
 public class FileNode extends Node {
-	private static final Log log = LogFactory.getLog(Node.class);
-
 	private FileChannel channel;
 	private int channelFlags = FilesystemConstants.O_RDONLY;
 	private File file;
@@ -80,7 +75,6 @@ public class FileNode extends Node {
 
 
 	public void stat(FuseGetattrSetter setter) {
-		log.debug("ATTRS OF " + name);
 		int time = (int)(file.lastModified() / 1000L);
 		long size = file.length();
 		setter.set(
@@ -109,7 +103,6 @@ public class FileNode extends Node {
 			for (QueryGroup r : remove) {
 				if (allowMimetypeChange || r.getType() != Type.MIME) {
 					groups.remove(r);
-					log.debug("FLAG REMOVE " + r);
 					backend.flag(r);
 				}
 			}
@@ -151,7 +144,6 @@ public class FileNode extends Node {
 		this.name = name;
 		synchronized (this) {
 			String current = file.getName();
-			log.debug("RENAME TO " + name);
 			if (current.equals(name))
 				return;
 			File dest = null;

@@ -6,16 +6,10 @@ import java.util.Set;
 
 import fuse.FuseException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import queryfs.QueryGroup.Type;
 import static queryfs.Util.*;
 
 public class SubclassingDirectory extends RootDirectory {
-	private static final Log log =
-		LogFactory.getLog(Directory.class);
-
 	private final Directory parent;
 	private final QueryGroup group;
 
@@ -73,10 +67,8 @@ public class SubclassingDirectory extends RootDirectory {
 	}
 
 	protected void update() {
-		if (!group.stampValid(stamp)) {
+		if (!group.stampValid(stamp))
 			populated = false;
-			log.info("REBUILD: " + group);
-		}
 		super.update();
 	}
 

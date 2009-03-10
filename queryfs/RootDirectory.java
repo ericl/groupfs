@@ -9,15 +9,9 @@ import fuse.FuseException;
 import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import queryfs.QueryGroup.Type;
 
 public class RootDirectory implements Directory {
-	private static final Log log =
-		LogFactory.getLog(RootDirectory.class);
-
 	protected QueryBackend backend;
 	protected long time = System.currentTimeMillis();
 	protected long stamp = System.nanoTime();
@@ -111,11 +105,8 @@ public class RootDirectory implements Directory {
 	}
 
 	protected void update() {
-		log.debug("UPDATE CHECK");
-		if (!QueryGroup.allValid(stamp)) {
+		if (!QueryGroup.allValid(stamp))
 			populated = false;
-			log.info("REBUILD BASE");
-		}
 		if (!populated) {
 			populateSelf();
 			populated = true;

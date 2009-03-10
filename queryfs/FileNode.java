@@ -51,7 +51,6 @@ public class FileNode extends Node {
 	}
 
 	public int rename(String from, String to, View target) throws FuseException {
-		// TODO delete "from" directory recursively if empty
 		if (target != null) {
 			if (target instanceof Node)
 				((Node)target).unlink();
@@ -71,6 +70,14 @@ public class FileNode extends Node {
 		}
 		return 0;
 	}
+
+	private void rmdirs(File f) {
+		if (f == null || !f.isDirectory() || f.list().length != 0)
+			return;
+		f.delete();
+		rmdirs(f.getParentFile());
+	}
+
 
 	public void stat(FuseGetattrSetter setter) {
 		log.debug("ATTRS OF " + name);
@@ -94,9 +101,13 @@ public class FileNode extends Node {
 	}
 
 	public void changeQueryGroups(Set<QueryGroup> add, Set<QueryGroup> remove) throws FuseException {
+		changeQueryGroups(add, remove, false);
+	}
+
+	public void changeQueryGroups(Set<QueryGroup> add, Set<QueryGroup> remove, boolean allowMimetypeChange) throws FuseException {
 		if (remove != null)
 			for (QueryGroup r : remove) {
-				if (r.getType() != Type.MIME) {
+				if (allowMimetypeChange || r.getType() != Type.MIME) {
 					groups.remove(r);
 					log.debug("FLAG REMOVE " + r);
 					backend.flag(r);
@@ -104,7 +115,7 @@ public class FileNode extends Node {
 			}
 		if (add != null)
 			for (QueryGroup a : add) {
-				if (a.getType() != Type.MIME)
+				if (allowMimetypeChange || a.getType() != Type.MIME)
 					groups.add(a);
 			}
 		File loc = null;
@@ -114,6 +125,7 @@ public class FileNode extends Node {
 			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
 		}
 		file.renameTo(loc);
+		rmdirs(file.getParentFile());
 		file = loc;
 		for (QueryGroup g : groups)
 			backend.flag(g);
@@ -127,7 +139,15 @@ public class FileNode extends Node {
 	}
 
 	public void setName(String name) throws FuseException {
-		// TODO handle MIME change (requires changeQueryGroups to allow this)
+		String extI = extensionOf(this.name);
+		String extF = extensionOf(name);
+		if (!extI.equals(extF)) {
+			Set<QueryGroup> add = new HashSet<QueryGroup>();
+			Set<QueryGroup> remove = new HashSet<QueryGroup>();
+			remove.add(backend.getManager().create(extI, Type.MIME));
+			add.add(backend.getManager().create(extF, Type.MIME));
+			changeQueryGroups(add, remove, true);
+		}
 		this.name = name;
 		synchronized (this) {
 			String current = file.getName();

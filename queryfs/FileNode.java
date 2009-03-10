@@ -56,7 +56,7 @@ public class FileNode extends Node {
 		if (!new File(to).getParent().equals(new File(from).getParent())) {
 			Set<QueryGroup> add = new HashSet<QueryGroup>();
 			for (String tag : tagsOf(new File(to).getParent()))
-				add.add(backend.getManager().create(tag, Type.TAG));
+				add.add(QueryGroup.create(tag, Type.TAG));
 			changeQueryGroups(add, new HashSet<QueryGroup>(groups));
 		} else {
 			for (QueryGroup q : groups)
@@ -137,8 +137,8 @@ public class FileNode extends Node {
 		if (!extI.equals(extF)) {
 			Set<QueryGroup> add = new HashSet<QueryGroup>();
 			Set<QueryGroup> remove = new HashSet<QueryGroup>();
-			remove.add(backend.getManager().create(extI, Type.MIME));
-			add.add(backend.getManager().create(extF, Type.MIME));
+			remove.add(QueryGroup.create(extI, Type.MIME));
+			add.add(QueryGroup.create(extF, Type.MIME));
 			changeQueryGroups(add, remove, true);
 		}
 		this.name = name;

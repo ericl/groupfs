@@ -52,7 +52,7 @@ public class SubclassingDirectory extends RootDirectory {
 			return fuse.Errno.EPERM;
 		Set<QueryGroup> add = new HashSet<QueryGroup>();
 		for (String tag : tagsOf(to))
-			add.add(backend.getManager().create(tag, Type.TAG));
+			add.add(QueryGroup.create(tag, Type.TAG));
 		for (Node n : getNodes())
 			n.changeQueryGroups(add, groups);
 		return 0;

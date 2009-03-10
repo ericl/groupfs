@@ -18,7 +18,6 @@ import static queryfs.Util.*;
 class QueryBackend {
 	public final File root;
 	private Set<Node> nodes = new HashSet<Node>();
-	private QueryGroupManager manager = new QueryGroupManager();
 	private Set<QueryGroup> flagged = new HashSet<QueryGroup>();
 	private QueryCache cache = new QueryCache();
 	private boolean rebuild_root = false;
@@ -189,8 +188,8 @@ class QueryBackend {
 		tags.remove("");
 		Set<QueryGroup> groups = new HashSet<QueryGroup>();
 		for (String tag : tags)
-			groups.add(manager.create(tag, Type.TAG));
-		groups.add(manager.create(extensionOf(file), Type.MIME));
+			groups.add(QueryGroup.create(tag, Type.TAG));
+		groups.add(QueryGroup.create(extensionOf(file), Type.MIME));
 		assert maxOneMimeGroup(groups);
 		return new FileNode(this, file, groups);
 	}
@@ -236,10 +235,6 @@ class QueryBackend {
 				return;
 			}
 		}
-	}
-
-	public QueryGroupManager getManager() {
-		return manager;
 	}
 
 	public void unref(Node node) {

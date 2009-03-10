@@ -45,7 +45,7 @@ public class Filesystem implements Filesystem3 {
 		public void createFloat(String path) {
 			String parent = new File(path).getParent();
 			String name = new File(path).getName();
-			FloatingDirectory f = new FloatingDirectory(this, parent, path, backend.getManager().create(name, Type.TAG));
+			FloatingDirectory f = new FloatingDirectory(this, parent, path, QueryGroup.create(name, Type.TAG));
 			floats.put(path, f);
 			List<FloatingDirectory> s = parents.get(parent);
 			if (s == null) {
@@ -210,7 +210,7 @@ public class Filesystem implements Filesystem3 {
 			return fuse.Errno.EPERM;
 		String ext = extensionOf(new File(path));
 		if (ext != null)
-			groups.add(backend.getManager().create(ext, Type.MIME));
+			groups.add(QueryGroup.create(ext, Type.MIME));
 		backend.create(groups, name);
 		return 0;
 	}

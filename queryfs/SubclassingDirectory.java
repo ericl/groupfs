@@ -7,6 +7,7 @@ import java.util.Set;
 import fuse.FuseException;
 
 import queryfs.QueryGroup.Type;
+
 import static queryfs.Util.*;
 
 public class SubclassingDirectory extends RootDirectory {

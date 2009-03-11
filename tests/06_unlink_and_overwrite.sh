@@ -15,6 +15,3 @@ mv $MP/two/one/probe $MP/two/one/one_and_two
 test ! -e $MP/two/one/probe
 test `cat $MP/two/one/one_and_two` = my_string
 test `cat $MP/one/two/one_and_two` = my_string
-
-test `cat $ORIGIN/two/one/one_and_two` = my_string
-test -e $ORIGIN/*one_and_two*

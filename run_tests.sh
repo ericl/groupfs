@@ -1,6 +1,6 @@
 #!/bin/bash -u
 
-ABORT_ON_ERROR=${ABORT_ON_ERROR-true}
+ABORT_ON_ERROR=${ABORT_ON_ERROR-false}
 
 cd `dirname $0`
 
@@ -48,8 +48,7 @@ for test in tests/*; do
 	echo -n "Running $test... "
 	CODE=1
 	tries=0
-	while [ $tries -lt 10 ] && [ $CODE != 0 ]; do
-		echo -n 'o'
+	while [ $tries -lt 5 ] && [ $CODE != 0 ]; do
 		fusermount -uzq $MP
 		let tries++
 		rm -rf $ORIGIN $MP $SCRATCH
@@ -58,7 +57,7 @@ for test in tests/*; do
 		CODE=$?
 	done
 	if [ $CODE -eq 0 ]; then
-		echo "k"
+		echo "ok"
 	else
 		echo "FAIL"
 		if $ABORT_ON_ERROR; then

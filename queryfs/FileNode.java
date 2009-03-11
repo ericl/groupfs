@@ -127,8 +127,15 @@ public class FileNode extends Node {
 			backend.checkRoot(remove);
 		if (add != null)
 			backend.checkRootAdd(add);
-		if (groups.isEmpty())
+		if (untagged(groups))
 			backend.unref(this);
+	}
+
+	private boolean untagged(Set<QueryGroup> groups) {
+		for (QueryGroup group : groups)
+			if (group.getType() == Type.TAG)
+				return false;
+		return true;
 	}
 
 	public void setName(String name) throws FuseException {

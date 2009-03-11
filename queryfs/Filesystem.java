@@ -207,7 +207,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		Directory d = mapper.getDir(new File(path).getParent());
 		if (d == null)
 			return fuse.Errno.ENOENT;
-		else if (d.getGroup().getType() == Type.MIME)
+		else if (d.getGroup() == null || d.getGroup().getType() == Type.MIME)
 			return fuse.Errno.EPERM;
 		Set<QueryGroup> groups = d.getQueryGroups();
 		if (groups.isEmpty())
@@ -239,8 +239,14 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
-		else
-			n.unlink();
+		Directory d = mapper.getDir(new File(path).getParent());
+		if (d == null)
+			return fuse.Errno.ENOENT;
+		else if (d.getGroup().getType() == Type.MIME)
+			return fuse.Errno.EPERM;
+		Set<QueryGroup> remove = new HashSet<QueryGroup>();
+		remove.add(d.getGroup());
+		n.changeQueryGroups(null, remove);
 		return 0;
 	}
 

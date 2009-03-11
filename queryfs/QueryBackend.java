@@ -25,7 +25,7 @@ class QueryBackend {
 	public QueryBackend(File origin) {
 		assert origin.isDirectory();
 		root = origin;
-		scan(root);
+		scan(root, true);
 	}
 
 	private class QueryCache {
@@ -167,13 +167,13 @@ class QueryBackend {
 		flagged.clear();
 	}
 
-	private void scan(File dir) {
+	private void scan(File dir, boolean root) {
 		for (File child : dir.listFiles()) {
 			if (!child.canRead())
 				continue;
 			if (child.isDirectory())
-				scan(child);
-			else
+				scan(child, false);
+			else if (!root)
 				nodes.add(fileToNode(child));
 		}
 	}

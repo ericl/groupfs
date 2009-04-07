@@ -46,6 +46,8 @@ public class FileNode extends Node {
 	}
 
 	public int rename(String from, String to, View target) throws FuseException {
+		if (target == this)
+			return 0;
 		if (target != null) {
 			if (target instanceof Node)
 				((Node)target).unlink();

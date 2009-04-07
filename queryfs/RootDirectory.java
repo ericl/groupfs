@@ -59,8 +59,12 @@ public class RootDirectory implements Directory {
 		for (QueryGroup group : backend.subclass(groups)) {
 			if (group.getType() == Type.MIME)
 				register("." + group.getValue(), new SubclassingDirectory(backend, this, group));
-			else
-				register(group.getValue(), new SubclassingDirectory(backend, this, group));
+			else {
+				String value = group.getValue();
+				if (value.startsWith("."))
+					value = "dot" + value;
+				register(value, new SubclassingDirectory(backend, this, group));
+			}
 		}
 	}
 

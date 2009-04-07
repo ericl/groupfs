@@ -22,12 +22,7 @@ while [ $# -gt 0 ]; do
 	shift
 done
 
-if test -d "$MOUNTPOINT"; then
-	MOUNTPOINT_EXISTS=true
-else
-	MOUNTPOINT_EXISTS=false
-	mkdir -p "$MOUNTPOINT"
-fi
+mkdir -p "$MOUNTPOINT"
 
 if [ ! -d "$ORIGIN" ] || [ ! -d "$MOUNTPOINT" ]; then
 	echo "$USAGE"
@@ -36,9 +31,7 @@ fi
 
 clean_exit() {
 	fusermount -uz "$MOUNTPOINT"
-	if ! $MOUNTPOINT_EXISTS; then
-		rmdir "$MOUNTPOINT"	
-	fi
+	rmdir "$MOUNTPOINT"	
 	exit ${1-0}
 }
 

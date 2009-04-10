@@ -42,13 +42,13 @@ test `whoami` != root
 
 export ORIGIN MP SCRATCH PATH=".:${PATH}"
 ALL_PASSED=true
-fusermount -uz $MP 2>/dev/null || true
+fusermount -uzq $MP 2>/dev/null || true
 for test in tests/*; do
 	[ ! -x $test ] && continue
 	echo -n "Running $test... "
 	CODE=1
 	tries=0
-	while [ $tries -lt 5 ] && [ $CODE != 0 ]; do
+	while [ $tries -lt 10 ] && [ $CODE != 0 ]; do
 		fusermount -uzq $MP
 		let tries++
 		rm -rf $ORIGIN $MP $SCRATCH
@@ -67,7 +67,7 @@ for test in tests/*; do
 		ALL_PASSED=false
 	fi
 done
-fusermount -u $MP
+fusermount -uzq $MP
 
 rm -rf $ORIGIN $MP $SCRATCH mount
 if $ALL_PASSED; then

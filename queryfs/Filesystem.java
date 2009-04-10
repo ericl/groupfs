@@ -244,9 +244,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			return fuse.Errno.ENOENT;
 		else if (d.getGroup().getType() == Type.MIME)
 			return fuse.Errno.EPERM;
-		Set<QueryGroup> remove = new HashSet<QueryGroup>();
-		remove.add(d.getGroup());
-		n.changeQueryGroups(null, remove);
+		n.unlink();
 		return 0;
 	}
 

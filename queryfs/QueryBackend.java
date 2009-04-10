@@ -171,10 +171,12 @@ class QueryBackend {
 		for (File child : dir.listFiles()) {
 			if (!child.canRead())
 				continue;
-			if (child.isDirectory())
-				scan(child, false);
-			else if (!root)
+			if (child.isDirectory()) {
+				if (!child.getName().startsWith("."))
+					scan(child, false);
+			} else if (!root) {
 				nodes.add(fileToNode(child));
+			}
 		}
 	}
 

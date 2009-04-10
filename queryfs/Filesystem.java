@@ -266,8 +266,11 @@ public class Filesystem implements Filesystem3, XattrSupport {
 
 	public int rename(String from, String to) throws FuseException {
 		View o = mapper.get(from);
-		if (o == null)
+		Directory d = mapper.getDir(new File(from).getParent());
+		if (o == null || d == null)
 			return fuse.Errno.ENOENT;
+		else if (d.getGroup() != null && d.getGroup().getType() == Type.MIME)
+			return fuse.Errno.EPERM;
 		else if (new File(to).getName().startsWith("."))
 			return fuse.Errno.EPERM;
 		else if (new File(to).getParentFile().getName().startsWith("."))

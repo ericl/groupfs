@@ -31,7 +31,7 @@ fi
 
 clean_exit() {
 	fusermount -uz "$MOUNTPOINT"
-	rmdir "$MOUNTPOINT"	
+	rmdir "$MOUNTPOINT" 2>/dev/null
 	exit ${1-0}
 }
 

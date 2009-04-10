@@ -42,8 +42,7 @@ public class SubclassingDirectory extends RootDirectory {
 	protected void populateSelf() {
 		super.populateSelf();
 		for (Node node : backend.query(groups))
-			if (node.visible())
-				register(node.getName(), node);
+			register(node.getName(), node);
 	}
 
 	private boolean fromEqualsThis(String from) {

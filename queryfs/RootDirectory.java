@@ -61,8 +61,7 @@ public class RootDirectory implements Directory {
 				register("." + group.getValue(), new SubclassingDirectory(backend, this, group));
 			else {
 				String value = group.getValue();
-				if (value.startsWith("."))
-					value = "dot" + value;
+				assert !value.startsWith(".");
 				register(value, new SubclassingDirectory(backend, this, group));
 			}
 		}

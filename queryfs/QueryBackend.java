@@ -182,11 +182,10 @@ class QueryBackend {
 
 	private Node fileToNode(File file) {
 		assert !file.isDirectory();
-		String path = file.getAbsolutePath().substring(root.getAbsolutePath().length() + 1);
+		String path = file.getParentFile().getAbsolutePath().substring(root.getAbsolutePath().length() + 1);
 		Set<String> tags = new HashSet<String>(
 			Arrays.asList(path.split("/"))
 		);
-		tags.remove(file.getName());
 		tags.remove("");
 		Set<QueryGroup> groups = new HashSet<QueryGroup>();
 		for (String tag : tags)

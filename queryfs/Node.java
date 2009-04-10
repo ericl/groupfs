@@ -22,10 +22,6 @@ public abstract class Node implements View {
 		this.groups = groups;
 	}
 
-	public boolean visible() {
-		return true;
-	}
-
 	public int getFType() {
 		return FuseFtype.TYPE_FILE;
 	}

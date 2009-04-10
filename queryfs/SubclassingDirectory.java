@@ -46,7 +46,15 @@ public class SubclassingDirectory extends RootDirectory {
 				register(node.getName(), node);
 	}
 
+	private boolean fromEqualsThis(String from) {
+		Set<QueryGroup> remove = new HashSet<QueryGroup>();
+		for (String tag : tagsOf(from))
+			remove.add(QueryGroup.create(tag, Type.TAG));
+		return remove.equals(groups);
+	}
+
 	public int rename(String from, String to, View target) throws FuseException {
+		assert fromEqualsThis(from);
 		if (target != null)
 			return fuse.Errno.EPERM;
 		if (group.getType() == Type.MIME)

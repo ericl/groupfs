@@ -59,7 +59,10 @@ public class FileNode extends Node {
 			Set<QueryGroup> add = new HashSet<QueryGroup>();
 			for (String tag : tagsOf(new File(to).getParent()))
 				add.add(QueryGroup.create(tag, Type.TAG));
-			changeQueryGroups(add, new HashSet<QueryGroup>(groups));
+			Set<QueryGroup> remove = new HashSet<QueryGroup>();
+			for (String tag : tagsOf(new File(from).getParent()))
+				remove.add(QueryGroup.create(tag, Type.TAG));
+			changeQueryGroups(add, remove);
 		} else {
 			for (QueryGroup q : groups)
 				backend.flag(q);

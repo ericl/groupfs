@@ -46,9 +46,8 @@ public class FileNode extends Node {
 	}
 
 	public int rename(String from, String to, View target) throws FuseException {
-		if (target == this)
-			return 0;
-		if (target != null) {
+		if (target != null && target != this) {
+			// the common rename-swap-file-to-write behavior
 			if (target instanceof Node)
 				((Node)target).unlink();
 			else
@@ -56,6 +55,7 @@ public class FileNode extends Node {
 		}
 		setName(new File(to).getName());
 		if (!new File(to).getParent().equals(new File(from).getParent())) {
+			// move to different dir
 			Set<QueryGroup> add = new HashSet<QueryGroup>();
 			for (String tag : tagsOf(new File(to).getParent()))
 				add.add(QueryGroup.create(tag, Type.TAG));
@@ -64,6 +64,7 @@ public class FileNode extends Node {
 				remove.add(QueryGroup.create(tag, Type.TAG));
 			changeQueryGroups(add, remove);
 		} else {
+			// name change in same dir
 			for (QueryGroup q : groups)
 				backend.flag(q);
 			backend.flush();

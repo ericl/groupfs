@@ -151,7 +151,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		File mountPoint = new File(args[args.length - 2]);
 		try {
 			validate(originDir, mountPoint);
-			FuseMount.mount(fuseArgs, new Filesystem(originDir, mountPoint), log);
+			FuseMount.mount(fuseArgs, new Filesystem(originDir), log);
 		} catch (Exception e) {
 			log.error(e);
 		}
@@ -173,7 +173,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 
-	public Filesystem(File originDir, File mountPoint) {
+	public Filesystem(File originDir) {
 		backend = new QueryBackend(originDir);
 		mapper = new ViewMapper(new RootDirectory(backend));
 	}

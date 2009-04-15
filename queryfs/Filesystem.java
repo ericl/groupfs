@@ -183,8 +183,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		if (o == null)
 			return fuse.Errno.ENOENT;
 		else
-			o.stat(getattrSetter);
-		return 0;
+			return o.stat(getattrSetter);
 	}
 
 	public int readlink(String path, CharBuffer link) throws FuseException {
@@ -237,10 +236,11 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		Directory d = mapper.getDir(new File(path).getParent());
 		if (d == null)
 			return fuse.Errno.ENOENT;
-		else if (!d.getPerms().canDeleteNode())
+		else if (d.getGroup() == QueryGroup.GROUP_NO_GROUP) {
+			return n.deleteFromBackingMedia();
+		} else if (!d.getPerms().canDeleteNode())
 			return fuse.Errno.EPERM;
-		n.unlink();
-		return 0;
+		return n.unlink();
 	}
 
 	public int rmdir(String path) throws FuseException {
@@ -262,7 +262,9 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		Directory dd = mapper.getDir(new File(to).getParent());
 		if (o == null || d == null || dd == null)
 			return fuse.Errno.ENOENT;
-		else if (!d.getPerms().canMoveOut() || !dd.getPerms().canMoveIn() || new File(to).getName().startsWith("."))
+		else if (d != dd && (!d.getPerms().canMoveOut() || !dd.getPerms().canMoveIn()))
+			return fuse.Errno.EPERM;
+		else if (new File(to).getName().startsWith("."))
 			return fuse.Errno.EPERM;
 		return o.rename(from, to, mapper.get(to));
 	}
@@ -283,16 +285,14 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
-		n.truncate(size);
-		return 0;
+		return n.truncate(size);
 	}
 
 	public int utime(String path, int atime, int mtime) throws FuseException {
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
-		n.setModified(mtime);
-		return 0;
+		return n.setModified(mtime);
 	}
 
 	public int statfs(FuseStatfsSetter statfsSetter) throws FuseException {
@@ -320,16 +320,14 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
-		n.read(buf, offset);
-		return 0;
+		return n.read(buf, offset);
 	}
 
 	public int write(String path, Object fh, boolean isWritepage, ByteBuffer buf, long offset) throws FuseException {
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
-		n.write(buf, offset);
-		return 0;
+		return n.write(buf, offset);
 	}
 
 	public int flush(String path, Object fh) throws FuseException {

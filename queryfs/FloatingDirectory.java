@@ -44,7 +44,7 @@ public class FloatingDirectory implements Directory {
 		return FuseFtype.TYPE_DIR;
 	}
 
-	public void stat(FuseGetattrSetter setter) {
+	public int stat(FuseGetattrSetter setter) {
 		int mtime = (int)(time / 1000L);
 		setter.set(
 			0, // inode
@@ -57,10 +57,12 @@ public class FloatingDirectory implements Directory {
 			0,
 			mtime, mtime, mtime // atime, mtime, ctime
 		);
+		return 0;
 	}
 
-	public void setModified(long mtime) throws FuseException {
+	public int setModified(long mtime) throws FuseException {
 		time = mtime;
+		return 0;
 	}
 
 	public int rename(String from, String to, View v) {

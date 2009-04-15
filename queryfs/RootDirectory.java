@@ -45,8 +45,9 @@ public class RootDirectory implements Directory {
 		return FuseFtype.TYPE_DIR;
 	}
 
-	public void setModified(long mtime) throws FuseException {
+	public int setModified(long mtime) throws FuseException {
 		time = mtime;
+		return 0;
 	}
 
 	public int rename(String from, String to, View v) throws FuseException {
@@ -81,7 +82,7 @@ public class RootDirectory implements Directory {
 		return null;
 	}
 
-	public void stat(FuseGetattrSetter setter) {
+	public int stat(FuseGetattrSetter setter) {
 		update();
 		int mtime = (int)(time / 1000L);
 		setter.set(
@@ -95,6 +96,7 @@ public class RootDirectory implements Directory {
 			0,
 			mtime, mtime, mtime // atime, mtime, ctime
 		);
+		return 0;
 	}
 
 	public QueryGroup getGroup() {

@@ -40,23 +40,23 @@ public abstract class Node implements View {
 
 	public void setPermanent(boolean b) {}
 
-	public abstract void stat(FuseGetattrSetter setter);
+	public abstract int stat(FuseGetattrSetter setter);
 
-	public abstract void setModified(long mtime) throws FuseException;
+	public abstract int setModified(long mtime) throws FuseException;
 
 	public abstract void changeQueryGroups(Set<QueryGroup> add, Set<QueryGroup> remove) throws FuseException;
 
 	public abstract void setName(String name) throws FuseException;
 
-	public abstract void unlink() throws FuseException;
+	public abstract int unlink() throws FuseException;
 
-	public abstract void open(int flags) throws FuseException;
+	public abstract int deleteFromBackingMedia() throws FuseException;
 
 	public abstract void close() throws FuseException;
 
-	public abstract void read(ByteBuffer buf, long offset) throws FuseException;
+	public abstract int read(ByteBuffer buf, long offset) throws FuseException;
 
-	public abstract void write(ByteBuffer buf, long offset) throws FuseException;
+	public abstract int write(ByteBuffer buf, long offset) throws FuseException;
 
-	public abstract void truncate(long size) throws FuseException;
+	public abstract int truncate(long size) throws FuseException;
 }

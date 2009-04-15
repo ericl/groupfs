@@ -45,7 +45,6 @@ public class FileNode extends Node {
 		return name;
 	}
 
-	// TODO use filemapper to get groups instead of name-splitting
 	public int rename(String from, String to, View target) throws FuseException {
 		if (target != null && target != this) {
 			// the common rename-swap-file-to-write behavior
@@ -79,8 +78,7 @@ public class FileNode extends Node {
 		rmdirs(f.getParentFile());
 	}
 
-
-	public void stat(FuseGetattrSetter setter) {
+	public int stat(FuseGetattrSetter setter) {
 		int time = (int)(file.lastModified() / 1000L);
 		long size = file.length();
 		setter.set(
@@ -94,10 +92,12 @@ public class FileNode extends Node {
 			(int)((size + 511L) / 512L),
 			time, time, time // atime, mtime, ctime
 		);
+		return 0;
 	}
 
-	public void setModified(long mtime) throws FuseException {
+	public int setModified(long mtime) throws FuseException {
 		file.setLastModified(mtime);
+		return 0;
 	}
 
 	public void changeQueryGroups(Set<QueryGroup> add, Set<QueryGroup> remove) throws FuseException {
@@ -165,13 +165,23 @@ public class FileNode extends Node {
 		}
 	}
 
-	public void unlink() throws FuseException {
+	public int unlink() throws FuseException {
 		Set<QueryGroup> add = new HashSet<QueryGroup>();
 		add.add(QueryGroup.GROUP_NO_GROUP);
 		changeQueryGroups(add, new HashSet<QueryGroup>(groups), true);
+		return 0;
 	}
 
-	public void open(int flags) throws FuseException {
+	public int deleteFromBackingMedia() {
+		for (QueryGroup q : groups)
+			backend.flag(q);
+		groups.clear();
+		backend.flush();
+		file.delete();
+		return 0;
+	}
+
+	private void open(int flags) throws FuseException {
 		synchronized (this) {
 			if (!file.exists())
 				throw new FuseException("No Such Entry").initErrno(FuseException.ENOENT);
@@ -203,16 +213,17 @@ public class FileNode extends Node {
 		}
 	}
 
-	public void read(ByteBuffer buf, long offset) throws FuseException {
+	public int read(ByteBuffer buf, long offset) throws FuseException {
 		open(FilesystemConstants.O_RDONLY);
 		try {
 			channel.read(buf, offset);
 		} catch (IOException e) {
 			throw new FuseException("IO Exception", e).initErrno(FuseException.EIO);
 		}
+		return 0;
 	}
 
-	public void write(ByteBuffer buf, long offset) throws FuseException {
+	public int write(ByteBuffer buf, long offset) throws FuseException {
 		open(FilesystemConstants.O_RDWR);
 		try {
 			channel.position(offset);
@@ -220,14 +231,16 @@ public class FileNode extends Node {
 		} catch (IOException e) {
 			throw new FuseException("IO Exception", e).initErrno(FuseException.EIO);
 		}
+		return 0;
 	}
 
-	public void truncate(long size) throws FuseException {
+	public int truncate(long size) throws FuseException {
 		open(FilesystemConstants.O_RDWR);
 		try {
 			channel.truncate(size);
 		} catch (IOException e) {
 			throw new FuseException("IO Exception", e).initErrno(FuseException.EIO);
 		}
+		return 0;
 	}
 }

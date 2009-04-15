@@ -22,6 +22,12 @@ public class Util {
 		return tags;
 	}
 
+	public static String unNumbered(String name) {
+		if (name.matches(".*\\.[0-9]+"))
+			name = name.substring(0, name.lastIndexOf("."));
+		return name;
+	}
+
 	public static String extensionOf(String name) {
 		if (name.matches(".*\\.[0-9]+"))
 			name = name.substring(0, name.lastIndexOf("."));

@@ -30,7 +30,7 @@ public class FileNode extends Node {
 		super(backend, groups);
 		assert file.exists() && !file.isDirectory();
 		this.file = file;
-		this.name = file.getName();
+		this.name = unNumbered(file.getName());
 	}
 
 	public int getFType() {

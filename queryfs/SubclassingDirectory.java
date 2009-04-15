@@ -61,7 +61,7 @@ public class SubclassingDirectory extends RootDirectory {
 		return remove.equals(groups);
 	}
 
-	public int rename(String from, String to, View target) throws FuseException {
+	public int rename(String from, String to, View target, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd) throws FuseException {
 		assert fromEqualsThis(from);
 		if (target != null)
 			return fuse.Errno.EPERM;

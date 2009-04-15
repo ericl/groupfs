@@ -45,7 +45,7 @@ public class FileNode extends Node {
 		return name;
 	}
 
-	public int rename(String from, String to, View target) throws FuseException {
+	public int rename(String from, String to, View target, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd) throws FuseException {
 		if (target != null && target != this) {
 			// the common rename-swap-file-to-write behavior
 			if (target instanceof Node)
@@ -54,14 +54,11 @@ public class FileNode extends Node {
 		}
 		setName(new File(to).getName());
 		if (!new File(to).getParent().equals(new File(from).getParent())) {
-			// move to different dir
-			Set<QueryGroup> add = new HashSet<QueryGroup>();
-			for (String tag : tagsOf(new File(to).getParent()))
-				add.add(QueryGroup.create(tag, Type.TAG));
-			Set<QueryGroup> remove = new HashSet<QueryGroup>();
-			for (String tag : tagsOf(new File(from).getParent()))
-				remove.add(QueryGroup.create(tag, Type.TAG));
-			changeQueryGroups(add, remove);
+			for (QueryGroup group : hintAdd)
+				assert group.getType() == Type.TAG;
+			for (QueryGroup group : hintRemove)
+				assert group == QueryGroup.GROUP_NO_GROUP || group.getType() == Type.TAG;
+			changeQueryGroups(hintAdd, hintRemove);
 		} else {
 			// name change in same dir
 			for (QueryGroup q : groups)

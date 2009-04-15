@@ -50,7 +50,7 @@ public class RootDirectory implements Directory {
 		return 0;
 	}
 
-	public int rename(String from, String to, View v) throws FuseException {
+	public int rename(String from, String to, View v, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd) throws FuseException {
 		return fuse.Errno.EPERM;
 	}
 

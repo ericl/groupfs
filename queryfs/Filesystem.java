@@ -266,7 +266,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			return fuse.Errno.EPERM;
 		else if (new File(to).getName().startsWith("."))
 			return fuse.Errno.EPERM;
-		return o.rename(from, to, mapper.get(to));
+		return o.rename(from, to, mapper.get(to), d.getQueryGroups(), dd.getQueryGroups());
 	}
 
 	public int link(String from, String to) throws FuseException {

@@ -45,13 +45,13 @@ public class FileNode extends Node {
 		return name;
 	}
 
+	// TODO use filemapper to get groups instead of name-splitting
 	public int rename(String from, String to, View target) throws FuseException {
 		if (target != null && target != this) {
 			// the common rename-swap-file-to-write behavior
 			if (target instanceof Node)
 				((Node)target).unlink();
-			else
-				return fuse.Errno.EPERM;
+			// if not a node then probably root dir !?
 		}
 		setName(new File(to).getName());
 		if (!new File(to).getParent().equals(new File(from).getParent())) {
@@ -117,9 +117,13 @@ public class FileNode extends Node {
 				if (allowMimetypeChange || a.getType() != Type.MIME)
 					groups.add(a);
 			}
+		if (groups.size() > 1) // auto-handle this
+			groups.remove(QueryGroup.GROUP_NO_GROUP);
 		File loc = null;
 		try {
-			loc = getDestination(newPath(backend.root, groups), name);
+			Set<QueryGroup> consideredGroups = new HashSet<QueryGroup>(groups);
+			consideredGroups.remove(QueryGroup.GROUP_NO_GROUP);
+			loc = getDestination(newPath(backend.root, consideredGroups), name);
 		} catch (IOException e) {
 			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
 		}
@@ -133,15 +137,6 @@ public class FileNode extends Node {
 			backend.checkRoot(remove);
 		if (add != null)
 			backend.checkRootAdd(add);
-		if (untagged(groups))
-			backend.unref(this);
-	}
-
-	private boolean untagged(Set<QueryGroup> groups) {
-		for (QueryGroup group : groups)
-			if (group.getType() == Type.TAG)
-				return false;
-		return true;
 	}
 
 	public void setName(String name) throws FuseException {
@@ -171,7 +166,9 @@ public class FileNode extends Node {
 	}
 
 	public void unlink() throws FuseException {
-		changeQueryGroups(null, new HashSet<QueryGroup>(groups));
+		Set<QueryGroup> add = new HashSet<QueryGroup>();
+		add.add(QueryGroup.GROUP_NO_GROUP);
+		changeQueryGroups(add, new HashSet<QueryGroup>(groups), true);
 	}
 
 	public void open(int flags) throws FuseException {

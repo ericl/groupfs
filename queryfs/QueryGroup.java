@@ -11,6 +11,7 @@ public class QueryGroup {
 	private final Type type;
 	private static Map<String,QueryGroup> mimetypes = new HashMap<String,QueryGroup>();
 	private static Map<String,QueryGroup> tags = new HashMap<String,QueryGroup>();
+	public static QueryGroup GROUP_NO_GROUP = QueryGroup.create("Trash", Type.MIME);
 
 	public static QueryGroup create(String value, Type type) {
 		QueryGroup q = null;

@@ -18,10 +18,17 @@ public class RootDirectory implements Directory {
 	protected boolean populated;
 	protected Set<QueryGroup> groups;
 	protected Map<String,View> views = new HashMap<String,View>();
+	protected static Permissions root_perms = new Permissions(
+		false, false, false, true, true, true, false
+	);
 
 	public RootDirectory(QueryBackend backend) {
 		this.backend = backend;
 		groups = new HashSet<QueryGroup>();
+	}
+
+	public Permissions getPerms() {
+		return root_perms;
 	}
 
 	protected void register(String key, View value) {
@@ -34,10 +41,6 @@ public class RootDirectory implements Directory {
 		views.put(key, value);
 	}
 
-	public Set<Node> getNodes() {
-		return new HashSet<Node>();
-	}
-
 	public int getFType() {
 		return FuseFtype.TYPE_DIR;
 	}
@@ -47,11 +50,11 @@ public class RootDirectory implements Directory {
 	}
 
 	public int rename(String from, String to, View v) throws FuseException {
-		throw new FuseException("cannot move /").initErrno(FuseException.EPERM);
+		return fuse.Errno.EPERM;
 	}
 
-	public void delete() throws FuseException {
-		throw new FuseException("cannot delete /").initErrno(FuseException.EPERM);
+	public int delete() throws FuseException {
+		return fuse.Errno.EPERM;
 	}
 
 	protected void populateSelf() {
@@ -61,7 +64,6 @@ public class RootDirectory implements Directory {
 				register("." + group.getValue(), new SubclassingDirectory(backend, this, group));
 			else {
 				String value = group.getValue();
-				assert !value.startsWith(".");
 				register(value, new SubclassingDirectory(backend, this, group));
 			}
 		}
@@ -107,7 +109,7 @@ public class RootDirectory implements Directory {
 		return null;
 	}
 
-	protected void update() {
+	protected synchronized void update() {
 		if (!QueryGroup.allValid(stamp))
 			populated = false;
 		if (!populated) {
@@ -118,7 +120,7 @@ public class RootDirectory implements Directory {
 		}
 	}
 
-	public synchronized Map<String,View> list() {
+	public Map<String,View> list() {
 		update();
 		return views;
 	}

@@ -18,6 +18,9 @@ public class FloatingDirectory implements Directory {
 	private final String parent;
 	private long time = System.currentTimeMillis();
 	private Set<QueryGroup> groups;
+	protected static Permissions floating_perms = new Permissions(
+		true, true, true, true, true, true, true
+	);
 
 	public FloatingDirectory(ViewMapper mapper, String parent, String id, QueryGroup group) {
 		this.mapper = mapper;
@@ -29,8 +32,8 @@ public class FloatingDirectory implements Directory {
 		groups.add(group);
 	}
 
-	public String getPath() {
-		return id;
+	public Permissions getPerms() {
+		return floating_perms;
 	}
 
 	public String getHost() {
@@ -60,10 +63,6 @@ public class FloatingDirectory implements Directory {
 		time = mtime;
 	}
 
-	public Set<Node> getNodes() {
-		return new HashSet<Node>();
-	}
-
 	public int rename(String from, String to, View v) {
 		if (v != null)
 			return fuse.Errno.EPERM;
@@ -72,8 +71,9 @@ public class FloatingDirectory implements Directory {
 	}
 
 
-	public void delete() throws FuseException {
+	public int delete() throws FuseException {
 		mapper.delete(id, true);
+		return 0;
 	}
 	
 	public View get(String name) {

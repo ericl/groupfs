@@ -207,11 +207,9 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		Directory d = mapper.getDir(new File(path).getParent());
 		if (d == null)
 			return fuse.Errno.ENOENT;
-		else if (d.getGroup() == null || d.getGroup().getType() == Type.MIME)
+		else if (!d.getPerms().canMknod())
 			return fuse.Errno.EPERM;
 		Set<QueryGroup> groups = d.getQueryGroups();
-		if (groups.isEmpty())
-			return fuse.Errno.EPERM;
 		String ext = extensionOf(new File(path));
 		if (ext != null)
 			groups.add(QueryGroup.create(ext, Type.MIME));
@@ -223,13 +221,10 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		String name = new File(path).getName();
 		if (name.startsWith("."))
 			return fuse.Errno.EPERM;
-		View v = mapper.get(path);
-		if (v != null && v instanceof Node)
-			return fuse.Errno.EPERM;
 		Directory parent = mapper.getDir(new File(path).getParent());
 		if (parent == null)
 			return fuse.Errno.ENOENT;
-		else if (parent.getGroup() != null && parent.getGroup().getType() == Type.MIME)
+		else if (!parent.getPerms().canMkdir())
 			return fuse.Errno.EPERM;
 		mapper.createFloat(path);
 		return 0;
@@ -242,7 +237,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		Directory d = mapper.getDir(new File(path).getParent());
 		if (d == null)
 			return fuse.Errno.ENOENT;
-		else if (d.getGroup().getType() == Type.MIME)
+		else if (!d.getPerms().canDeleteNode())
 			return fuse.Errno.EPERM;
 		n.unlink();
 		return 0;
@@ -252,10 +247,9 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		Directory d = mapper.getDir(path);
 		if (d == null)
 			return fuse.Errno.ENOENT;
-		else if (d.getGroup() != null && d.getGroup().getType() == Type.MIME)
+		else if (!d.getPerms().canDelete())
 			return fuse.Errno.EPERM;
-		d.delete();
-		return 0;
+		return d.delete();
 	}
 
 	public int symlink(String from, String to) throws FuseException {
@@ -265,13 +259,10 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	public int rename(String from, String to) throws FuseException {
 		View o = mapper.get(from);
 		Directory d = mapper.getDir(new File(from).getParent());
-		if (o == null || d == null)
+		Directory dd = mapper.getDir(new File(to).getParent());
+		if (o == null || d == null || dd == null)
 			return fuse.Errno.ENOENT;
-		else if (d.getGroup() != null && d.getGroup().getType() == Type.MIME)
-			return fuse.Errno.EPERM;
-		else if (new File(to).getName().startsWith("."))
-			return fuse.Errno.EPERM;
-		else if (new File(to).getParentFile().getName().startsWith("."))
+		else if (!d.getPerms().canMoveOut() || !dd.getPerms().canMoveIn() || new File(to).getName().startsWith("."))
 			return fuse.Errno.EPERM;
 		return o.rename(from, to, mapper.get(to));
 	}
@@ -370,7 +361,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int setxattr(String path, String name, ByteBuffer value, int flags) throws FuseException {
-		return fuse.Errno.EPERM;
+		return fuse.Errno.ENOTSUPP;
 	}
 
 	public int removexattr(String path, String name) throws FuseException {

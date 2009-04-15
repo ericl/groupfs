@@ -13,6 +13,12 @@ import static queryfs.Util.*;
 public class SubclassingDirectory extends RootDirectory {
 	private final Directory parent;
 	private final QueryGroup group;
+	protected static Permissions class_tag_perms = new Permissions(
+		true, true, true, true, true, true, true
+	);
+	protected static Permissions class_mime_perms = new Permissions(
+		false, false, false, false, true, false, true
+	);
 
 	public SubclassingDirectory(QueryBackend backend, Directory parent, QueryGroup group) {
 		super(backend);
@@ -22,11 +28,14 @@ public class SubclassingDirectory extends RootDirectory {
 		groups.add(group);
 	}
 
-	public Set<Node> getNodes() {
-		return backend.query(groups);
+	public Permissions getPerms() {
+		if (group.getType() == Type.MIME)
+			return class_mime_perms;
+		else
+			return class_tag_perms;
 	}
 
-	public void delete() throws FuseException {
+	public int delete() throws FuseException {
 		Set<QueryGroup> del = new HashSet<QueryGroup>();
 		del.add(group);
 		for (String ref : views.keySet()) {
@@ -36,7 +45,7 @@ public class SubclassingDirectory extends RootDirectory {
 				n.changeQueryGroups(null, del);
 			}
 		}
-		return;
+		return 0;
 	}
 
 	protected void populateSelf() {
@@ -61,7 +70,7 @@ public class SubclassingDirectory extends RootDirectory {
 		Set<QueryGroup> add = new HashSet<QueryGroup>();
 		for (String tag : tagsOf(to))
 			add.add(QueryGroup.create(tag, Type.TAG));
-		for (Node n : getNodes())
+		for (Node n : backend.query(groups))
 			n.changeQueryGroups(add, groups);
 		return 0;
 	}
@@ -74,13 +83,13 @@ public class SubclassingDirectory extends RootDirectory {
 		return parent;
 	}
 
-	protected void update() {
+	protected synchronized void update() {
 		if (!group.stampValid(stamp))
 			populated = false;
 		super.update();
 	}
 
-	public synchronized Map<String,View> list() {
+	public Map<String,View> list() {
 		update();
 		return views;
 	}

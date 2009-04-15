@@ -25,7 +25,7 @@ class QueryBackend {
 	public QueryBackend(File origin) {
 		assert origin.isDirectory();
 		root = origin;
-		scan(root, true);
+		scan(root);
 	}
 
 	private class QueryCache {
@@ -167,14 +167,14 @@ class QueryBackend {
 		flagged.clear();
 	}
 
-	private void scan(File dir, boolean root) {
+	private void scan(File dir) {
 		for (File child : dir.listFiles()) {
 			if (!child.canRead())
 				continue;
 			if (child.isDirectory()) {
 				if (!child.getName().startsWith("."))
-					scan(child, false);
-			} else if (!root) {
+					scan(child);
+			} else {
 				nodes.add(fileToNode(child));
 			}
 		}
@@ -182,12 +182,18 @@ class QueryBackend {
 
 	private Node fileToNode(File file) {
 		assert !file.isDirectory();
-		String path = file.getParentFile().getAbsolutePath().substring(root.getAbsolutePath().length() + 1);
+		String a = file.getParentFile().getAbsolutePath();
+		String b = root.getAbsolutePath();
+		Set<QueryGroup> groups = new HashSet<QueryGroup>();
+		if (a.equals(b)) {
+			groups.add(QueryGroup.GROUP_NO_GROUP);
+			return new FileNode(this, file, groups);
+		}
+		String path = a.substring(b.length() + 1);
 		Set<String> tags = new HashSet<String>(
 			Arrays.asList(path.split("/"))
 		);
 		tags.remove("");
-		Set<QueryGroup> groups = new HashSet<QueryGroup>();
 		for (String tag : tags)
 			groups.add(QueryGroup.create(tag, Type.TAG));
 		groups.add(QueryGroup.create(extensionOf(file), Type.MIME));
@@ -236,9 +242,5 @@ class QueryBackend {
 				return;
 			}
 		}
-	}
-
-	public void unref(Node node) {
-		nodes.remove(node);
 	}
 }

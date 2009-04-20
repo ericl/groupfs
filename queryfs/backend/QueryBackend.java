@@ -10,4 +10,7 @@ public interface QueryBackend {
 	public Set<Node> query(Set<QueryGroup> groups);
 	public Set<QueryGroup> subclass(Set<QueryGroup> groups);
 	public void create(Set<QueryGroup> groups, String name) throws FuseException;
+	public long getFreeSpace();
+	public long getTotalSpace();
+	public long getUsableSpace();
 }

@@ -93,6 +93,18 @@ public class DirectoryQueryBackend implements QueryBackend {
 		checkRootAdd(groups);
 	}
 
+	public long getFreeSpace() {
+		return root.getFreeSpace();
+	}
+
+	public long getUsableSpace() {
+		return root.getUsableSpace();
+	}
+
+	public long getTotalSpace() {
+		return root.getTotalSpace();
+	}
+
 	protected File getRoot() {
 		return root;
 	}
@@ -234,6 +246,10 @@ public class DirectoryQueryBackend implements QueryBackend {
 				return;
 			}
 		}
+	}
+
+	protected void unref(Node n) {
+		nodes.remove(n);
 	}
 
 	protected void checkRootAdd(Set<QueryGroup> added) {

@@ -167,6 +167,7 @@ public class DirectoryBackedNode extends Node {
 	}
 
 	public int deleteFromBackingMedia() {
+		backend.unref(this);
 		for (QueryGroup q : groups)
 			backend.flag(q);
 		groups.clear();

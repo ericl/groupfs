@@ -36,6 +36,7 @@ import static queryfs.Util.*;
 
 public class Filesystem implements Filesystem3, XattrSupport {
 	public static final Log log = LogFactory.getLog(Filesystem.class);
+	public static final int blksize = 1024;
 	private QueryBackend backend;
 	private ViewMapper mapper;
 
@@ -44,11 +45,11 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		private Map<String,FloatingDirectory> floats = new HashMap<String,FloatingDirectory>();
 		private Map<String,List<FloatingDirectory>> parents = new HashMap<String,List<FloatingDirectory>>();
 
-		public ViewMapper(RootDirectory root) {
+		ViewMapper(RootDirectory root) {
 			this.root = root;
 		}
 
-		public void createFloat(String path) {
+		void createFloat(String path) {
 			String parent = new File(path).getParent();
 			String name = new File(path).getName();
 			FloatingDirectory f = new FloatingDirectory(this, parent, path, QueryGroup.create(name, Type.TAG));
@@ -61,7 +62,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			s.add(f);
 		}
 
-		public void delete(String path, boolean recursive) {
+		void delete(String path, boolean recursive) {
 			FloatingDirectory target = floats.remove(path);
 			if (target == null)
 				return;
@@ -75,7 +76,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 						delete(test, false);
 		}
 
-		public void remap(String from, String to) {
+		void remap(String from, String to) {
 			delete(from, false);
 			createFloat(to);
 			for (String test : new HashSet<String>(floats.keySet()))
@@ -85,7 +86,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 				}
 		}
 
-		public void finish(String parent, Set<String> taken, FuseDirFiller filler) {
+		void finish(String parent, Set<String> taken, FuseDirFiller filler) {
 			List<FloatingDirectory> s = parents.get(parent);
 			if (s != null)
 				for (FloatingDirectory f : s) {
@@ -95,7 +96,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 				}
 		}
 
-		public View get(String path) {
+		View get(String path) {
 			String[] parts = path.split("/");
 			if (parts.length < 2)
 				return root;
@@ -125,7 +126,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			return output;
 		}
 
-		public Directory getDir(String path) {
+		Directory getDir(String path) {
 			View dir = get(path);
 			if (dir instanceof Directory)
 				return (Directory)dir;
@@ -133,7 +134,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 				return null;
 		}
 
-		public Node getNode(String path) {
+		Node getNode(String path) {
 			View dir = get(path);
 			if (dir instanceof Node)
 				return (Node)dir;
@@ -283,10 +284,10 @@ public class Filesystem implements Filesystem3, XattrSupport {
 
 	public int statfs(FuseStatfsSetter statfsSetter) throws FuseException {
 		statfsSetter.set(
-			1024, // blockSize
-			Integer.MAX_VALUE, // blocks
-			Integer.MAX_VALUE, // blocksFree
-			Integer.MAX_VALUE, // blocksAvail
+			blksize, // blockSize
+			(int)(backend.getTotalSpace() / blksize), // blocks
+			(int)(backend.getFreeSpace() / blksize), // blocksFree
+			(int)(backend.getUsableSpace() / blksize), // blocksAvail
 			0, // files
 			0, // filesFree
 			0 // namelen

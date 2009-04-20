@@ -1,4 +1,4 @@
-package queryfs;
+package queryfs.backend;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,17 +18,21 @@ import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
 import queryfs.QueryGroup.Type;
+import queryfs.QueryGroup;
+import queryfs.View;
 
 import static queryfs.Util.*;
 
-public class FileNode extends Node {
+public class DirectoryBackedNode extends Node {
 	private FileChannel channel;
+	private DirectoryQueryBackend backend;
 	private int channelFlags = FilesystemConstants.O_RDONLY;
 	private File file;
 
-	public FileNode(QueryBackend backend, File file, Set<QueryGroup> groups) {
-		super(backend, groups);
+	protected DirectoryBackedNode(DirectoryQueryBackend backend, File file, Set<QueryGroup> groups) {
+		super(groups);
 		assert file.exists() && !file.isDirectory();
+		this.backend = backend;
 		this.file = file;
 		this.name = unNumbered(file.getName());
 	}
@@ -66,13 +70,6 @@ public class FileNode extends Node {
 			backend.flush();
 		}
 		return 0;
-	}
-
-	private void rmdirs(File f) {
-		if (f == null || !f.isDirectory() || f.list().length != 0)
-			return;
-		f.delete();
-		rmdirs(f.getParentFile());
 	}
 
 	public int stat(FuseGetattrSetter setter) {
@@ -120,7 +117,7 @@ public class FileNode extends Node {
 		try {
 			Set<QueryGroup> consideredGroups = new HashSet<QueryGroup>(groups);
 			consideredGroups.remove(QueryGroup.GROUP_NO_GROUP);
-			loc = getDestination(newPath(backend.root, consideredGroups), name);
+			loc = getDestination(newPath(backend.getRoot(), consideredGroups), name);
 		} catch (IOException e) {
 			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
 		}
@@ -178,24 +175,6 @@ public class FileNode extends Node {
 		return 0;
 	}
 
-	private void open(int flags) throws FuseException {
-		synchronized (this) {
-			if (!file.exists())
-				throw new FuseException("No Such Entry").initErrno(FuseException.ENOENT);
-			if (channel == null || channelFlags < flags) {
-				try {
-					String mode = "r";
-					if (flags > FilesystemConstants.O_RDONLY)
-						mode = "rw";
-					channel = new RandomAccessFile(file, mode).getChannel();
-				} catch (FileNotFoundException e) {
-					throw new FuseException("No Such Entry", e).initErrno(FuseException.ENOENT);
-				}
-				channelFlags = flags;
-			}
-		}
-	}
-
 	public void close() throws FuseException {
 		synchronized (this) {
 			if (channel == null)
@@ -239,5 +218,23 @@ public class FileNode extends Node {
 			throw new FuseException("IO Exception", e).initErrno(FuseException.EIO);
 		}
 		return 0;
+	}
+
+	private void open(int flags) throws FuseException {
+		synchronized (this) {
+			if (!file.exists())
+				throw new FuseException("No Such Entry").initErrno(FuseException.ENOENT);
+			if (channel == null || channelFlags < flags) {
+				try {
+					String mode = "r";
+					if (flags > FilesystemConstants.O_RDONLY)
+						mode = "rw";
+					channel = new RandomAccessFile(file, mode).getChannel();
+				} catch (FileNotFoundException e) {
+					throw new FuseException("No Such Entry", e).initErrno(FuseException.ENOENT);
+				}
+				channelFlags = flags;
+			}
+		}
 	}
 }

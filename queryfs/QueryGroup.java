@@ -3,12 +3,12 @@ package queryfs;
 import java.util.HashMap;
 import java.util.Map;
 
-public class QueryGroup {
-	public static long alltime = System.nanoTime();
+public final class QueryGroup {
 	public enum Type { TAG, MIME }
 	private final String value;
 	private long time = System.nanoTime();
 	private final Type type;
+	private static long alltime = System.nanoTime();
 	private static Map<String,QueryGroup> mimetypes = new HashMap<String,QueryGroup>();
 	private static Map<String,QueryGroup> tags = new HashMap<String,QueryGroup>();
 	public static QueryGroup GROUP_NO_GROUP = QueryGroup.create("Trash", Type.MIME);

@@ -1,7 +1,6 @@
 package queryfs;
 
 import java.io.File;
-import java.io.IOException;
 
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
@@ -28,6 +27,9 @@ import fuse.XattrSupport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import queryfs.backend.Node;
+import queryfs.backend.QueryBackend;
+import queryfs.backend.DirectoryQueryBackend;
 import queryfs.QueryGroup.Type;
 
 import static queryfs.Util.*;
@@ -157,24 +159,8 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		}
 	}
 
-	public static void validate(File origin, File mount) throws IOException {
-		if (!origin.exists() || !origin.isDirectory())
-			throw new IllegalArgumentException("Origin is invalid.");
-		if (!mount.exists() || !mount.isDirectory())
-			throw new IllegalArgumentException("Mount point is invalid.");
-		String op = origin.getCanonicalPath();
-		String mp = mount.getCanonicalPath();
-		if (!op.endsWith("/"))
-			op += "/";
-		if (!mp.endsWith("/"))
-			mp += "/";
-		if (mp.startsWith(op) || op.startsWith(mp))
-			throw new IllegalArgumentException("Mount point overlaps origin.");
-	}
-
-
 	public Filesystem(File originDir) {
-		backend = new QueryBackend(originDir);
+		backend = new DirectoryQueryBackend(originDir);
 		mapper = new ViewMapper(new RootDirectory(backend));
 	}
 

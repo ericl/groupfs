@@ -11,6 +11,8 @@ import fuse.FuseGetattrSetter;
 
 import queryfs.Filesystem.ViewMapper;
 
+import static queryfs.Util.*;
+
 public class FloatingDirectory implements Directory {
 	private final ViewMapper mapper;
 	private final QueryGroup group;

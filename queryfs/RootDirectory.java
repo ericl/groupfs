@@ -10,6 +10,9 @@ import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
 import queryfs.QueryGroup.Type;
+import queryfs.backend.QueryBackend;
+
+import static queryfs.Util.*;
 
 public class RootDirectory implements Directory {
 	protected QueryBackend backend;

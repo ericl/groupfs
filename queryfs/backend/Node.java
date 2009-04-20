@@ -1,24 +1,21 @@
-package queryfs;
+package queryfs.backend;
 
 import java.nio.ByteBuffer;
 
 import java.util.Set;
 
-import com.sun.security.auth.module.UnixSystem;
-
 import fuse.FuseException;
 import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
+import queryfs.QueryGroup;
+import queryfs.View;
+
 public abstract class Node implements View {
-	protected QueryBackend backend;
-	protected final static int UID = (int)new UnixSystem().getUid();
-	protected final static int GID = (int)new UnixSystem().getGid();
 	protected Set<QueryGroup> groups;
 	protected String name = "__undefined__";
 
-	public Node(QueryBackend backend, Set<QueryGroup> groups) {
-		this.backend = backend;
+	public Node(Set<QueryGroup> groups) {
 		this.groups = groups;
 	}
 
@@ -37,8 +34,6 @@ public abstract class Node implements View {
 	public boolean permanent() {
 		return false;
 	}
-
-	public void setPermanent(boolean b) {}
 
 	public abstract int stat(FuseGetattrSetter setter);
 

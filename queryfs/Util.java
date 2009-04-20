@@ -7,11 +7,40 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.sun.security.auth.module.UnixSystem;
+
 import queryfs.QueryGroup.Type;
 
-public class Util {
+public final class Util {
+	public final static int UID = (int)new UnixSystem().getUid();
+	public final static int GID = (int)new UnixSystem().getGid();
+
+	private Util() {}
+
 	public static String extensionOf(File file) {
 		return extensionOf(file.getName());
+	}
+
+	public static void validate(File origin, File mount) throws IOException {
+		if (!origin.exists() || !origin.isDirectory())
+			throw new IllegalArgumentException("Origin is invalid.");
+		if (!mount.exists() || !mount.isDirectory())
+			throw new IllegalArgumentException("Mount point is invalid.");
+		String op = origin.getCanonicalPath();
+		String mp = mount.getCanonicalPath();
+		if (!op.endsWith("/"))
+			op += "/";
+		if (!mp.endsWith("/"))
+			mp += "/";
+		if (mp.startsWith(op) || op.startsWith(mp))
+			throw new IllegalArgumentException("Mount point overlaps origin.");
+	}
+
+	public static void rmdirs(File f) {
+		if (f == null || !f.isDirectory() || f.list().length != 0)
+			return;
+		f.delete();
+		rmdirs(f.getParentFile());
 	}
 
 	public static Set<String> tagsOf(String parent) {

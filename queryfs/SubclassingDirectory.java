@@ -7,6 +7,8 @@ import java.util.Set;
 import fuse.FuseException;
 
 import queryfs.QueryGroup.Type;
+import queryfs.backend.QueryBackend;
+import queryfs.backend.Node;
 
 import static queryfs.Util.*;
 

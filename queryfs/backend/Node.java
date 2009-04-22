@@ -1,5 +1,7 @@
 package queryfs.backend;
 
+import java.io.File;
+
 import java.nio.ByteBuffer;
 
 import java.util.Set;
@@ -8,6 +10,7 @@ import fuse.FuseException;
 import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
+import queryfs.QueryGroup.Type;
 import queryfs.QueryGroup;
 import queryfs.View;
 
@@ -34,6 +37,29 @@ public abstract class Node implements View {
 	public boolean permanent() {
 		return false;
 	}
+
+	public int rename(String from, String to, View target, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd) throws FuseException {
+		if (target != null && target != this) {
+			// the common rename-swap-file-to-write behavior
+			if (target instanceof Node)
+				((Node)target).unlink();
+			// if not a node then probably root dir !?
+		}
+		setName(new File(to).getName());
+		if (!new File(to).getParent().equals(new File(from).getParent())) {
+			for (QueryGroup group : hintAdd)
+				assert group.getType() == Type.TAG;
+			for (QueryGroup group : hintRemove)
+				assert group == QueryGroup.GROUP_NO_GROUP || group.getType() == Type.TAG;
+			changeQueryGroups(hintAdd, hintRemove);
+		} else {
+			// name change in same dir
+			notifyChanged(groups);
+		}
+		return 0;
+	}
+
+	protected void notifyChanged(Set<QueryGroup> groups) {}
 
 	public abstract int stat(FuseGetattrSetter setter);
 

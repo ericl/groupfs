@@ -18,55 +18,78 @@ import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
 import queryfs.QueryGroup.Type;
+
 import queryfs.QueryGroup;
 
 import static queryfs.Util.*;
 
-public class DirectoryBackedNode extends Node {
-	private FileChannel channel;
-	private DirectoryQueryBackend backend;
-	private int channelFlags = FilesystemConstants.O_RDONLY;
+public class TestingBackend extends CachingQueryBackend {
+	protected final static String root = "/dev/shm/tmp-1000/queryfs-data-dump";
+	static {
+		File f = new File(root);
+		f.mkdirs();
+		f.deleteOnExit();
+	}
+
+	public void create(Set<QueryGroup> groups, String name) throws FuseException {
+		assert maxOneMimeGroup(groups);
+		flagged.addAll(groups);
+		flush();
+		nodes.add(new VirtualNode(groups, name));
+		checkRootAdd(groups);
+	}
+
+	public long getFreeSpace() {
+		return Integer.MAX_VALUE;
+	}
+
+	public long getTotalSpace() {
+		return Integer.MAX_VALUE;
+	}
+
+	public long getUsableSpace() {
+		return Integer.MAX_VALUE;
+	}
+}
+
+class VirtualNode extends Node {
+	private static int count;
+	private long mtime = System.currentTimeMillis();
 	private File file;
+	private FileChannel channel;
+	private int channelFlags = FilesystemConstants.O_RDONLY;
 
-	protected DirectoryBackedNode(DirectoryQueryBackend backend, File file, Set<QueryGroup> groups) {
+	public VirtualNode(Set<QueryGroup> groups, String name) {
 		super(groups);
-		assert file.exists() && !file.isDirectory();
-		this.backend = backend;
-		this.file = file;
-		this.name = unNumbered(file.getName());
-	}
-
-	public int getFType() {
-		return FuseFtype.TYPE_FILE;
-	}
-
-	public Set<QueryGroup> getQueryGroups() {
-		return groups;
-	}
-
-	public String getName() {
-		return name;
+		file = new File(TestingBackend.root + "/data." + count++);
+		try {
+			file.createNewFile();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		file.deleteOnExit();
+		this.name = name;
 	}
 
 	public int stat(FuseGetattrSetter setter) {
-		int time = (int)(file.lastModified() / 1000L);
-		long size = file.length();
+		int time = (int)(mtime / 1000L);
+		long length = file.length();
 		setter.set(
-			0, // inode
+			0l, // inode
 			FuseFtype.TYPE_FILE | 0644,
 			1, // nlink
 			UID,
 			GID,
 			0, // rdev
-			size,
-			(int)((size + 511L) / 512L),
+			length,
+			(int)((length + 511L) / 512L),
 			time, time, time // atime, mtime, ctime
 		);
 		return 0;
 	}
 
 	public int setModified(long mtime) throws FuseException {
-		file.setLastModified(mtime);
+		this.mtime = mtime;
 		return 0;
 	}
 
@@ -75,29 +98,7 @@ public class DirectoryBackedNode extends Node {
 	}
 
 	public void setName(String name) throws FuseException {
-		String extI = extensionOf(this.name);
-		String extF = extensionOf(name);
-		if (!extI.equals(extF)) {
-			Set<QueryGroup> add = new HashSet<QueryGroup>();
-			Set<QueryGroup> remove = new HashSet<QueryGroup>();
-			remove.add(QueryGroup.create(extI, Type.MIME));
-			add.add(QueryGroup.create(extF, Type.MIME));
-			changeQueryGroups(add, remove, true);
-		}
 		this.name = name;
-		synchronized (this) {
-			String current = file.getName();
-			if (current.equals(name))
-				return;
-			File dest = null;
-			try {
-				dest = getDestination(file.getParent(), name);
-			} catch (IOException e) {
-				throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
-			}
-			file.renameTo(dest);
-			file = dest;
-		}
 	}
 
 	public int unlink() throws FuseException {
@@ -105,29 +106,12 @@ public class DirectoryBackedNode extends Node {
 		return 0;
 	}
 
-	public int deleteFromBackingMedia() {
-		backend.unref(this);
-		for (QueryGroup q : groups)
-			backend.flag(q);
-		groups.clear();
-		backend.flush();
-		file.delete();
+	public int deleteFromBackingMedia() throws FuseException {
+		unlink();
 		return 0;
 	}
 
-	public void close() throws FuseException {
-		synchronized (this) {
-			if (channel == null)
-				return;
-			try {
-				channel.close();
-			} catch (IOException eio) {
-				throw new FuseException("IO Exception", eio).initErrno(FuseException.EIO);
-			}
-			channel = null;
-			channelFlags = FilesystemConstants.O_RDONLY;
-		}
-	}
+	public void close() throws FuseException {}
 
 	public int read(ByteBuffer buf, long offset) throws FuseException {
 		open(FilesystemConstants.O_RDONLY);
@@ -160,18 +144,11 @@ public class DirectoryBackedNode extends Node {
 		return 0;
 	}
 
-	protected void notifyChanged(Set<QueryGroup> groups) {
-		for (QueryGroup q : groups)
-			backend.flag(q);
-		backend.flush();
-	}
-
 	protected void changeQueryGroups(Set<QueryGroup> add, Set<QueryGroup> remove, boolean allowMimetypeChange) throws FuseException {
 		if (remove != null)
 			for (QueryGroup r : remove) {
 				if (allowMimetypeChange || r.getType() != Type.MIME) {
 					groups.remove(r);
-					backend.flag(r);
 				}
 			}
 		if (add != null)
@@ -179,29 +156,10 @@ public class DirectoryBackedNode extends Node {
 				if (allowMimetypeChange || a.getType() != Type.MIME)
 					groups.add(a);
 			}
-		if (hasTags(groups)) {
+		if (hasTags(groups))
 			groups.remove(QueryGroup.GROUP_NO_GROUP);
-			backend.flag(QueryGroup.GROUP_NO_GROUP);
-		} else
+		else
 			groups.add(QueryGroup.GROUP_NO_GROUP);
-		File loc = null;
-		try {
-			Set<QueryGroup> consideredGroups = new HashSet<QueryGroup>(groups);
-			consideredGroups.remove(QueryGroup.GROUP_NO_GROUP);
-			loc = getDestination(newPath(backend.getRoot(), consideredGroups), name);
-		} catch (IOException e) {
-			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
-		}
-		file.renameTo(loc);
-		rmdirs(file.getParentFile());
-		file = loc;
-		for (QueryGroup g : groups)
-			backend.flag(g);
-		backend.flush();
-		if (remove != null)
-			backend.checkRoot(remove);
-		if (add != null)
-			backend.checkRootAdd(add);
 	}
 
 	private void open(int flags) throws FuseException {

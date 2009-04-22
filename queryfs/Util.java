@@ -74,6 +74,15 @@ public final class Util {
 		return path;
 	}
 
+	public static boolean hasTags(Set<QueryGroup> groups) {
+		if (groups != null) {
+			for (QueryGroup group : groups)
+				if (group != QueryGroup.GROUP_NO_GROUP && group.getType() == Type.TAG)
+					return true;
+		}
+		return false;
+	}
+
 	public static File getDestination(String path, String name) throws IOException {
 		File dir = new File(path);
 		if (dir.exists() && !dir.isDirectory())

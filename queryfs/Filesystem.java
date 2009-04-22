@@ -154,14 +154,14 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		File mountPoint = new File(args[args.length - 2]);
 		try {
 			validate(originDir, mountPoint);
-			FuseMount.mount(fuseArgs, new Filesystem(originDir), log);
+			FuseMount.mount(fuseArgs, new Filesystem(new DirectoryQueryBackend(originDir)), log);
 		} catch (Exception e) {
 			log.error(e);
 		}
 	}
 
-	public Filesystem(File originDir) {
-		backend = new DirectoryQueryBackend(originDir);
+	public Filesystem(QueryBackend backend) {
+		this.backend = backend;
 		mapper = new ViewMapper(new RootDirectory(backend));
 	}
 

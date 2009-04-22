@@ -35,7 +35,7 @@ public class TestingBackend extends CachingQueryBackend {
 		assert maxOneMimeGroup(groups);
 		flagged.addAll(groups);
 		flush();
-		nodes.add(new VirtualNode(groups, name));
+		nodes.add(new VirtualNode(this, groups, name));
 		checkRootAdd(groups);
 	}
 
@@ -55,12 +55,14 @@ public class TestingBackend extends CachingQueryBackend {
 class VirtualNode extends Node {
 	private static int count;
 	private long mtime = System.currentTimeMillis();
+	private TestingBackend backend;
 	private File file;
 	private FileChannel channel;
 	private int channelFlags = FilesystemConstants.O_RDONLY;
 
-	public VirtualNode(Set<QueryGroup> groups, String name) {
+	public VirtualNode(TestingBackend backend, Set<QueryGroup> groups, String name) {
 		super(groups);
+		this.backend = backend;
 		file = new File(TestingBackend.root + "/data." + count++);
 		try {
 			file.createNewFile();
@@ -107,7 +109,12 @@ class VirtualNode extends Node {
 	}
 
 	public int deleteFromBackingMedia() throws FuseException {
-		unlink();
+		backend.unref(this);
+		for (QueryGroup q : groups)
+			backend.flag(q);
+		groups.clear();
+		backend.flush();
+		file.delete();
 		return 0;
 	}
 
@@ -149,6 +156,7 @@ class VirtualNode extends Node {
 			for (QueryGroup r : remove) {
 				if (allowMimetypeChange || r.getType() != Type.MIME) {
 					groups.remove(r);
+					backend.flag(r);
 				}
 			}
 		if (add != null)
@@ -156,10 +164,22 @@ class VirtualNode extends Node {
 				if (allowMimetypeChange || a.getType() != Type.MIME)
 					groups.add(a);
 			}
-		if (hasTags(groups))
+		if (hasCategory(groups)) {
 			groups.remove(QueryGroup.GROUP_NO_GROUP);
-		else
+			backend.flag(QueryGroup.GROUP_NO_GROUP);
+		} else {
+			for (QueryGroup group : groups)
+				backend.flag(group);
+			groups.clear();
 			groups.add(QueryGroup.GROUP_NO_GROUP);
+		}
+		for (QueryGroup g : groups)
+			backend.flag(g);
+		backend.flush();
+		if (remove != null)
+			backend.checkRoot(remove);
+		if (add != null)
+			backend.checkRootAdd(add);
 	}
 
 	private void open(int flags) throws FuseException {

@@ -179,11 +179,15 @@ public class DirectoryBackedNode extends Node {
 				if (allowMimetypeChange || a.getType() != Type.MIME)
 					groups.add(a);
 			}
-		if (hasTags(groups)) {
+		if (hasCategory(groups)) {
 			groups.remove(QueryGroup.GROUP_NO_GROUP);
 			backend.flag(QueryGroup.GROUP_NO_GROUP);
-		} else
+		} else {
+			for (QueryGroup group : groups)
+				backend.flag(group);
+			groups.clear();
 			groups.add(QueryGroup.GROUP_NO_GROUP);
+		}
 		File loc = null;
 		try {
 			Set<QueryGroup> consideredGroups = new HashSet<QueryGroup>(groups);

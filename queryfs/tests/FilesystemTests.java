@@ -5,9 +5,10 @@ public class FilesystemTests {
 
 	public static void main(String[] args) {
 		FilesystemTests tests = new FilesystemTests();
-		tests.runTests(
-			new SimpleCreate()
-		);
+		tests.runTests(new Test[] {
+			new SimpleCreate(),
+			new SimpleMove(),
+		});
 		if (tests.error)
 			System.err.println("One or more tests FAILED");
 		else
@@ -15,7 +16,7 @@ public class FilesystemTests {
 
 	}
 
-	public void runTests(Test ... tests) {
+	public void runTests(Test[] tests) {
 		for (Test test : tests) {
 			System.out.println("Running test: " + test);
 			test.run();

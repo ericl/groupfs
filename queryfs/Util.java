@@ -74,10 +74,10 @@ public final class Util {
 		return path;
 	}
 
-	public static boolean hasTags(Set<QueryGroup> groups) {
+	public static boolean hasCategory(Set<QueryGroup> groups) {
 		if (groups != null) {
 			for (QueryGroup group : groups)
-				if (group != QueryGroup.GROUP_NO_GROUP && group.getType() == Type.TAG)
+				if (group.getType() != Type.MIME)
 					return true;
 		}
 		return false;

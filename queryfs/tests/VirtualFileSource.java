@@ -57,10 +57,10 @@ class VirtualFileHandler implements FileHandler {
 	}
 
 	public void setTagGroups(Set<QueryGroup> groups) {
-		this.groups = groups;
+		this.groups = new HashSet<QueryGroup>(groups);
 	}
 
-	public void renameTo(String name) {
+	public void setName(String name) {
 		this.name = name;
 	}
 

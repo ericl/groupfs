@@ -17,7 +17,7 @@ public interface FileHandler {
 	public void setLastModified(long mtime);
 	public void close() throws FuseException;
 	public void setTagGroups(Set<QueryGroup> groups) throws FuseException;
-	public void renameTo(String name) throws FuseException;
+	public void setName(String name) throws FuseException;
 	public int read(ByteBuffer buf, long offset) throws FuseException;
 	public int write(ByteBuffer buf, long offset) throws FuseException;
 	public int truncate(long size) throws FuseException;

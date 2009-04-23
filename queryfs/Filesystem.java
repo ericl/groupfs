@@ -209,7 +209,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			return fuse.Errno.ENOENT;
 		else if (!d.getPerms().canMknod())
 			return fuse.Errno.EPERM;
-		Set<QueryGroup> groups = d.getQueryGroups();
+		Set<QueryGroup> groups = new HashSet<QueryGroup>(d.getQueryGroups());
 		String ext = extensionOf(new File(path));
 		if (ext != null)
 			groups.add(QueryGroup.create(ext, Type.MIME));

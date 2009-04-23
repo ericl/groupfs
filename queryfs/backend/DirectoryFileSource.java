@@ -65,6 +65,7 @@ public class DirectoryFileSource implements FileSource {
 		for (String tag : tags)
 			groups.add(QueryGroup.create(tag, Type.TAG));
 		groups.add(QueryGroup.create(extensionOf(file), Type.MIME));
+		assert maxOneMimeGroup(groups);
 		return groups;
 	}
 
@@ -121,20 +122,25 @@ class DirectoryFileHandler implements FileHandler {
 	}
 
 	public void setTagGroups(Set<QueryGroup> groups) throws FuseException {
-		File loc = null;
-		try {
-			Set<QueryGroup> consideredGroups = new HashSet<QueryGroup>(groups);
-			consideredGroups.remove(QueryGroup.GROUP_NO_GROUP);
-			loc = getDestination(newPath(root, consideredGroups), name);
-		} catch (IOException e) {
-			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
+		assert maxOneMimeGroup(groups);
+		this.groups = new HashSet<QueryGroup>(groups);
+		synchronized (this) {
+			File loc = null;
+			try {
+				Set<QueryGroup> consideredGroups = new HashSet<QueryGroup>(groups);
+				consideredGroups.remove(QueryGroup.GROUP_NO_GROUP);
+				loc = getDestination(newPath(root, consideredGroups), name);
+			} catch (IOException e) {
+				throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
+			}
+			file.renameTo(loc);
+			rmdirs(file.getParentFile());
+			file = loc;
+			close();
 		}
-		file.renameTo(loc);
-		rmdirs(file.getParentFile());
-		file = loc;
 	}
 
-	public void renameTo(String name) throws FuseException {
+	public void setName(String name) throws FuseException {
 		String current = file.getName();
 		if (current.equals(name))
 			return;

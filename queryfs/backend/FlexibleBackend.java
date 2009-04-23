@@ -104,6 +104,7 @@ class FlexibleNode extends Node {
 	public void setName(String name) throws FuseException {
 		String extI = extensionOf(this.name);
 		String extF = extensionOf(name);
+		assert maxOneMimeGroup(groups);
 		if (!extI.equals(extF)) {
 			Set<QueryGroup> add = new HashSet<QueryGroup>();
 			Set<QueryGroup> remove = new HashSet<QueryGroup>();
@@ -111,13 +112,12 @@ class FlexibleNode extends Node {
 			add.add(QueryGroup.create(extF, Type.MIME));
 			changeQueryGroups(add, remove, true);
 		}
+		assert maxOneMimeGroup(groups);
 		this.name = name;
-		synchronized (this) {
-			String current = fh.getName();
-			if (current.equals(name))
-				return;
-			fh.renameTo(name);
-		}
+		String current = fh.getName();
+		if (current.equals(name))
+			return;
+		fh.setName(name);
 	}
 
 	public int unlink() throws FuseException {

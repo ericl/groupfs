@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import fuse.FuseDirFiller;
 import fuse.FuseException;
@@ -70,10 +72,10 @@ public abstract class Test {
 	}
 
 	protected void expect(Filesystem fs, String[] files, String[] dirs) {
-		Set<String> fe = new HashSet<String>(Arrays.asList(files));
-		Set<String> de = new HashSet<String>(Arrays.asList(dirs));
-		Set<String> f = new HashSet<String>();
-		Set<String> d = new HashSet<String>();
+		SortedSet<String> fe = new TreeSet<String>(Arrays.asList(files));
+		SortedSet<String> de = new TreeSet<String>(Arrays.asList(dirs));
+		SortedSet<String> f = new TreeSet<String>();
+		SortedSet<String> d = new TreeSet<String>();
 		buildFileSet(fs, f, d, ".");
 		if (!fe.equals(f)) {
 			log += "expected: " + fe + "\n";

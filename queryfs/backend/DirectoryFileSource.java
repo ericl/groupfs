@@ -10,6 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,12 +27,12 @@ import queryfs.backend.FileSource;
 import static queryfs.Util.*;
 
 public class DirectoryFileSource implements FileSource {
-	private Set<FileHandler> files = new HashSet<FileHandler>();
+	private final Set<FileHandler> raw_files, files;
 	private File root;
 
 	public DirectoryFileSource(File originDir) {
 		this.root = originDir;
-		assert root.isDirectory() && root.canRead();
+		files = Collections.unmodifiableSet(raw_files = new HashSet<FileHandler>());
 		scan(root);
 	}
 
@@ -44,7 +45,7 @@ public class DirectoryFileSource implements FileSource {
 					scan(child);
 			} else {
 				Set<QueryGroup> groups = groupsOf(child);
-				files.add(new DirectoryFileHandler(root, child, groups));
+				raw_files.add(new DirectoryFileHandler(root, child, groups));
 			}
 		}
 	}
@@ -82,7 +83,7 @@ public class DirectoryFileSource implements FileSource {
 			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
 		}
 		FileHandler fh = new DirectoryFileHandler(root, file, groups);
-		files.add(fh);
+		raw_files.add(fh);
 		return fh;
 	}
 
@@ -102,7 +103,7 @@ public class DirectoryFileSource implements FileSource {
 class DirectoryFileHandler implements FileHandler {
 	private FileChannel channel;
 	private int channelFlags = FilesystemConstants.O_RDONLY;
-	private Set<QueryGroup> groups;
+	private final Set<QueryGroup> groups, raw_groups;
 	private File file, root;
 	private String name;
 	
@@ -110,7 +111,7 @@ class DirectoryFileHandler implements FileHandler {
 		this.root = root;
 		this.file = file;
 		this.name = unNumbered(file.getName());
-		this.groups = groups;
+		this.groups = Collections.unmodifiableSet(raw_groups = new HashSet<QueryGroup>(groups));
 	}
 
 	public Set<QueryGroup> getAllGroups() {
@@ -123,7 +124,8 @@ class DirectoryFileHandler implements FileHandler {
 
 	public void setTagGroups(Set<QueryGroup> groups) throws FuseException {
 		assert maxOneMimeGroup(groups);
-		this.groups = new HashSet<QueryGroup>(groups);
+		raw_groups.clear();
+		raw_groups.addAll(groups);
 		synchronized (this) {
 			File loc = null;
 			try {

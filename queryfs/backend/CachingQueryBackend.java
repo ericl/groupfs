@@ -1,5 +1,6 @@
 package queryfs.backend;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -19,7 +20,7 @@ public abstract class CachingQueryBackend implements QueryBackend {
 	protected Set<Node> nodes = new HashSet<Node>();
 	protected boolean rebuild_root;
 
-	class QueryCache {
+	private class QueryCache {
 		// keyindex is shared by nodecache and groupcache
 		Map<QueryGroup,Set<Set<QueryGroup>>> keyIndex = new HashMap<QueryGroup,Set<Set<QueryGroup>>>();
 		Map<Set<QueryGroup>,Set<Node>> nodeCache = new HashMap<Set<QueryGroup>,Set<Node>>();
@@ -102,7 +103,7 @@ public abstract class CachingQueryBackend implements QueryBackend {
 					output.add(node);
 			cache.putNodes(groups, output);
 		}
-		return output;
+		return Collections.unmodifiableSet(output);
 	}
 
 	public Set<QueryGroup> subclass(Set<QueryGroup> groups) {
@@ -126,7 +127,7 @@ public abstract class CachingQueryBackend implements QueryBackend {
 					output.add(g);
 			cache.putGroups(groups, output);
 		}
-		return output;
+		return Collections.unmodifiableSet(output);
 	}
 
 	public abstract void create(Set<QueryGroup> groups, String name) throws FuseException;

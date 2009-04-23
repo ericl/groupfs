@@ -26,8 +26,8 @@ public class SubclassingDirectory extends RootDirectory {
 		super(backend);
 		this.parent = parent;
 		this.group = group;
-		groups.addAll(parent.getQueryGroups());
-		groups.add(group);
+		raw_groups.addAll(parent.getQueryGroups());
+		raw_groups.add(group);
 	}
 
 	public Permissions getPerms() {

@@ -4,6 +4,7 @@ import java.io.File;
 
 import java.nio.ByteBuffer;
 
+import java.util.Collections;
 import java.util.Set;
 
 import fuse.FuseException;
@@ -14,11 +15,11 @@ import queryfs.QueryGroup;
 import queryfs.View;
 
 public abstract class Node implements View {
-	protected Set<QueryGroup> groups;
+	protected final Set<QueryGroup> groups, raw_groups;
 	protected String name = "__undefined__";
 
 	public Node(Set<QueryGroup> groups) {
-		this.groups = groups;
+		this.groups = Collections.unmodifiableSet(this.raw_groups = groups);
 	}
 
 	public int getFType() {

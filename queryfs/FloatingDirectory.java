@@ -1,5 +1,6 @@
 package queryfs;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -19,7 +20,7 @@ public class FloatingDirectory implements Directory {
 	private final String id;
 	private final String parent;
 	private long time = System.currentTimeMillis();
-	private Set<QueryGroup> groups;
+	private final Set<QueryGroup> groups, raw_groups;
 	protected static Permissions floating_perms = new Permissions(
 		true, true, true, true, true, true, true
 	);
@@ -29,10 +30,10 @@ public class FloatingDirectory implements Directory {
 		this.group = group;
 		this.parent = parent;
 		this.id = id;
-		groups = new HashSet<QueryGroup>();
+		groups = Collections.unmodifiableSet(raw_groups = new HashSet<QueryGroup>());
 		if (getParent() != null)
-			groups.addAll(getParent().getQueryGroups());
-		groups.add(group);
+			raw_groups.addAll(getParent().getQueryGroups());
+		raw_groups.add(group);
 	}
 
 	public Permissions getPerms() {

@@ -130,7 +130,7 @@ class FlexibleNode extends Node {
 		for (QueryGroup q : groups)
 			backend.flag(q);
 		Set<QueryGroup> removed = new HashSet<QueryGroup>(groups);
-		groups.clear();
+		raw_groups.clear();
 		backend.flush();
 		fh.delete();
 		backend.checkRoot(removed);
@@ -163,23 +163,23 @@ class FlexibleNode extends Node {
 		if (remove != null)
 			for (QueryGroup r : remove) {
 				if (allowMimetypeChange || r.getType() != Type.MIME) {
-					groups.remove(r);
+					raw_groups.remove(r);
 					backend.flag(r);
 				}
 			}
 		if (add != null)
 			for (QueryGroup a : add) {
 				if (allowMimetypeChange || a.getType() != Type.MIME)
-					groups.add(a);
+					raw_groups.add(a);
 			}
 		if (hasCategory(groups)) {
-			groups.remove(QueryGroup.GROUP_NO_GROUP);
+			raw_groups.remove(QueryGroup.GROUP_NO_GROUP);
 			backend.flag(QueryGroup.GROUP_NO_GROUP);
 		} else {
 			for (QueryGroup group : groups)
 				backend.flag(group);
-			groups.clear();
-			groups.add(QueryGroup.GROUP_NO_GROUP);
+			raw_groups.clear();
+			raw_groups.add(QueryGroup.GROUP_NO_GROUP);
 		}
 		fh.setTagGroups(groups);
 		for (QueryGroup g : groups)

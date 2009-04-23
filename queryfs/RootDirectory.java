@@ -1,5 +1,6 @@
 package queryfs;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -10,6 +11,7 @@ import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
 import queryfs.QueryGroup.Type;
+
 import queryfs.backend.QueryBackend;
 
 import static queryfs.Util.*;
@@ -19,7 +21,7 @@ public class RootDirectory implements Directory {
 	protected long time = System.currentTimeMillis();
 	protected long stamp = System.nanoTime();
 	protected boolean populated;
-	protected Set<QueryGroup> groups;
+	protected final Set<QueryGroup> groups, raw_groups;
 	protected Map<String,View> views = new HashMap<String,View>();
 	protected static Permissions root_perms = new Permissions(
 		false, false, false, true, true, true, false
@@ -27,7 +29,7 @@ public class RootDirectory implements Directory {
 
 	public RootDirectory(QueryBackend backend) {
 		this.backend = backend;
-		groups = new HashSet<QueryGroup>();
+		groups = Collections.unmodifiableSet(raw_groups = new HashSet<QueryGroup>());
 	}
 
 	public Permissions getPerms() {

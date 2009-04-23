@@ -153,7 +153,7 @@ public abstract class CachingQueryBackend implements QueryBackend {
 		flagged.clear();
 	}
 
-	protected void checkRoot(Set<QueryGroup> removed) {
+	protected void checkRootRm(Set<QueryGroup> removed) {
 		Set<QueryGroup> p = new HashSet<QueryGroup>();
 		for (QueryGroup q : removed) {
 			p.clear();

@@ -132,7 +132,7 @@ class FlexibleNode extends Node {
 		Set<QueryGroup> removed = new HashSet<QueryGroup>(groups);
 		raw_groups.clear();
 		backend.flush();
-		backend.checkRoot(removed);
+		backend.checkRootRm(removed);
 		fh.delete();
 		return 0;
 	}
@@ -173,20 +173,26 @@ class FlexibleNode extends Node {
 					raw_groups.add(a);
 			}
 		if (hasCategory(groups)) {
-			raw_groups.remove(QueryGroup.GROUP_NO_GROUP);
+			if (groups.contains(QueryGroup.GROUP_NO_GROUP)) {
+				raw_groups.remove(QueryGroup.GROUP_NO_GROUP);
+				backend.checkRootRm(QueryGroup.SET_NO_GROUP);
+			}
 			backend.flag(QueryGroup.GROUP_NO_GROUP);
 		} else {
 			for (QueryGroup group : groups)
 				backend.flag(group);
 			raw_groups.clear();
-			raw_groups.add(QueryGroup.GROUP_NO_GROUP);
+			if (!groups.contains(QueryGroup.GROUP_NO_GROUP)) {
+				raw_groups.add(QueryGroup.GROUP_NO_GROUP);
+				backend.checkRootAdd(QueryGroup.SET_NO_GROUP);
+			}
 		}
 		fh.setTagGroups(groups);
 		for (QueryGroup g : groups)
 			backend.flag(g);
 		backend.flush();
 		if (remove != null)
-			backend.checkRoot(remove);
+			backend.checkRootRm(remove);
 		if (add != null)
 			backend.checkRootAdd(add);
 		assert maxOneMimeGroup(groups);

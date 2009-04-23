@@ -1,7 +1,10 @@
 package queryfs;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public final class QueryGroup {
 	public enum Type { TAG, MIME }
@@ -11,7 +14,13 @@ public final class QueryGroup {
 	private static long alltime = System.nanoTime();
 	private static Map<String,QueryGroup> mimetypes = new HashMap<String,QueryGroup>();
 	private static Map<String,QueryGroup> tags = new HashMap<String,QueryGroup>();
-	public static QueryGroup GROUP_NO_GROUP = QueryGroup.create("Trash", Type.MIME);
+	public final static QueryGroup GROUP_NO_GROUP = QueryGroup.create("Trash", Type.MIME);
+	public final static Set<QueryGroup> SET_NO_GROUP;
+	static {
+		Set<QueryGroup> tmp = new HashSet<QueryGroup>();
+		tmp.add(GROUP_NO_GROUP);
+		SET_NO_GROUP = Collections.unmodifiableSet(tmp);
+	}
 
 	public static QueryGroup create(String value, Type type) {
 		QueryGroup q = null;

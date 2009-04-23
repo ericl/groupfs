@@ -11,6 +11,7 @@ public class FilesystemTests {
 			new SimpleUnlink(),
 			new MovingEmptyDirs(),
 			new FileRenaming(),
+			new ExtensionRenaming(),
 		});
 		if (tests.error)
 			System.err.println("One or more tests FAILED");

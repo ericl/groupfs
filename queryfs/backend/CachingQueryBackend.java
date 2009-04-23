@@ -153,6 +153,10 @@ public abstract class CachingQueryBackend implements QueryBackend {
 		flagged.clear();
 	}
 
+	protected void unref(Node n) {
+		nodes.remove(n);
+	}
+
 	protected void checkRootRm(Set<QueryGroup> removed) {
 		Set<QueryGroup> p = new HashSet<QueryGroup>();
 		for (QueryGroup q : removed) {
@@ -165,10 +169,6 @@ public abstract class CachingQueryBackend implements QueryBackend {
 				return;
 			}
 		}
-	}
-
-	protected void unref(Node n) {
-		nodes.remove(n);
 	}
 
 	protected void checkRootAdd(Set<QueryGroup> added) {

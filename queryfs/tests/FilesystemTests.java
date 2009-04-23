@@ -15,6 +15,7 @@ public class FilesystemTests {
 			new MoveDirectory(),
 			new StrangeMovements(),
 			new SpecialRenaming(),
+			new LargeScaleValidation(),
 		});
 		if (tests.error)
 			System.err.println("One or more tests FAILED");

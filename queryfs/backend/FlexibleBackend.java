@@ -63,18 +63,6 @@ class FlexibleNode extends Node {
 		this.name = unNumbered(fh.getName());
 	}
 
-	public int getFType() {
-		return FuseFtype.TYPE_FILE;
-	}
-
-	public Set<QueryGroup> getQueryGroups() {
-		return groups;
-	}
-
-	public String getName() {
-		return name;
-	}
-
 	public int stat(FuseGetattrSetter setter) {
 		int time = (int)(fh.lastModified() / 1000L);
 		long size = fh.length();
@@ -151,12 +139,6 @@ class FlexibleNode extends Node {
 
 	public int truncate(long size) throws FuseException {
 		return fh.truncate(size);
-	}
-
-	protected void notifyChanged(Set<QueryGroup> groups) {
-		for (QueryGroup q : groups)
-			backend.flag(q);
-		backend.flush();
 	}
 
 	protected void changeQueryGroups(Set<QueryGroup> add, Set<QueryGroup> remove, boolean allowMimetypeChange) throws FuseException {

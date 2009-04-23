@@ -12,6 +12,9 @@ public class FilesystemTests {
 			new MovingEmptyDirs(),
 			new FileRenaming(),
 			new ExtensionRenaming(),
+			new MoveDirectory(),
+			new StrangeMovements(),
+			new SpecialRenaming(),
 		});
 		if (tests.error)
 			System.err.println("One or more tests FAILED");

@@ -209,6 +209,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			return fuse.Errno.ENOENT;
 		else if (!d.getPerms().canMknod())
 			return fuse.Errno.EPERM;
+		mapper.delete(new File(path).getParent(), false);
 		Set<QueryGroup> groups = new HashSet<QueryGroup>(d.getQueryGroups());
 		String ext = extensionOf(new File(path));
 		if (ext != null)
@@ -267,6 +268,8 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			return fuse.Errno.EPERM;
 		else if (new File(to).getName().startsWith("."))
 			return fuse.Errno.EPERM;
+		if (o instanceof Node)
+			mapper.delete(new File(to).getParent(), true);
 		return o.rename(from, to, mapper.get(to), d.getQueryGroups(), dd.getQueryGroups());
 	}
 

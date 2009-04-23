@@ -10,6 +10,7 @@ import queryfs.*;
 // moving out of mime dir
 // delete from mime dir
 // rename within mime dir
+// rmdir mime dir -> fail
 public class ExtensionRenaming extends Test {
 	public void run() {
 		QueryBackend backend = getNewBackend();
@@ -44,6 +45,12 @@ public class ExtensionRenaming extends Test {
 		}
 		try {
 			fs.unlink("/.txt/doc2.txt");
+			int ret = fs.rmdir("/.txt");
+			if (ret != fuse.Errno.EPERM)
+				throw new FuseException(
+					"\nexpected: " + fuse.Errno.EPERM +
+					"\nreturned: " + ret
+				);
 		} catch (FuseException e) {
 			log += e;
 			error = true;

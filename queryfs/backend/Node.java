@@ -17,7 +17,7 @@ import queryfs.View;
 
 public abstract class Node implements View {
 	protected final Set<QueryGroup> groups, raw_groups;
-	protected String name = "__undefined__";
+	protected String name;
 
 	public Node(Set<QueryGroup> groups) {
 		this.groups = Collections.unmodifiableSet(this.raw_groups = new HashSet<QueryGroup>(groups));
@@ -35,28 +35,20 @@ public abstract class Node implements View {
 		return name;
 	}
 
-	public boolean permanent() {
-		return false;
-	}
-
 	public int rename(String from, String to, View target, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd) throws FuseException {
 		if (target != null && target != this) {
 			// the common rename-swap-file-to-write behavior
-			if (target instanceof Node)
-				((Node)target).unlink();
+			if (target instanceof Node) {
+				Node node = (Node)target;
+				changeQueryGroups(node.getQueryGroups(), null);
+				node.deleteFromBackingMedia();
+			}
 			// if not a node then probably root dir !?
 		}
 		setName(new File(to).getName());
-		if (!new File(to).getParent().equals(new File(from).getParent())) {
-			changeQueryGroups(hintAdd, hintRemove);
-		} else {
-			// name change in same dir
-			notifyChanged(groups);
-		}
+		changeQueryGroups(hintAdd, hintRemove);
 		return 0;
 	}
-
-	protected void notifyChanged(Set<QueryGroup> groups) {}
 
 	public abstract int stat(FuseGetattrSetter setter);
 

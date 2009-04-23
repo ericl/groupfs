@@ -8,6 +8,9 @@ public class FilesystemTests {
 		tests.runTests(new Test[] {
 			new SimpleCreate(),
 			new SimpleMove(),
+			new SimpleUnlink(),
+			new MovingEmptyDirs(),
+			new FileRenaming(),
 		});
 		if (tests.error)
 			System.err.println("One or more tests FAILED");

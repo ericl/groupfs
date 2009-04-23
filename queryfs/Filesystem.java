@@ -87,6 +87,12 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		}
 
 		void finish(String parent, Set<String> taken, FuseDirFiller filler) {
+			// todo parsing of parent path in parts instead of string
+			if (parent.startsWith(".")) {
+				parent = parent.substring(1);
+				if (parent.isEmpty())
+					parent = "/";
+			}
 			List<FloatingDirectory> s = parents.get(parent);
 			if (s != null)
 				for (FloatingDirectory f : s) {
@@ -119,8 +125,14 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			View output = null;
 			if (parent_ok)
 				output = directory.get(parts[parts.length-1]);
-			if (output == null)
+			if (output == null) {
+				if (path.startsWith(".")) {
+					path = path.substring(1);
+					if (path.isEmpty())
+						path = "/";
+				}
 				output = floats.get(path);
+			}
 			else
 				delete(path, false); // garbage collect those floatingdirs
 			return output;

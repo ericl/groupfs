@@ -30,7 +30,8 @@ public class FloatingDirectory implements Directory {
 		this.parent = parent;
 		this.id = id;
 		groups = new HashSet<QueryGroup>();
-		groups.addAll(getParent().getQueryGroups());
+		if (getParent() != null)
+			groups.addAll(getParent().getQueryGroups());
 		groups.add(group);
 	}
 

@@ -1,39 +1,66 @@
 package queryfs.backend;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-
 import java.nio.ByteBuffer;
-
-import java.nio.channels.FileChannel;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import fuse.FilesystemConstants;
 import fuse.FuseException;
 import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
 import queryfs.QueryGroup.Type;
+
 import queryfs.QueryGroup;
 
 import static queryfs.Util.*;
 
-public class DirectoryBackedNode extends Node {
-	private FileChannel channel;
-	private DirectoryQueryBackend backend;
-	private int channelFlags = FilesystemConstants.O_RDONLY;
-	private File file;
+public class FlexibleBackend extends CachingQueryBackend {
+	private final FileSource source;
 
-	protected DirectoryBackedNode(DirectoryQueryBackend backend, File file, Set<QueryGroup> groups) {
-		super(groups);
-		assert file.exists() && !file.isDirectory();
+	public FlexibleBackend(FileSource source) {
+		this.source = source;
+		for (FileHandler fh : source.getAll())
+			nodes.add(makeNode(fh));
+	}
+
+	private Node makeNode(FileHandler fh) {
+		Set<QueryGroup> groups = fh.getAllGroups();
+		assert maxOneMimeGroup(groups);
+		return new FlexibleNode(this, fh);
+	}
+
+	public void create(Set<QueryGroup> groups, String name) throws FuseException {
+		assert maxOneMimeGroup(groups);
+		FileHandler fh = source.create(name, groups);
+		flagged.addAll(groups);
+		flush();
+		nodes.add(new FlexibleNode(this, fh));
+		checkRootAdd(groups);
+	}
+
+	public long getFreeSpace() {
+		return source.getFreeSpace();
+	}
+
+	public long getUsableSpace() {
+		return source.getUsableSpace();
+	}
+
+	public long getTotalSpace() {
+		return source.getTotalSpace();
+	}
+}
+
+class FlexibleNode extends Node {
+	private FileHandler fh;
+	private CachingQueryBackend backend;
+
+	protected FlexibleNode(CachingQueryBackend backend, FileHandler fh) {
+		super(fh.getAllGroups());
 		this.backend = backend;
-		this.file = file;
-		this.name = unNumbered(file.getName());
+		this.fh = fh;
+		this.name = unNumbered(fh.getName());
 	}
 
 	public int getFType() {
@@ -49,8 +76,8 @@ public class DirectoryBackedNode extends Node {
 	}
 
 	public int stat(FuseGetattrSetter setter) {
-		int time = (int)(file.lastModified() / 1000L);
-		long size = file.length();
+		int time = (int)(fh.lastModified() / 1000L);
+		long size = fh.length();
 		setter.set(
 			0, // inode
 			FuseFtype.TYPE_FILE | 0644,
@@ -66,7 +93,7 @@ public class DirectoryBackedNode extends Node {
 	}
 
 	public int setModified(long mtime) throws FuseException {
-		file.setLastModified(mtime);
+		fh.setLastModified(mtime);
 		return 0;
 	}
 
@@ -86,17 +113,10 @@ public class DirectoryBackedNode extends Node {
 		}
 		this.name = name;
 		synchronized (this) {
-			String current = file.getName();
+			String current = fh.getName();
 			if (current.equals(name))
 				return;
-			File dest = null;
-			try {
-				dest = getDestination(file.getParent(), name);
-			} catch (IOException e) {
-				throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
-			}
-			file.renameTo(dest);
-			file = dest;
+			fh.renameTo(name);
 		}
 	}
 
@@ -112,54 +132,25 @@ public class DirectoryBackedNode extends Node {
 		Set<QueryGroup> removed = new HashSet<QueryGroup>(groups);
 		groups.clear();
 		backend.flush();
-		file.delete();
+		fh.delete();
 		backend.checkRoot(removed);
 		return 0;
 	}
 
 	public void close() throws FuseException {
-		synchronized (this) {
-			if (channel == null)
-				return;
-			try {
-				channel.close();
-			} catch (IOException eio) {
-				throw new FuseException("IO Exception", eio).initErrno(FuseException.EIO);
-			}
-			channel = null;
-			channelFlags = FilesystemConstants.O_RDONLY;
-		}
+		fh.close();
 	}
 
 	public int read(ByteBuffer buf, long offset) throws FuseException {
-		open(FilesystemConstants.O_RDONLY);
-		try {
-			channel.read(buf, offset);
-		} catch (IOException e) {
-			throw new FuseException("IO Exception", e).initErrno(FuseException.EIO);
-		}
-		return 0;
+		return fh.read(buf, offset);
 	}
 
 	public int write(ByteBuffer buf, long offset) throws FuseException {
-		open(FilesystemConstants.O_RDWR);
-		try {
-			channel.position(offset);
-			channel.write(buf);
-		} catch (IOException e) {
-			throw new FuseException("IO Exception", e).initErrno(FuseException.EIO);
-		}
-		return 0;
+		return fh.write(buf, offset);
 	}
 
 	public int truncate(long size) throws FuseException {
-		open(FilesystemConstants.O_RDWR);
-		try {
-			channel.truncate(size);
-		} catch (IOException e) {
-			throw new FuseException("IO Exception", e).initErrno(FuseException.EIO);
-		}
-		return 0;
+		return fh.truncate(size);
 	}
 
 	protected void notifyChanged(Set<QueryGroup> groups) {
@@ -190,17 +181,7 @@ public class DirectoryBackedNode extends Node {
 			groups.clear();
 			groups.add(QueryGroup.GROUP_NO_GROUP);
 		}
-		File loc = null;
-		try {
-			Set<QueryGroup> consideredGroups = new HashSet<QueryGroup>(groups);
-			consideredGroups.remove(QueryGroup.GROUP_NO_GROUP);
-			loc = getDestination(newPath(backend.getRoot(), consideredGroups), name);
-		} catch (IOException e) {
-			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
-		}
-		file.renameTo(loc);
-		rmdirs(file.getParentFile());
-		file = loc;
+		fh.setTagGroups(groups);
 		for (QueryGroup g : groups)
 			backend.flag(g);
 		backend.flush();
@@ -208,23 +189,5 @@ public class DirectoryBackedNode extends Node {
 			backend.checkRoot(remove);
 		if (add != null)
 			backend.checkRootAdd(add);
-	}
-
-	private void open(int flags) throws FuseException {
-		synchronized (this) {
-			if (!file.exists())
-				throw new FuseException("No Such Entry").initErrno(FuseException.ENOENT);
-			if (channel == null || channelFlags < flags) {
-				try {
-					String mode = "r";
-					if (flags > FilesystemConstants.O_RDONLY)
-						mode = "rw";
-					channel = new RandomAccessFile(file, mode).getChannel();
-				} catch (FileNotFoundException e) {
-					throw new FuseException("No Such Entry", e).initErrno(FuseException.ENOENT);
-				}
-				channelFlags = flags;
-			}
-		}
 	}
 }

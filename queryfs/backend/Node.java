@@ -10,7 +10,6 @@ import fuse.FuseException;
 import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
-import queryfs.QueryGroup.Type;
 import queryfs.QueryGroup;
 import queryfs.View;
 
@@ -47,10 +46,6 @@ public abstract class Node implements View {
 		}
 		setName(new File(to).getName());
 		if (!new File(to).getParent().equals(new File(from).getParent())) {
-			for (QueryGroup group : hintAdd)
-				assert group.getType() == Type.TAG;
-			for (QueryGroup group : hintRemove)
-				assert group == QueryGroup.GROUP_NO_GROUP || group.getType() == Type.TAG;
 			changeQueryGroups(hintAdd, hintRemove);
 		} else {
 			// name change in same dir

@@ -9,15 +9,13 @@ import queryfs.*;
 // mkdir
 // file gaining TAG
 // file losing TAG
-public class SimpleMove extends Test {
+public class FileRenaming extends Test {
 	public void run() {
 		QueryBackend backend = getNewBackend();
 		syn(backend, "perl-in-perl.pl", "Manual");
 		Filesystem fs = new Filesystem(backend);
 		try {
-			fs.mkdir("/Manual/Readable", 0);
-			fs.rename("/Manual/perl-in-perl.pl", "/Manual/Readable/perl-in-perl.pl");
-			fs.rename("/Manual/perl-in-perl.pl", "/Readable/perl-in-perl.pl");
+			fs.rename("/Manual/perl-in-perl.pl", "/Manual/perl-in-english.man");
 		} catch (FuseException e) {
 			log += e;
 			error = true;
@@ -25,13 +23,13 @@ public class SimpleMove extends Test {
 		}
 		expect(fs,
 			new String[] {
-				"./Readable/perl-in-perl.pl",
-				"./.pl/perl-in-perl.pl",
+				"./Manual/perl-in-english.man",
+				"./.man/perl-in-english.man",
 			},
 			new String[] {
 				".",
-				"./.pl",
-				"./Readable",
+				"./.man",
+				"./Manual",
 			}
 		);
 	}

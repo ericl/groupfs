@@ -1,8 +1,8 @@
 package queryfs.tests;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import fuse.FuseDirFiller;
@@ -22,6 +22,10 @@ public abstract class Test {
 	protected String log = "";
 
 	public abstract void run();
+
+	protected QueryBackend getNewBackend() {
+		return new FlexibleBackend(new VirtualFileSource());
+	}
 
 	class Node {
 		String name;
@@ -65,23 +69,25 @@ public abstract class Test {
 		}
 	}
 
-	protected void expect(Filesystem fs, List<String> files, List<String> dirs) {
-		List<String> f = new ArrayList<String>();
-		List<String> d = new ArrayList<String>();
-		buildFileList(fs, f, d, ".");
-		if (!files.equals(f)) {
-			log += "expected: " + files + "\n";
+	protected void expect(Filesystem fs, String[] files, String[] dirs) {
+		Set<String> fe = new HashSet<String>(Arrays.asList(files));
+		Set<String> de = new HashSet<String>(Arrays.asList(dirs));
+		Set<String> f = new HashSet<String>();
+		Set<String> d = new HashSet<String>();
+		buildFileSet(fs, f, d, ".");
+		if (!fe.equals(f)) {
+			log += "expected: " + fe + "\n";
 			log += "found:    " + f + "\n";
 			error = true;
 		}
-		if (!dirs.equals(d)) {
-			log += "expected: " + dirs + "\n";
+		if (!de.equals(d)) {
+			log += "expected: " + de + "\n";
 			log += "found:    " + d + "\n";
 			error = true;
 		}
 	}
 
-	private void buildFileList(Filesystem fs, List<String> f, List<String> d, String path) {
+	private void buildFileSet(Filesystem fs, Set<String> f, Set<String> d, String path) {
 		TestDirFiller filler = new TestDirFiller();
 		d.add(path);
 		try {
@@ -89,7 +95,7 @@ public abstract class Test {
 			for (Node n : filler) {
 				String realpath = path + "/" + n.name;
 				if (n.dir) {
-					buildFileList(fs, f, d, realpath);
+					buildFileSet(fs, f, d, realpath);
 				} else {
 					f.add(realpath);
 				}

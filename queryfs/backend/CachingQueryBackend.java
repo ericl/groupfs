@@ -142,7 +142,8 @@ public abstract class CachingQueryBackend implements QueryBackend {
 	protected boolean maxOneMimeGroup(Set<QueryGroup> groups) {
 		int count = 0;
 		for (QueryGroup q : groups)
-			if (q.getType() == Type.MIME && q != QueryGroup.GROUP_NO_GROUP)
+			if (q.getType() == Type.MIME)
+			// GROUP_NO_GROUP counts too - trashed files must not show up elsewhere
 				count++;
 		return count <= 1;
 	}

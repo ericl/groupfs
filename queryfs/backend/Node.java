@@ -5,6 +5,7 @@ import java.io.File;
 import java.nio.ByteBuffer;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import fuse.FuseException;
@@ -19,7 +20,7 @@ public abstract class Node implements View {
 	protected String name = "__undefined__";
 
 	public Node(Set<QueryGroup> groups) {
-		this.groups = Collections.unmodifiableSet(this.raw_groups = groups);
+		this.groups = Collections.unmodifiableSet(this.raw_groups = new HashSet<QueryGroup>(groups));
 	}
 
 	public int getFType() {

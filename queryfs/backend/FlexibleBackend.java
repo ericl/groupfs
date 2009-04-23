@@ -132,8 +132,8 @@ class FlexibleNode extends Node {
 		Set<QueryGroup> removed = new HashSet<QueryGroup>(groups);
 		raw_groups.clear();
 		backend.flush();
-		fh.delete();
 		backend.checkRoot(removed);
+		fh.delete();
 		return 0;
 	}
 

@@ -27,10 +27,12 @@ import fuse.XattrSupport;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import queryfs.QueryGroup.Type;
+
+import queryfs.backend.DirectoryFileSource;
+import queryfs.backend.FlexibleBackend;
 import queryfs.backend.Node;
 import queryfs.backend.QueryBackend;
-import queryfs.backend.DirectoryQueryBackend;
-import queryfs.QueryGroup.Type;
 
 import static queryfs.Util.*;
 
@@ -166,7 +168,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		File mountPoint = new File(args[args.length - 2]);
 		try {
 			validate(originDir, mountPoint);
-			FuseMount.mount(fuseArgs, new Filesystem(new DirectoryQueryBackend(originDir)), log);
+			FuseMount.mount(fuseArgs, new Filesystem(new FlexibleBackend(new DirectoryFileSource(originDir))), log);
 		} catch (Exception e) {
 			log.error(e);
 		}

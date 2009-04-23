@@ -83,6 +83,15 @@ public final class Util {
 		return false;
 	}
 
+	public static boolean maxOneMimeGroup(Set<QueryGroup> groups) {
+		int count = 0;
+		for (QueryGroup q : groups)
+			if (q.getType() == Type.MIME)
+			// GROUP_NO_GROUP counts too - trashed files must not show up elsewhere
+				count++;
+		return count <= 1;
+	}
+
 	public static File getDestination(String path, String name) throws IOException {
 		File dir = new File(path);
 		if (dir.exists() && !dir.isDirectory())

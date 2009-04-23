@@ -11,6 +11,8 @@ import queryfs.QueryGroup.Type;
 
 import queryfs.QueryGroup;
 
+import static queryfs.Util.*;
+
 public abstract class CachingQueryBackend implements QueryBackend {
 	protected QueryCache cache = new QueryCache();
 	protected Set<QueryGroup> flagged = new HashSet<QueryGroup>();
@@ -137,15 +139,6 @@ public abstract class CachingQueryBackend implements QueryBackend {
 			output.add(t);
 		}
 		return output;
-	}
-
-	protected boolean maxOneMimeGroup(Set<QueryGroup> groups) {
-		int count = 0;
-		for (QueryGroup q : groups)
-			if (q.getType() == Type.MIME)
-			// GROUP_NO_GROUP counts too - trashed files must not show up elsewhere
-				count++;
-		return count <= 1;
 	}
 
 	protected void flag(QueryGroup updated) {

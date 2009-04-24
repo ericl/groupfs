@@ -6,7 +6,8 @@ import fuse.FuseException;
 
 import queryfs.*;
 
-public class SpecialRenaming extends Test {
+// overwriting file with another
+public class OverwriteRenaming extends Test {
 	public void run() {
 		QueryBackend backend = getNewBackend();
 		syn(backend, "Random Book.txt", "Book", "Readable");

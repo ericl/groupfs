@@ -15,6 +15,7 @@ public class FilesystemTests {
 			new MoveDirectory(),
 			new StrangeMovements(),
 			new SpecialRenaming(),
+			new DuplicateHandling(),
 			new LargeScaleValidation(),
 		});
 		if (tests.error)

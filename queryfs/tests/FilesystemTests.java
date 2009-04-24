@@ -14,12 +14,11 @@ public class FilesystemTests {
 			new ExtensionRenaming(),
 			new MoveDirectory(),
 			new StrangeMovements(),
-			new SpecialRenaming(),
 			new DuplicateHandling(),
 			new LargeScaleValidation(),
 		});
 		if (tests.error)
-			System.err.println("One or more tests FAILED");
+			System.err.println("One or more tests FAILED.");
 		else
 			System.out.println("All tests succeeded.");
 

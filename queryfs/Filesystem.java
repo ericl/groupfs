@@ -42,8 +42,21 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	private QueryBackend backend;
 	private ViewMapper mapper;
 
+	// TODO make this method all-encompassing and robust
+	// TODO find all places where necessary in viewmapper
+	static String standardize(String path) {
+		if (path.startsWith(".")) {
+			path = path.substring(1);
+			if (path.isEmpty())
+				path = "/";
+		}
+		return path;
+	}
+
 	protected class ViewMapper {
 		private final RootDirectory root;
+		private String latestPath;
+		private Node latestNode;
 		private Map<String,FloatingDirectory> floats = new HashMap<String,FloatingDirectory>();
 		private Map<String,List<FloatingDirectory>> parents = new HashMap<String,List<FloatingDirectory>>();
 
@@ -89,12 +102,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		}
 
 		void finish(String parent, Set<String> taken, FuseDirFiller filler) {
-			// todo parsing of parent path in parts instead of string
-			if (parent.startsWith(".")) {
-				parent = parent.substring(1);
-				if (parent.isEmpty())
-					parent = "/";
-			}
+			parent = standardize(parent);
 			List<FloatingDirectory> s = parents.get(parent);
 			if (s != null)
 				for (FloatingDirectory f : s) {
@@ -104,7 +112,14 @@ public class Filesystem implements Filesystem3, XattrSupport {
 				}
 		}
 
+		void notifyLatest(String path, Node node) {
+			latestPath = path;
+			latestNode = node;
+		}
+
 		View get(String path) {
+			if (path.equals(latestPath))
+				return latestNode;
 			String[] parts = path.split("/");
 			if (parts.length < 2)
 				return root;
@@ -128,11 +143,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			if (parent_ok)
 				output = directory.get(parts[parts.length-1]);
 			if (output == null) {
-				if (path.startsWith(".")) {
-					path = path.substring(1);
-					if (path.isEmpty())
-						path = "/";
-				}
+				path = standardize(path);
 				output = floats.get(path);
 			}
 			else
@@ -207,14 +218,14 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		Directory d = mapper.getDir(new File(path).getParent());
 		if (d == null)
 			return fuse.Errno.ENOENT;
-		else if (!d.getPerms().canMknod())
+		else if (!d.getPerms().canMknod() || name.startsWith("."))
 			return fuse.Errno.EPERM;
 		mapper.delete(new File(path).getParent(), false);
 		Set<QueryGroup> groups = new HashSet<QueryGroup>(d.getQueryGroups());
 		String ext = extensionOf(new File(path));
 		if (ext != null)
 			groups.add(QueryGroup.create(ext, Type.MIME));
-		backend.create(groups, name);
+		mapper.notifyLatest(path, backend.create(groups, name));
 		return 0;
 	}
 

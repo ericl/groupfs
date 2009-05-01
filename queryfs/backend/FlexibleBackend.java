@@ -30,13 +30,15 @@ public class FlexibleBackend extends CachingQueryBackend {
 		return new FlexibleNode(this, fh);
 	}
 
-	public void create(Set<QueryGroup> groups, String name) throws FuseException {
+	public Node create(Set<QueryGroup> groups, String name) throws FuseException {
 		assert maxOneMimeGroup(groups);
 		FileHandler fh = source.create(name, groups);
-		nodes.add(new FlexibleNode(this, fh));
+		Node ret = new FlexibleNode(this, fh);
+		nodes.add(ret);
 		flagged.addAll(groups);
 		flush();
 		checkRootAdd(groups);
+		return ret;
 	}
 
 	public long getFreeSpace() {

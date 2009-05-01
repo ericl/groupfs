@@ -16,6 +16,7 @@ public class FilesystemTests {
 			new StrangeMovements(),
 			new DuplicateHandling(),
 			new LargeScaleValidation(),
+			new HoldNewFilesOpen(),
 		});
 		if (tests.error)
 			System.err.println("One or more tests FAILED.");

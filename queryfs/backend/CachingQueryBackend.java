@@ -6,8 +6,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import fuse.FuseException;
-
 import queryfs.QueryGroup.Type;
 
 import queryfs.QueryGroup;
@@ -129,8 +127,6 @@ public abstract class CachingQueryBackend implements QueryBackend {
 		}
 		return Collections.unmodifiableSet(output);
 	}
-
-	public abstract void create(Set<QueryGroup> groups, String name) throws FuseException;
 
 	protected Set<Set<QueryGroup>> broader(Set<QueryGroup> input) {
 		Set<Set<QueryGroup>> output = new HashSet<Set<QueryGroup>>();

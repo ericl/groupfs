@@ -17,6 +17,7 @@ import queryfs.*;
  * root mknod -> fail
  * mime mknod -> fail
  * autodeletion of floating dirs
+ * mv to dotfile
  */
 public class StrangeMovements extends Test {
 	public void run() {
@@ -86,6 +87,7 @@ public class StrangeMovements extends Test {
 			fs.mkdir("/Foo/Bar/Baz", 0);
 			fs.mknod("/Foo/node", 0, 0);
 			fs.rename("/Foo/node", "/Foo/Bar/node");
+			fs.rename("/Foo/node", "/Foo/.node");
 		} catch (FuseException e) {
 			log += e;
 			error = true;

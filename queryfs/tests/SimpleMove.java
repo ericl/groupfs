@@ -9,6 +9,7 @@ import queryfs.*;
 // mkdir
 // file gaining TAG
 // file losing TAG
+// file losing all tags
 public class SimpleMove extends Test {
 	public void run() {
 		QueryBackend backend = getNewBackend();
@@ -32,6 +33,25 @@ public class SimpleMove extends Test {
 				".",
 				"./.pl",
 				"./Readable",
+			}
+		);
+		backend = getNewBackend();
+		syn(backend, "perl-in-perl.pl", "Manual");
+		fs = new Filesystem(backend);
+		try {
+			fs.rename("/Manual/perl-in-perl.pl", "/perl-in-perl.pl");
+		} catch (FuseException e) {
+			log += e;
+			error = true;
+			return;
+		}
+		expect(fs,
+			new String[] {
+				"./.Trash/perl-in-perl.pl",
+			},
+			new String[] {
+				".",
+				"./.Trash",
 			}
 		);
 	}

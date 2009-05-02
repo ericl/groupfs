@@ -33,7 +33,7 @@ public class MovingEmptyDirs extends Test {
 			error = true;
 			return;
 		}
-		expect(fs,
+		expect_nocopy(fs,
 			new String[] {
 				"./Manual/perl-in-perl.pl",
 				"./.pl/perl-in-perl.pl",

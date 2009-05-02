@@ -65,6 +65,10 @@ class FlexibleNode extends Node {
 		this.name = unNumbered(fh.getName());
 	}
 
+	public String toString() {
+		return name;
+	}
+
 	public int stat(FuseGetattrSetter setter) {
 		int time = (int)(fh.lastModified() / 1000L);
 		long size = fh.length();
@@ -157,11 +161,7 @@ class FlexibleNode extends Node {
 					raw_groups.add(a);
 			}
 		if (hasCategory(groups)) {
-			if (groups.contains(QueryGroup.GROUP_NO_GROUP)) {
-				raw_groups.remove(QueryGroup.GROUP_NO_GROUP);
-				backend.checkRootRm(QueryGroup.SET_NO_GROUP);
-			}
-			backend.flag(QueryGroup.GROUP_NO_GROUP);
+			assert !groups.contains(QueryGroup.GROUP_NO_GROUP);
 		} else {
 			for (QueryGroup group : groups)
 				backend.flag(group);

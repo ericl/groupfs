@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import queryfs.QueryGroup.Type;
 
 import queryfs.backend.DirectoryFileSource;
+import queryfs.backend.FileSource;
 import queryfs.backend.FlexibleBackend;
 import queryfs.backend.Node;
 import queryfs.backend.QueryBackend;

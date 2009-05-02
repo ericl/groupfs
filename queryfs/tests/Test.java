@@ -22,11 +22,12 @@ import static queryfs.Util.*;
 public abstract class Test {
 	protected boolean error = false;
 	protected String log = "";
+	protected FileSource source;
 
 	public abstract void run();
 
 	protected QueryBackend getNewBackend() {
-		return new FlexibleBackend(new VirtualFileSource());
+		return new FlexibleBackend(source = new VirtualFileSource());
 	}
 
 	class Node {
@@ -72,6 +73,11 @@ public abstract class Test {
 	}
 
 	protected void expect(Filesystem fs, String[] files, String[] dirs) {
+		expect_nocopy(fs, files, dirs);
+		expect_nocopy(new Filesystem(new FlexibleBackend(source)), files, dirs);
+	}
+
+	protected void expect_nocopy(Filesystem fs, String[] files, String[] dirs) {
 		SortedSet<String> fe = new TreeSet<String>(Arrays.asList(files));
 		SortedSet<String> de = new TreeSet<String>(Arrays.asList(dirs));
 		SortedSet<String> f = new TreeSet<String>();

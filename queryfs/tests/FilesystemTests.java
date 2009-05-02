@@ -17,6 +17,7 @@ public class FilesystemTests {
 			new DuplicateHandling(),
 			new LargeScaleValidation(),
 			new HoldNewFilesOpen(),
+			new LargeScale2(),
 		});
 		if (tests.error)
 			System.err.println("One or more tests FAILED.");

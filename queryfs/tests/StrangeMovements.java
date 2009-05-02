@@ -7,10 +7,6 @@ import fuse.FuseException;
 import queryfs.*;
 
 /* 
- * NOTE: Operations here may be suboptimal in some cases but work
- *       work well enough. To improve would require significantly
- *       more complexity. Hence, be cautious of change.
- *
  * root mkdir
  * mknod in mkdir
  * mknod in nested mkdir -> residual dir
@@ -66,7 +62,7 @@ public class StrangeMovements extends Test {
 			error = true;
 			return;
 		}
-		expect(fs,
+		expect_nocopy(fs,
 			new String[] {
 				"./.Trash/foo",
 				"./.Trash/node",
@@ -116,7 +112,7 @@ public class StrangeMovements extends Test {
 			error = true;
 			return;
 		}
-		expect(fs,
+		expect_nocopy(fs,
 			new String[] {
 				"./Perl/foo",
 				"./Foo/node",
@@ -146,7 +142,7 @@ public class StrangeMovements extends Test {
 			error = true;
 			return;
 		}
-		expect(fs,
+		expect_nocopy(fs,
 			new String[] {
 				"./Perl/x",
 				"./one/x",
@@ -176,7 +172,7 @@ public class StrangeMovements extends Test {
 			error = true;
 			return;
 		}
-		expect(fs,
+		expect_nocopy(fs,
 			new String[] {
 				"./Perl/x",
 				"./one/x",

@@ -9,4 +9,4 @@ else
 	exit 1
 fi
 
-java queryfs.tests.FilesystemTests 2>&1 | tee tests.log
+java -ea queryfs.tests.FilesystemTests 2>&1 | tee tests.log

@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import fuse.Filesystem3;
 import fuse.FuseDirFiller;
@@ -30,7 +31,6 @@ import org.apache.commons.logging.LogFactory;
 import queryfs.QueryGroup.Type;
 
 import queryfs.backend.DirectoryFileSource;
-import queryfs.backend.FileSource;
 import queryfs.backend.FlexibleBackend;
 import queryfs.backend.Node;
 import queryfs.backend.QueryBackend;
@@ -43,31 +43,20 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	private QueryBackend backend;
 	private ViewMapper mapper;
 
-	// TODO make this method all-encompassing and robust
-	// TODO find all places where necessary in viewmapper
-	static String standardize(String path) {
-		if (path.startsWith(".")) {
-			path = path.substring(1);
-			if (path.isEmpty())
-				path = "/";
-		}
-		return path;
-	}
-
 	protected class ViewMapper {
 		private final RootDirectory root;
-		private String latestPath;
+		private Path latestPath;
 		private Node latestNode;
-		private Map<String,FloatingDirectory> floats = new HashMap<String,FloatingDirectory>();
-		private Map<String,List<FloatingDirectory>> parents = new HashMap<String,List<FloatingDirectory>>();
+		private Map<Path,FloatingDirectory> floats = new HashMap<Path,FloatingDirectory>();
+		private Map<Path,List<FloatingDirectory>> parents = new HashMap<Path,List<FloatingDirectory>>();
 
 		ViewMapper(RootDirectory root) {
 			this.root = root;
 		}
 
-		void createFloat(String path) {
-			String parent = new File(path).getParent();
-			String name = new File(path).getName();
+		void createFloat(Path path) {
+			Path parent = new Path(new File(path.value).getParent());
+			String name = new File(path.value).getName();
 			FloatingDirectory f = new FloatingDirectory(this, parent, path, QueryGroup.create(name, Type.TAG));
 			floats.put(path, f);
 			List<FloatingDirectory> s = parents.get(parent);
@@ -78,7 +67,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			s.add(f);
 		}
 
-		void delete(String path, boolean recursive) {
+		void delete(Path path, boolean recursive) {
 			FloatingDirectory target = floats.remove(path);
 			if (target == null)
 				return;
@@ -87,23 +76,22 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			if (l.isEmpty())
 				parents.remove(target.getHost());
 			if (recursive)
-				for (String test : new HashSet<String>(floats.keySet()))
-					if (test.startsWith(path))
+				for (Path test : new HashSet<Path>(floats.keySet()))
+					if (test.value.startsWith(path.value))
 						delete(test, false);
 		}
 
-		void remap(String from, String to) {
+		void remap(Path from, Path to) {
 			delete(from, false);
 			createFloat(to);
-			for (String test : new HashSet<String>(floats.keySet()))
-				if (test.startsWith(from)) {
+			for (Path test : new HashSet<Path>(floats.keySet()))
+				if (test.value.startsWith(from.value)) {
 					delete(test, false);
-					createFloat(test.replaceFirst(from, to));
+					createFloat(new Path(test.value.replaceFirst(from.value, to.value)));
 				}
 		}
 
-		void finish(String parent, Set<String> taken, FuseDirFiller filler) {
-			parent = standardize(parent);
+		void finish(Path parent, Set<String> taken, FuseDirFiller filler) {
 			List<FloatingDirectory> s = parents.get(parent);
 			if (s != null)
 				for (FloatingDirectory f : s) {
@@ -113,15 +101,16 @@ public class Filesystem implements Filesystem3, XattrSupport {
 				}
 		}
 
-		void notifyLatest(String path, Node node) {
+		void notifyLatest(Path path, Node node) {
 			latestPath = path;
 			latestNode = node;
 		}
 
-		View get(String path) {
-			if (path.equals(latestPath))
+		View get(String input) {
+			Path path = new Path(input);
+			if (latestPath != null && latestPath.equals(path))
 				return latestNode;
-			String[] parts = path.split("/");
+			String[] parts = path.value.split("/");
 			if (parts.length < 2)
 				return root;
 			Directory directory = root;
@@ -143,10 +132,8 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			View output = null;
 			if (parent_ok)
 				output = directory.get(parts[parts.length-1]);
-			if (output == null) {
-				path = standardize(path);
+			if (output == null)
 				output = floats.get(path);
-			}
 			else
 				delete(path, false); // garbage collect those floatingdirs
 			return output;
@@ -210,7 +197,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		Map<String,View> list = d.list();
 		for (String ref : list.keySet())
 			dirFiller.add(ref, 0, list.get(ref).getFType());
-		mapper.finish(path, list.keySet(), dirFiller);
+		mapper.finish(new Path(path), list.keySet(), dirFiller);
 		return 0;
 	}
 
@@ -221,12 +208,12 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			return fuse.Errno.ENOENT;
 		else if (!d.getPerms().canMknod() || name.startsWith("."))
 			return fuse.Errno.EPERM;
-		mapper.delete(new File(path).getParent(), false);
+		mapper.delete(new Path(new File(path).getParent()), false);
 		Set<QueryGroup> groups = new HashSet<QueryGroup>(d.getQueryGroups());
 		String ext = extensionOf(new File(path));
 		if (ext != null)
 			groups.add(QueryGroup.create(ext, Type.MIME));
-		mapper.notifyLatest(path, backend.create(groups, name));
+		mapper.notifyLatest(new Path(path), backend.create(groups, name));
 		return 0;
 	}
 
@@ -239,7 +226,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			return fuse.Errno.ENOENT;
 		else if (!parent.getPerms().canMkdir())
 			return fuse.Errno.EPERM;
-		mapper.createFloat(path);
+		mapper.createFloat(new Path(path));
 		return 0;
 	}
 
@@ -281,7 +268,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		else if (new File(to).getName().startsWith("."))
 			return fuse.Errno.EPERM;
 		if (o instanceof Node)
-			mapper.delete(new File(to).getParent(), true);
+			mapper.delete(new Path(new File(to).getParent()), true);
 		return o.rename(from, to, mapper.get(to), d.getQueryGroups(), dd.getQueryGroups());
 	}
 
@@ -382,3 +369,43 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		return fuse.Errno.ENOENT;
 	}
 }
+
+final class Path {
+	public final String value;
+
+	private static String parse(String path) {
+		String[] parts = path.split("/");
+		Stack<String> stack = new Stack<String>();
+		for (int i=0; i < parts.length; i++) {
+			String part = parts[i];
+			if (part.equals("") || part.equals(".")) {
+				// the same node
+			} else if (part.equals("..")) {
+				if (!stack.isEmpty())
+					stack.pop();
+			} else {
+				stack.push(part);
+			}
+		}
+		String ret = "";
+		if (stack.isEmpty())
+			ret = "/";
+		else
+			for (String part : stack)
+				ret += "/" + part;
+		return ret;
+	}
+
+	Path(String path) {
+		this.value = parse(path).intern();
+	}
+
+	public boolean equals(Object other) {
+		return other instanceof Path && value.equals(((Path)other).value);
+	}
+
+	public int hashCode() {
+		return value.hashCode();
+	}
+}
+

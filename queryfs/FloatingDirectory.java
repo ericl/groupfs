@@ -17,15 +17,14 @@ import static queryfs.Util.*;
 public class FloatingDirectory implements Directory {
 	private final ViewMapper mapper;
 	private final QueryGroup group;
-	private final String id;
-	private final String parent;
+	private final Path id, parent;
 	private long time = System.currentTimeMillis();
 	private final Set<QueryGroup> groups, raw_groups;
 	protected static Permissions floating_perms = new Permissions(
 		true, true, true, true, true, true, true
 	);
 
-	public FloatingDirectory(ViewMapper mapper, String parent, String id, QueryGroup group) {
+	public FloatingDirectory(ViewMapper mapper, Path parent, Path id, QueryGroup group) {
 		this.mapper = mapper;
 		this.group = group;
 		this.parent = parent;
@@ -40,7 +39,7 @@ public class FloatingDirectory implements Directory {
 		return floating_perms;
 	}
 
-	public String getHost() {
+	public Path getHost() {
 		return parent;
 	}
 
@@ -72,7 +71,7 @@ public class FloatingDirectory implements Directory {
 	public int rename(String from, String to, View v, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd) {
 		if (v != null)
 			return fuse.Errno.EPERM;
-		mapper.remap(from, to);
+		mapper.remap(new Path(from), new Path(to));
 		return 0;
 	}
 
@@ -99,7 +98,7 @@ public class FloatingDirectory implements Directory {
 	}
 
 	public Directory getParent() {
-		return mapper.getDir(parent);
+		return mapper.getDir(parent.value);
 	}
 
 	public Map<String,View> list() {

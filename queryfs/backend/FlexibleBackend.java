@@ -108,9 +108,6 @@ class FlexibleNode extends Node {
 		}
 		assert maxOneMimeGroup(groups);
 		this.name = name;
-		String current = fh.getName();
-		if (current.equals(name))
-			return;
 		fh.setName(name);
 	}
 
@@ -147,6 +144,16 @@ class FlexibleNode extends Node {
 		return fh.truncate(size);
 	}
 
+	protected void update(Set<QueryGroup> all, Set<QueryGroup> add, Set<QueryGroup> remove) {
+		for (QueryGroup g : groups)
+			backend.flag(g);
+		backend.flush();
+		if (remove != null)
+			backend.checkRootRm(remove);
+		if (add != null)
+			backend.checkRootAdd(add);
+	}
+
 	protected void changeQueryGroups(Set<QueryGroup> add, Set<QueryGroup> remove, boolean allowMimetypeChange) throws FuseException {
 		if (remove != null)
 			for (QueryGroup r : remove) {
@@ -172,13 +179,7 @@ class FlexibleNode extends Node {
 			}
 		}
 		fh.setTagGroups(groups);
-		for (QueryGroup g : groups)
-			backend.flag(g);
-		backend.flush();
-		if (remove != null)
-			backend.checkRootRm(remove);
-		if (add != null)
-			backend.checkRootAdd(add);
+		update(groups, add, remove);
 		assert maxOneMimeGroup(groups);
 	}
 }

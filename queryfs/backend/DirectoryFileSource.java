@@ -17,6 +17,9 @@ import java.util.Set;
 import fuse.FilesystemConstants;
 import fuse.FuseException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import queryfs.QueryGroup.Type;
 
 import queryfs.QueryGroup;
@@ -27,6 +30,7 @@ import queryfs.backend.FileSource;
 import static queryfs.Util.*;
 
 public class DirectoryFileSource implements FileSource {
+
 	private final Set<FileHandler> raw_files, files;
 	private File root;
 
@@ -110,7 +114,7 @@ class DirectoryFileHandler implements FileHandler {
 	public DirectoryFileHandler(File root, File file, Set<QueryGroup> groups) {
 		this.root = root;
 		this.file = file;
-		this.name = unNumbered(file.getName());
+		this.name = file.getName();
 		this.groups = Collections.unmodifiableSet(raw_groups = new HashSet<QueryGroup>(groups));
 	}
 
@@ -123,6 +127,7 @@ class DirectoryFileHandler implements FileHandler {
 	}
 
 	public void setTagGroups(Set<QueryGroup> groups) throws FuseException {
+		System.out.println("tag CHANGE op");
 		assert maxOneMimeGroup(groups);
 		raw_groups.clear();
 		raw_groups.addAll(groups);
@@ -143,13 +148,17 @@ class DirectoryFileHandler implements FileHandler {
 	}
 
 	public void setName(String name) throws FuseException {
-		String current = file.getName();
-		if (current.equals(name))
+		System.out.println("setname op");
+		if (this.name.equals(name))
 			return;
+		this.name = name;
 		synchronized (this) {
 			File dest = null;
 			try {
 				dest = getDestination(file.getParent(), name);
+				log.info("dest is " + dest);
+				System.out.println("file exists? " + file.exists());
+				System.out.println("dest exists? " + dest.exists());
 			} catch (IOException e) {
 				throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
 			}
@@ -237,4 +246,6 @@ class DirectoryFileHandler implements FileHandler {
 			}
 		}
 	}
+	private static final Log log =
+		LogFactory.getLog(DirectoryFileHandler.class);
 }

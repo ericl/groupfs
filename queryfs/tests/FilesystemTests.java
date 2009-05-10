@@ -21,8 +21,6 @@ public class FilesystemTests {
 		});
 		if (tests.error)
 			System.err.println("One or more tests FAILED.");
-		else
-			System.out.println("All tests succeeded.");
 
 	}
 

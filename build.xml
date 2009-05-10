@@ -26,10 +26,13 @@
 				<include name="**/*.jar"/>
 				<include name="**/*~"/>
 				<include name="**/*.log"/>
-				<include name="mount"/>
+				<include name="test_helper"/>
 			</fileset>
 		</delete>
 		<delete dir="doc"/>
+		<delete dir="test.mount"/>
+		<delete dir="test.origin"/>
+		<delete dir="test.scratch"/>
 	</target>
 
 	<target name="doc" depends="compile">

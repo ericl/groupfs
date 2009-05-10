@@ -35,6 +35,8 @@ public abstract class Node implements View {
 		return name;
 	}
 
+	protected abstract void update(Set<QueryGroup> all, Set<QueryGroup> add, Set<QueryGroup> remove);
+
 	public int rename(String from, String to, View target, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd) throws FuseException {
 		if (target != null && target != this) {
 			// the common rename-swap-file-to-write behavior
@@ -46,7 +48,10 @@ public abstract class Node implements View {
 			// if not a node then probably root dir !?
 		}
 		setName(new File(to).getName());
-		changeQueryGroups(hintAdd, hintRemove);
+		if (!hintRemove.equals(hintAdd))
+			changeQueryGroups(hintAdd, hintRemove);
+		else
+			update(groups, hintAdd, hintRemove);
 		return 0;
 	}
 

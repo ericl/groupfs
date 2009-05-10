@@ -10,7 +10,7 @@ doc
 *~
 *.DS_Store
 *.log
-/mount
+/test_helper
 /test.mount
 /test.origin
 /test.scratch

@@ -9,7 +9,7 @@ else
 	exit 1
 fi
 
-java -ea queryfs.tests.FilesystemTests 2>&1 | tee tests.log
+java -ea intfs.tests.FilesystemTests 2>&1 | tee tests.log
 
 (
 cd `dirname $0`
@@ -20,7 +20,7 @@ readonly MP=`pwd`/test.mount
 readonly SCRATCH=`pwd`/test.scratch
 readonly LOG=io_test.log
 readonly LOG2=test-stderr.log
-readonly MOUNT="`readlink -f path_mount.sh` $ORIGIN $MP"
+readonly MOUNT="`readlink -f intfs_mount.sh` $ORIGIN $MP"
 
 rm -f $LOG $LOG2
 

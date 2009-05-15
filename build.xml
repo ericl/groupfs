@@ -1,19 +1,21 @@
-<project name="queryfs" default="compile" basedir=".">
+<project name="intfs" default="compile" basedir=".">
 
 	<description>
-		QueryFS - narrow down large file collections by directory paths.
+		intfs - the Intersecting Filesystem - presents the intersections
+		of sets of tagged files as directories. It supports modification
+		of data and metadata through typical filesystem operations.
 	</description>
 
 	<target name="compile">
-		<javac srcdir="queryfs" destdir="." debug="true" target="5">
+		<javac srcdir="intfs" destdir="." debug="true" target="5">
 			<compilerarg value="-Xlint"/>
 		</javac>
 	</target>
 
 	<target name="jar" depends="compile">
-		<jar jarfile="queryfs.jar" update="true">
+		<jar jarfile="intfs.jar" update="true">
 			<fileset dir=".">
-				<include name="queryfs/**/*.class"/>
+				<include name="intfs/**/*.class"/>
 			</fileset>
 		</jar>
 	</target>
@@ -38,7 +40,7 @@
 	<target name="doc" depends="compile">
 		<javadoc
 			sourcepath="."
-			packagenames="queryfs.*"
+			packagenames="intfs.*"
 			destdir="doc"/>
 	</target>
 

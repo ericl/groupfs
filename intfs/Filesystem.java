@@ -55,8 +55,8 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		}
 
 		void createFloat(Path path) {
-			Path parent = new Path(new File(path.value).getParent());
-			String name = new File(path.value).getName();
+			Path parent = path.parent();
+			String name = path.name();
 			FloatingDirectory f = new FloatingDirectory(this, parent, path, QueryGroup.create(name, Type.TAG));
 			floats.put(path, f);
 			List<FloatingDirectory> s = parents.get(parent);
@@ -106,8 +106,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			latestNode = node;
 		}
 
-		View get(String input) {
-			Path path = new Path(input);
+		View get(Path path) {
 			if (latestPath != null && latestPath.equals(path))
 				return latestNode;
 			String[] parts = path.value.split("/");
@@ -139,7 +138,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			return output;
 		}
 
-		Directory getDir(String path) {
+		Directory getDir(Path path) {
 			View dir = get(path);
 			if (dir instanceof Directory)
 				return (Directory)dir;
@@ -147,7 +146,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 				return null;
 		}
 
-		Node getNode(String path) {
+		Node getNode(Path path) {
 			View dir = get(path);
 			if (dir instanceof Node)
 				return (Node)dir;
@@ -179,7 +178,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int getattr(String path, FuseGetattrSetter getattrSetter) throws FuseException {
-		View o = mapper.get(path);
+		View o = mapper.get(new Path(path));
 		if (o == null)
 			return fuse.Errno.ENOENT;
 		else
@@ -190,51 +189,72 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		return fuse.Errno.ENOTSUPP;
 	}
 
-	public int getdir(String path, FuseDirFiller dirFiller) throws FuseException {
+	public int getdir(String input, FuseDirFiller dirFiller) throws FuseException {
+		Path path = new Path(input);
 		Directory d = mapper.getDir(path);
 		if (d == null)
 			return fuse.Errno.ENOENT;
 		Map<String,View> list = d.list();
 		for (String ref : list.keySet())
 			dirFiller.add(ref, 0, list.get(ref).getFType());
-		mapper.finish(new Path(path), list.keySet(), dirFiller);
+		mapper.finish(path, list.keySet(), dirFiller);
 		return 0;
 	}
 
-	public int mknod(String path, int mode, int rdev) throws FuseException {
-		String name = new File(path).getName();
-		Directory d = mapper.getDir(new File(path).getParent());
-		if (d == null)
-			return fuse.Errno.ENOENT;
-		else if (!d.getPerms().canMknod() || name.startsWith("."))
+	public int mknod(String input, int mode, int rdev) throws FuseException {
+		Path path = new Path(input);
+		String name = path.name();
+		if (!canMknod(path.parent()) || name.startsWith("."))
 			return fuse.Errno.EPERM;
-		mapper.delete(new Path(new File(path).getParent()), false);
-		Set<QueryGroup> groups = new HashSet<QueryGroup>(d.getQueryGroups());
-		String ext = extensionOf(new File(path));
+		Directory d = mapper.getDir(path.parent());
+		mapper.delete(path.parent(), false);
+		Set<QueryGroup> groups = null;
+		if (d == null) {
+			groups = new HashSet<QueryGroup>();
+			for (String tag : tagsOf(path.parent().value))
+				groups.add(QueryGroup.create(tag, Type.TAG));
+		} else
+			groups = new HashSet<QueryGroup>(d.getQueryGroups());
+		String ext = extensionOf(path.name());
 		if (ext != null)
 			groups.add(QueryGroup.create(ext, Type.MIME));
-		mapper.notifyLatest(new Path(path), backend.create(groups, name));
+		mapper.notifyLatest(path, backend.create(groups, name));
 		return 0;
 	}
 
-	public int mkdir(String path, int mode) throws FuseException {
-		String name = new File(path).getName();
+	private boolean _canMknod(Path path, boolean rootok) {
+		if (path.value.length() <= 1)
+			return rootok;
+		Directory parent = mapper.getDir(path);
+		if (parent != null && !parent.getPerms().canMknod())
+			return false;
+		return _canMknod(path.parent(), true);
+	}
+
+	private boolean canMknod(Path path) {
+		return _canMknod(path, false);
+	}
+
+	public int mkdir(String input, int mode) throws FuseException {
+		Path path = new Path(input);
+		String name = path.name();
 		if (name.startsWith("."))
 			return fuse.Errno.EPERM;
-		Directory parent = mapper.getDir(new File(path).getParent());
+		Directory parent = mapper.getDir(path.parent());
 		if (parent == null)
 			return fuse.Errno.ENOENT;
 		else if (!parent.getPerms().canMkdir())
 			return fuse.Errno.EPERM;
-		mapper.createFloat(new Path(path));
+		mapper.createFloat(path);
 		return 0;
 	}
 
-	public int unlink(String path) throws FuseException {
+	public int unlink(String input) throws FuseException {
+		Path path = new Path(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
-		Directory d = mapper.getDir(new File(path).getParent());
+		Directory d = mapper.getDir(path.parent());
 		if (d == null)
 			return fuse.Errno.ENOENT;
 		else if (d.getGroup() == QueryGroup.GROUP_NO_GROUP) {
@@ -244,7 +264,8 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		return n.unlink();
 	}
 
-	public int rmdir(String path) throws FuseException {
+	public int rmdir(String input) throws FuseException {
+		Path path = new Path(input);
 		Directory d = mapper.getDir(path);
 		if (d == null)
 			return fuse.Errno.ENOENT;
@@ -257,19 +278,21 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		return fuse.Errno.ENOTSUPP;
 	}
 
-	public int rename(String from, String to) throws FuseException {
+	public int rename(String fi, String ft) throws FuseException {
+		Path from = new Path(fi);
+		Path to = new Path(ft);
 		View o = mapper.get(from);
-		Directory d = mapper.getDir(new File(from).getParent());
-		Directory dd = mapper.getDir(new File(to).getParent());
+		Directory d = mapper.getDir(from.parent());
+		Directory dd = mapper.getDir(to.parent());
 		if (o == null || d == null || dd == null)
 			return fuse.Errno.ENOENT;
 		else if (d != dd && (!d.getPerms().canMoveOut() || !dd.getPerms().canMoveIn()))
 			return fuse.Errno.EPERM;
-		else if (new File(to).getName().startsWith("."))
+		else if (new File(to.value).getName().startsWith("."))
 			return fuse.Errno.EPERM;
 		if (o instanceof Node)
-			mapper.delete(new Path(new File(to).getParent()), true);
-		return o.rename(from, to, mapper.get(to), d.getQueryGroups(), dd.getQueryGroups());
+			mapper.delete(to.parent(), true);
+		return o.rename(from.value, to.value, mapper.get(to), d.getQueryGroups(), dd.getQueryGroups());
 	}
 
 	public int link(String from, String to) throws FuseException {
@@ -284,14 +307,16 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		return fuse.Errno.ENOTSUPP;
 	}
 
-	public int truncate(String path, long size) throws FuseException {
+	public int truncate(String input, long size) throws FuseException {
+		Path path = new Path(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
 		return n.truncate(size);
 	}
 
-	public int utime(String path, int atime, int mtime) throws FuseException {
+	public int utime(String input, int atime, int mtime) throws FuseException {
+		Path path = new Path(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
@@ -311,7 +336,8 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		return 0;
 	}
 
-	public int open(String path, int flags, FuseOpenSetter openSetter) throws FuseException {
+	public int open(String input, int flags, FuseOpenSetter openSetter) throws FuseException {
+		Path path = new Path(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
@@ -319,14 +345,16 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		return 0;
 	}
 
-	public int read(String path, Object fh, ByteBuffer buf, long offset) throws FuseException {
+	public int read(String input, Object fh, ByteBuffer buf, long offset) throws FuseException {
+		Path path = new Path(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
 		return n.read(buf, offset);
 	}
 
-	public int write(String path, Object fh, boolean isWritepage, ByteBuffer buf, long offset) throws FuseException {
+	public int write(String input, Object fh, boolean isWritepage, ByteBuffer buf, long offset) throws FuseException {
+		Path path = new Path(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
@@ -337,7 +365,8 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		return 0;
 	}
 
-	public int release(String path, Object fh, int flags) throws FuseException {
+	public int release(String input, Object fh, int flags) throws FuseException {
+		Path path = new Path(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
@@ -370,6 +399,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 }
 
+// there is no point in optimizing/cache this - it takes c0.01 ms anyways
 final class Path {
 	public final String value;
 
@@ -398,6 +428,14 @@ final class Path {
 
 	Path(String path) {
 		this.value = parse(path).intern();
+	}
+
+	public Path parent() {
+		return new Path(new File(value).getParent());
+	}
+
+	public String name() {
+		return new File(value).getName();
 	}
 
 	public boolean equals(Object other) {

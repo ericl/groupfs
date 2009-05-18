@@ -18,6 +18,7 @@ public class FilesystemTests {
 			new LargeScaleValidation(),
 			new HoldNewFilesOpen(),
 			new LargeScale2(),
+			new PermissiveWrites(),
 		});
 		if (tests.error)
 			System.err.println("One or more tests FAILED.");

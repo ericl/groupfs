@@ -6,7 +6,7 @@ import fuse.FuseException;
 
 import intfs.*;
 
-// mkdir
+// automkdir
 // file gaining TAG
 // file losing TAG
 public class FileRenaming extends Test {

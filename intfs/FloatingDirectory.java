@@ -98,7 +98,7 @@ public class FloatingDirectory implements Directory {
 	}
 
 	public Directory getParent() {
-		return mapper.getDir(parent.value);
+		return mapper.getDir(parent);
 	}
 
 	public Map<String,View> list() {

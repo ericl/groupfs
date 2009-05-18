@@ -1,21 +1,21 @@
-<project name="intfs" default="compile" basedir=".">
+<project name="groupfs" default="compile" basedir=".">
 
 	<description>
-		intfs - the Intersecting Filesystem - presents the intersections
+		groupfs - the grouping filesystem - presents the intersections
 		of sets of tagged files as directories. It supports modification
 		of data and metadata through typical filesystem operations.
 	</description>
 
 	<target name="compile">
-		<javac srcdir="intfs" destdir="." debug="true" target="5">
+		<javac srcdir="groupfs" destdir="." debug="true" target="5">
 			<compilerarg value="-Xlint"/>
 		</javac>
 	</target>
 
 	<target name="jar" depends="compile">
-		<jar jarfile="intfs.jar" update="true">
+		<jar jarfile="groupfs.jar" update="true">
 			<fileset dir=".">
-				<include name="intfs/**/*.class"/>
+				<include name="groupfs/**/*.class"/>
 			</fileset>
 		</jar>
 	</target>
@@ -40,7 +40,7 @@
 	<target name="doc" depends="compile">
 		<javadoc
 			sourcepath="."
-			packagenames="intfs.*"
+			packagenames="groupfs.*"
 			destdir="doc"/>
 	</target>
 

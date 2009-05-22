@@ -17,9 +17,6 @@ import java.util.Set;
 import fuse.FilesystemConstants;
 import fuse.FuseException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import groupfs.QueryGroup.Type;
 
 import groupfs.QueryGroup;
@@ -127,7 +124,6 @@ class DirectoryFileHandler implements FileHandler {
 	}
 
 	public void setTagGroups(Set<QueryGroup> groups) throws FuseException {
-		System.out.println("tag CHANGE op");
 		assert maxOneMimeGroup(groups);
 		raw_groups.clear();
 		raw_groups.addAll(groups);
@@ -148,7 +144,6 @@ class DirectoryFileHandler implements FileHandler {
 	}
 
 	public void setName(String name) throws FuseException {
-		System.out.println("setname op");
 		if (this.name.equals(name))
 			return;
 		this.name = name;
@@ -156,9 +151,6 @@ class DirectoryFileHandler implements FileHandler {
 			File dest = null;
 			try {
 				dest = getDestination(file.getParent(), name);
-				log.info("dest is " + dest);
-				System.out.println("file exists? " + file.exists());
-				System.out.println("dest exists? " + dest.exists());
 			} catch (IOException e) {
 				throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
 			}
@@ -246,6 +238,4 @@ class DirectoryFileHandler implements FileHandler {
 			}
 		}
 	}
-	private static final Log log =
-		LogFactory.getLog(DirectoryFileHandler.class);
 }

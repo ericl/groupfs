@@ -74,6 +74,10 @@ public abstract class Test {
 
 	protected void expect(Filesystem fs, String[] files, String[] dirs) {
 		expect_nocopy(fs, files, dirs);
+		if (error) {
+			System.out.println("first run failed, not rebuilding filesystem");
+			return;
+		}
 		expect_nocopy(new Filesystem(new FlexibleBackend(source)), files, dirs);
 	}
 

@@ -15,6 +15,8 @@ import fuse.FuseGetattrSetter;
 import groupfs.QueryGroup;
 import groupfs.View;
 
+import static groupfs.Util.*;
+
 public abstract class Node implements View {
 	protected final Set<QueryGroup> groups, raw_groups;
 	protected String name;
@@ -38,6 +40,7 @@ public abstract class Node implements View {
 	protected abstract void update(Set<QueryGroup> all, Set<QueryGroup> add, Set<QueryGroup> remove);
 
 	public int rename(String from, String to, View target, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd) throws FuseException {
+		boolean hadMime = hasMime(groups);
 		if (target != null && target != this) {
 			// the common rename-swap-file-to-write behavior
 			if (target instanceof Node) {
@@ -47,11 +50,11 @@ public abstract class Node implements View {
 			}
 			// if not a node then probably root dir !?
 		}
-		setName(new File(to).getName());
 		if (!hintRemove.equals(hintAdd))
 			changeQueryGroups(hintAdd, hintRemove);
 		else
 			update(groups, hintAdd, hintRemove);
+		setName(new File(to).getName(), hadMime);
 		return 0;
 	}
 
@@ -61,7 +64,7 @@ public abstract class Node implements View {
 
 	public abstract void changeQueryGroups(Set<QueryGroup> add, Set<QueryGroup> remove) throws FuseException;
 
-	public abstract void setName(String name) throws FuseException;
+	protected abstract void setName(String name, boolean hadMime) throws FuseException;
 
 	public abstract int unlink() throws FuseException;
 

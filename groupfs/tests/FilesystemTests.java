@@ -19,10 +19,12 @@ public class FilesystemTests {
 			new HoldNewFilesOpen(),
 			new LargeScale2(),
 			new PermissiveWrites(),
+			new UnTrash(),
 		});
-		if (tests.error)
+		if (tests.error) {
 			System.err.println("One or more tests FAILED.");
-
+			System.exit(1);
+		}
 	}
 
 	public void runTests(Test[] tests) {

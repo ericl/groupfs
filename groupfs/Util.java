@@ -83,6 +83,15 @@ public final class Util {
 		return false;
 	}
 
+	public static boolean hasMime(Set<QueryGroup> groups) {
+		if (groups != null) {
+			for (QueryGroup group : groups)
+				if (group.getType() == Type.MIME && group != QueryGroup.GROUP_NO_GROUP)
+					return true;
+		}
+		return false;
+	}
+
 	public static boolean maxOneMimeGroup(Set<QueryGroup> groups) {
 		int count = 0;
 		for (QueryGroup q : groups)

@@ -95,11 +95,11 @@ class FlexibleNode extends Node {
 		changeQueryGroups(add, remove, false);
 	}
 
-	public void setName(String name) throws FuseException {
+	protected void setName(String name, boolean hadMime) throws FuseException {
 		String extI = extensionOf(this.name);
 		String extF = extensionOf(name);
 		assert maxOneMimeGroup(groups);
-		if (!extI.equals(extF)) {
+		if (!hadMime || !extI.equals(extF)) {
 			Set<QueryGroup> add = new HashSet<QueryGroup>();
 			Set<QueryGroup> remove = new HashSet<QueryGroup>();
 			remove.add(QueryGroup.create(extI, Type.MIME));
@@ -168,7 +168,7 @@ class FlexibleNode extends Node {
 					raw_groups.add(a);
 			}
 		if (hasCategory(groups)) {
-			assert !groups.contains(QueryGroup.GROUP_NO_GROUP);
+			raw_groups.remove(QueryGroup.GROUP_NO_GROUP);
 		} else {
 			for (QueryGroup group : groups)
 				backend.flag(group);

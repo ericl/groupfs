@@ -12,7 +12,8 @@ import groupfs.QueryGroup;
 
 import static groupfs.Util.*;
 
-public abstract class CachingQueryBackend implements QueryBackend {
+public abstract class CachingQueryBackend implements QueryBackendWithCache {
+	public final static boolean CACHING = true; // XXX debug,benchmark use only
 	protected QueryCache cache = new QueryCache();
 	protected Set<QueryGroup> flagged = new HashSet<QueryGroup>();
 	protected Set<Node> nodes = new HashSet<Node>();
@@ -84,7 +85,9 @@ public abstract class CachingQueryBackend implements QueryBackend {
 		if (groups.isEmpty())
 			return nodes;
 		assert maxOneMimeGroup(groups);
-		Set<Node> output = cache.getNodes(groups);
+		Set<Node> output = null;
+		if (CACHING)
+			output = cache.getNodes(groups);
 		if (output == null) {
 			output = new HashSet<Node>();
 			// looking for a cached query 1 level up
@@ -92,14 +95,16 @@ public abstract class CachingQueryBackend implements QueryBackend {
 			Set<QueryGroup> selection = null;
 			for (Set<QueryGroup> sel : broader(groups)) {
 				selection = sel;
-				if (cache.getNodes(sel) != null)
-					break; // yes!
+				if (CACHING || cache.getNodes(sel) != null) {
+					break;
+				}
 			}
 			Set<Node> pool = query(selection);
 			for (Node node : pool)
 				if (node.getQueryGroups().containsAll(groups))
 					output.add(node);
-			cache.putNodes(groups, output);
+			if (CACHING)
+				cache.putNodes(groups, output);
 		}
 		return Collections.unmodifiableSet(output);
 	}
@@ -108,8 +113,10 @@ public abstract class CachingQueryBackend implements QueryBackend {
 		assert maxOneMimeGroup(groups);
 		for (QueryGroup q : groups)
 			if (q.getType() == Type.MIME)
-				return new HashSet<QueryGroup>();
-		Set<QueryGroup> output = cache.getGroups(groups);
+				return QueryGroup.SET_EMPTY_SET;
+		Set<QueryGroup> output = null;
+		if (CACHING)
+			cache.getGroups(groups);
 		if (output == null) {
 			Set<Node> pool = query(groups);
 			Map<QueryGroup,Integer> gcount = new HashMap<QueryGroup,Integer>();
@@ -123,7 +130,8 @@ public abstract class CachingQueryBackend implements QueryBackend {
 			for (QueryGroup g : gcount.keySet())
 				if (!groups.contains(g) && (groups.isEmpty() || gcount.get(g) < pool.size()))
 					output.add(g);
-			cache.putGroups(groups, output);
+			if (CACHING)
+				cache.putGroups(groups, output);
 		}
 		return Collections.unmodifiableSet(output);
 	}
@@ -138,22 +146,23 @@ public abstract class CachingQueryBackend implements QueryBackend {
 		return output;
 	}
 
-	protected void flag(QueryGroup updated) {
+	public void flag(QueryGroup updated) {
 		flagged.add(updated);
 	}
 
-	protected void flush() {
-		cache.drop(flagged);
+	public void flush() {
+		if (CACHING)
+			cache.drop(flagged);
 		for (QueryGroup q : flagged)
 			q.touch();
 		flagged.clear();
 	}
 
-	protected void unref(Node n) {
+	public void unref(Node n) {
 		nodes.remove(n);
 	}
 
-	protected void checkRootRm(Set<QueryGroup> removed) {
+	public void checkRootRm(Set<QueryGroup> removed) {
 		Set<QueryGroup> p = new HashSet<QueryGroup>();
 		for (QueryGroup q : removed) {
 			p.clear();
@@ -167,7 +176,7 @@ public abstract class CachingQueryBackend implements QueryBackend {
 		}
 	}
 
-	protected void checkRootAdd(Set<QueryGroup> added) {
+	public void checkRootAdd(Set<QueryGroup> added) {
 		Set<QueryGroup> p = new HashSet<QueryGroup>();
 		for (QueryGroup q : added) {
 			p.clear();

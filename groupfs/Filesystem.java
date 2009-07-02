@@ -87,7 +87,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			for (Path test : new HashSet<Path>(floats.keySet()))
 				if (test.value.startsWith(from.value)) {
 					delete(test, false);
-					createFloat(new Path(test.value.replaceFirst(from.value, to.value)));
+					createFloat(Path.get(test.value.replaceFirst(from.value, to.value)));
 				}
 		}
 
@@ -178,7 +178,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int getattr(String path, FuseGetattrSetter getattrSetter) throws FuseException {
-		View o = mapper.get(new Path(path));
+		View o = mapper.get(Path.get(path));
 		if (o == null)
 			return fuse.Errno.ENOENT;
 		else
@@ -189,20 +189,68 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		return fuse.Errno.ENOTSUPP;
 	}
 
+	static long ai, bi, ci, di, ei;
+	static long a, b, c, d, e;
+	static void ai() {
+		ai = System.nanoTime();
+	}
+	static void a() {
+		a += System.nanoTime() - ai;
+	}
+	static void bi() {
+		bi = System.nanoTime();
+	}
+	static void b() {
+		b += System.nanoTime() - bi;
+	}
+	static void ci() {
+		ci = System.nanoTime();
+	}
+	static void c() {
+		c += System.nanoTime() - ci;
+	}
+	static void di() {
+		di = System.nanoTime();
+	}
+	static void d() {
+		d += System.nanoTime() - di;
+	}
+	static void ei() {
+		ei = System.nanoTime();
+	}
+	static void e() {
+		e += System.nanoTime() - ei;
+	}
+	public static void stats() {
+		System.out.println("a: " + a / 1e6);
+		System.out.println("b: " + b / 1e6);
+		System.out.println("c: " + c / 1e6);
+		System.out.println("d: " + d / 1e6);
+		System.out.println("e: " + e / 1e6);
+		System.out.println();
+		a = b = c = d = e = 0;
+	}
 	public int getdir(String input, FuseDirFiller dirFiller) throws FuseException {
-		Path path = new Path(input);
+		ai();
+		Path path = Path.get(input);
+		a(); bi();
 		Directory d = mapper.getDir(path);
+		b();
 		if (d == null)
 			return fuse.Errno.ENOENT;
+		ci();
 		Map<String,View> list = d.list();
+		c(); di();
 		for (String ref : list.keySet())
 			dirFiller.add(ref, 0, list.get(ref).getFType());
+		d(); ei();
 		mapper.finish(path, list.keySet(), dirFiller);
+		e();
 		return 0;
 	}
 
 	public int mknod(String input, int mode, int rdev) throws FuseException {
-		Path path = new Path(input);
+		Path path = Path.get(input);
 		String name = path.name();
 		if (!canMknod(path.parent()) || name.startsWith("."))
 			return fuse.Errno.EPERM;
@@ -236,7 +284,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int mkdir(String input, int mode) throws FuseException {
-		Path path = new Path(input);
+		Path path = Path.get(input);
 		String name = path.name();
 		if (name.startsWith("."))
 			return fuse.Errno.EPERM;
@@ -250,7 +298,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int unlink(String input) throws FuseException {
-		Path path = new Path(input);
+		Path path = Path.get(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
@@ -265,7 +313,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int rmdir(String input) throws FuseException {
-		Path path = new Path(input);
+		Path path = Path.get(input);
 		Directory d = mapper.getDir(path);
 		if (d == null)
 			return fuse.Errno.ENOENT;
@@ -279,8 +327,8 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int rename(String fi, String ft) throws FuseException {
-		Path from = new Path(fi);
-		Path to = new Path(ft);
+		Path from = Path.get(fi);
+		Path to = Path.get(ft);
 		View o = mapper.get(from);
 		Directory d = mapper.getDir(from.parent());
 		Directory dd = mapper.getDir(to.parent());
@@ -308,7 +356,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int truncate(String input, long size) throws FuseException {
-		Path path = new Path(input);
+		Path path = Path.get(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
@@ -316,7 +364,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int utime(String input, int atime, int mtime) throws FuseException {
-		Path path = new Path(input);
+		Path path = Path.get(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
@@ -337,7 +385,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int open(String input, int flags, FuseOpenSetter openSetter) throws FuseException {
-		Path path = new Path(input);
+		Path path = Path.get(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
@@ -346,7 +394,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int read(String input, Object fh, ByteBuffer buf, long offset) throws FuseException {
-		Path path = new Path(input);
+		Path path = Path.get(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
@@ -354,7 +402,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int write(String input, Object fh, boolean isWritepage, ByteBuffer buf, long offset) throws FuseException {
-		Path path = new Path(input);
+		Path path = Path.get(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
@@ -366,7 +414,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int release(String input, Object fh, int flags) throws FuseException {
-		Path path = new Path(input);
+		Path path = Path.get(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
@@ -402,6 +450,9 @@ public class Filesystem implements Filesystem3, XattrSupport {
 // there is no point in optimizing/cache this - it takes c0.01 ms anyways
 final class Path {
 	public final String value;
+	private static final Map<String,Path> cache = new HashMap<String,Path>();
+	private String name;
+	private Path parent;
 
 	private static String parse(String path) {
 		String[] parts = path.split("/");
@@ -426,16 +477,29 @@ final class Path {
 		return ret;
 	}
 
-	Path(String path) {
+	private Path(String path) {
 		this.value = parse(path).intern();
 	}
 
+	public static Path get(String path) {
+		Path p = cache.get(path);
+		if (p != null)
+			return p;
+		p = new Path(path);
+		cache.put(path, p);
+		return p;
+	}
+
 	public Path parent() {
-		return new Path(new File(value).getParent());
+		if (parent != null)
+			return parent;
+		return parent = Path.get(new File(value).getParent());
 	}
 
 	public String name() {
-		return new File(value).getName();
+		if (name != null)
+			return name;
+		return name = new File(value).getName();
 	}
 
 	public boolean equals(Object other) {

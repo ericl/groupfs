@@ -30,11 +30,21 @@ public class FlexibleBackend extends CachingQueryBackend {
 		return new FlexibleNode(this, fh);
 	}
 
-	public Node create(Set<QueryGroup> groups, String name) throws FuseException {
+	/**
+	 * creates node without invalidating caches (if any)
+	 */
+	public Node raw_create(Set<QueryGroup> groups, String name) throws FuseException {
+
 		assert maxOneMimeGroup(groups);
 		FileHandler fh = source.create(name, groups);
 		Node ret = new FlexibleNode(this, fh);
 		nodes.add(ret);
+		return ret;
+	}
+
+	public Node create(Set<QueryGroup> groups, String name) throws FuseException {
+		assert maxOneMimeGroup(groups);
+		Node ret = raw_create(groups, name);
 		flagged.addAll(groups);
 		flush();
 		checkRootAdd(groups);
@@ -56,9 +66,9 @@ public class FlexibleBackend extends CachingQueryBackend {
 
 class FlexibleNode extends Node {
 	private FileHandler fh;
-	private CachingQueryBackend backend;
+	private QueryBackendWithCache backend;
 
-	protected FlexibleNode(CachingQueryBackend backend, FileHandler fh) {
+	protected FlexibleNode(QueryBackendWithCache backend, FileHandler fh) {
 		super(fh.getAllGroups());
 		this.backend = backend;
 		this.fh = fh;
@@ -145,7 +155,7 @@ class FlexibleNode extends Node {
 	}
 
 	protected void update(Set<QueryGroup> all, Set<QueryGroup> add, Set<QueryGroup> remove) {
-		for (QueryGroup g : groups)
+		for (QueryGroup g : all)
 			backend.flag(g);
 		backend.flush();
 		if (remove != null)

@@ -44,7 +44,7 @@ public abstract class Test {
 		}
 	}
 
-	class TestDirFiller extends ArrayList<Node> implements FuseDirFiller {
+	protected class TestDirFiller extends ArrayList<Node> implements FuseDirFiller {
 		public static final long serialVersionUID = 193413423873L;
 		public void add(String name, long inode, int mode) {
 			super.add(new Node(name, (mode & FuseFtype.TYPE_DIR) > 0));
@@ -66,7 +66,7 @@ public abstract class Test {
 			groups.add(QueryGroup.GROUP_NO_GROUP);
 		}
 		try {
-			backend.create(groups, name);
+			backend.raw_create(groups, name);
 		} catch (FuseException e) {
 			throw new AssertionError(e);
 		}
@@ -99,7 +99,7 @@ public abstract class Test {
 		}
 	}
 
-	private void buildFileSet(Filesystem fs, Set<String> f, Set<String> d, String path) {
+	protected void buildFileSet(Filesystem fs, Set<String> f, Set<String> d, String path) {
 		TestDirFiller filler = new TestDirFiller();
 		d.add(path);
 		try {

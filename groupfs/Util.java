@@ -107,7 +107,7 @@ public final class Util {
 			throw new IOException("Destination path exists as a file.");
 		else if (!dir.exists())
 			if (!dir.mkdirs())
-				throw new IOException("Could not create destination path.");
+				throw new IOException("Could not create destination path " + dir.getAbsolutePath());
 		File dest = new File(path + "/" + name);
 		if (dest.exists()) {
 			int counter = 0;

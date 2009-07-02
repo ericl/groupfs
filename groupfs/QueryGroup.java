@@ -16,10 +16,13 @@ public final class QueryGroup {
 	private static Map<String,QueryGroup> tags = new HashMap<String,QueryGroup>();
 	public final static QueryGroup GROUP_NO_GROUP = QueryGroup.create("Trash", Type.MIME);
 	public final static Set<QueryGroup> SET_NO_GROUP;
+	public final static Set<QueryGroup> SET_EMPTY_SET;
 	static {
 		Set<QueryGroup> tmp = new HashSet<QueryGroup>();
 		tmp.add(GROUP_NO_GROUP);
 		SET_NO_GROUP = Collections.unmodifiableSet(tmp);
+		tmp = new HashSet<QueryGroup>();
+		SET_EMPTY_SET = Collections.unmodifiableSet(tmp);
 	}
 
 	public static QueryGroup create(String value, Type type) {

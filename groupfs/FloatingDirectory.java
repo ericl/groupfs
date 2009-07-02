@@ -71,7 +71,7 @@ public class FloatingDirectory implements Directory {
 	public int rename(String from, String to, View v, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd) {
 		if (v != null)
 			return fuse.Errno.EPERM;
-		mapper.remap(new Path(from), new Path(to));
+		mapper.remap(Path.get(from), Path.get(to));
 		return 0;
 	}
 

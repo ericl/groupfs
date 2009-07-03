@@ -189,63 +189,15 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		return fuse.Errno.ENOTSUPP;
 	}
 
-	static long ai, bi, ci, di, ei;
-	static long a, b, c, d, e;
-	static void ai() {
-		ai = System.nanoTime();
-	}
-	static void a() {
-		a += System.nanoTime() - ai;
-	}
-	static void bi() {
-		bi = System.nanoTime();
-	}
-	static void b() {
-		b += System.nanoTime() - bi;
-	}
-	static void ci() {
-		ci = System.nanoTime();
-	}
-	static void c() {
-		c += System.nanoTime() - ci;
-	}
-	static void di() {
-		di = System.nanoTime();
-	}
-	static void d() {
-		d += System.nanoTime() - di;
-	}
-	static void ei() {
-		ei = System.nanoTime();
-	}
-	static void e() {
-		e += System.nanoTime() - ei;
-	}
-	public static void stats() {
-		System.out.println("a: " + a / 1e6);
-		System.out.println("b: " + b / 1e6);
-		System.out.println("c: " + c / 1e6);
-		System.out.println("d: " + d / 1e6);
-		System.out.println("e: " + e / 1e6);
-		System.out.println();
-		a = b = c = d = e = 0;
-	}
 	public int getdir(String input, FuseDirFiller dirFiller) throws FuseException {
-		ai();
 		Path path = Path.get(input);
-		a(); bi();
 		Directory d = mapper.getDir(path);
-		b();
 		if (d == null)
 			return fuse.Errno.ENOENT;
-		ci();
 		Map<String,View> list = d.list();
-		c(); di();
 		for (String ref : list.keySet())
 			dirFiller.add(ref, 0, list.get(ref).getFType());
-		d(); ei();
 		mapper.finish(path, list.keySet(), dirFiller);
-		e();
 		return 0;
 	}
 

@@ -1,16 +1,12 @@
 package groupfs.tests;
 
+import java.util.*;
+
 import groupfs.Filesystem;
 
 import groupfs.backend.*;
 
-import fuse.FuseException;
-
-import java.util.*;
-
-import groupfs.*;
-
-public class Slow extends Test {
+public class ReadOnly extends Test {
 	public void run() {
 		QueryBackend backend = getNewBackend();
 		long time = System.currentTimeMillis();

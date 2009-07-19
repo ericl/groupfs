@@ -3,6 +3,7 @@ package groupfs.backend;
 import java.nio.ByteBuffer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -17,12 +18,11 @@ import static groupfs.QueryGroup.Type.*;
 
 import static groupfs.Util.*;
 
-import static groupfs.backend.Update.Disposition.*;
-
 public class JournalingBackend {
 	public final Journal journal = new Journal();
 	private final Set<Node> nodes = new HashSet<Node>();
 	private final FileSource source;
+	private final Set<Node> nodes_ro = Collections.unmodifiableSet(nodes);
 
 	public JournalingBackend(FileSource source) {
 		this.source = source;
@@ -37,7 +37,7 @@ public class JournalingBackend {
 	}
 
 	public Set<Node> getAll() {
-		return nodes;
+		return nodes_ro;
 	}
 
 	public Set<QueryGroup> findAllGroups() {
@@ -54,7 +54,7 @@ public class JournalingBackend {
 		nodes.add(node);
 		List<Update> updates = new ArrayList<Update>();
 		for (QueryGroup group : groups)
-			updates.add(new Update(group, POSITIVE));
+			updates.add(new Update(group, true));
 		journal.log(node, updates);
 		return node;
 	}
@@ -142,7 +142,7 @@ class JournalingNode extends Node {
 		backend.unref(this);
 		List<Update> updates = new ArrayList<Update>();
 		for (QueryGroup g : groups)
-			updates.add(new Update(g, NEGATIVE));
+			updates.add(new Update(g, true));
 		backend.journal.log(this, updates);
 		raw_groups.clear();
 		fh.delete();
@@ -166,6 +166,9 @@ class JournalingNode extends Node {
 	}
 
 	protected void changeQueryGroups(Set<QueryGroup> add, Set<QueryGroup> remove, boolean allowMimetypeChange) throws FuseException {
+//		System.out.println(getName() + " changes groups"
+//			+ "\nadd: " + add
+//			+ "\nremove: " + remove);
 		Set<QueryGroup> original = new HashSet<QueryGroup>(groups);
 		if (remove != null)
 			for (QueryGroup r : remove) {
@@ -190,18 +193,23 @@ class JournalingNode extends Node {
 	}
 
 	protected void logDifference(Set<QueryGroup> original, Set<QueryGroup> current) {
+//		System.out.println("0" + original);
+//		System.out.println("1" + current);
 		List<Update> updates = new ArrayList<Update>();
+
 		Set<QueryGroup> neutral = new HashSet<QueryGroup>(original);
 		neutral.retainAll(current);
-		Set<QueryGroup> add = new HashSet<QueryGroup>(current);
-		add.removeAll(original);
 		for (QueryGroup g : neutral)
-			updates.add(new Update(g, NEUTRAL));
-		for (QueryGroup g : add)
-			updates.add(new Update(g, POSITIVE));
-		original.removeAll(current);
-		for (QueryGroup g : original)
-			updates.add(new Update(g, NEGATIVE));
+			updates.add(new Update(g, false));
+
+		Set<QueryGroup> changed = new HashSet<QueryGroup>(original);
+		changed.addAll(current);
+		changed.removeAll(neutral);
+		for (QueryGroup g : changed)
+			updates.add(new Update(g, true));
+
+//		System.out.println(updates);
+
 		backend.journal.log(this, updates);
 	}
 }

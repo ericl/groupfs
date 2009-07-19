@@ -35,24 +35,24 @@ public class SimpleMove extends Test {
 				"./Readable",
 			}
 		);
-		backend = getNewBackend();
-		syn(backend, "perl-in-perl.pl", "Manual");
-		fs = new Filesystem(backend);
-		try {
-			fs.rename("/Manual/perl-in-perl.pl", "/perl-in-perl.pl");
-		} catch (FuseException e) {
-			log += e;
-			error = true;
-			return;
-		}
-		expect(fs,
-			new String[] {
-				"./.Trash/perl-in-perl.pl",
-			},
-			new String[] {
-				".",
-				"./.Trash",
-			}
-		);
+//		backend = getNewBackend();
+//		syn(backend, "perl-in-perl.pl", "Manual");
+//		fs = new Filesystem(backend);
+//		try {
+//			fs.rename("/Manual/perl-in-perl.pl", "/perl-in-perl.pl");
+//		} catch (FuseException e) {
+//			log += e;
+//			error = true;
+//			return;
+//		}
+//		expect(fs,
+//			new String[] {
+//				"./.Trash/perl-in-perl.pl",
+//			},
+//			new String[] {
+//				".",
+//				"./.Trash",
+//			}
+//		);
 	}
 }

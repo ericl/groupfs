@@ -5,6 +5,10 @@ import java.util.*;
 public class Journal {
 	private Entry head;
 
+	public Journal() {
+		head = new Entry(null, new ArrayList<Update>());
+	}
+
 	public Entry head() {
 		return head;
 	}
@@ -14,5 +18,6 @@ public class Journal {
 		if (head != null)
 			head.setNext(next);
 		head = next;
+//		System.out.println("log " + head);
 	}
 }

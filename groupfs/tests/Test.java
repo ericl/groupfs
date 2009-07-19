@@ -72,6 +72,33 @@ public abstract class Test {
 		}
 	}
 
+	protected void expect_alternatives(Filesystem fs, String[] dirs, String[] ... files) {
+		SortedSet<String> de = new TreeSet<String>(Arrays.asList(dirs));
+		SortedSet<String> f = new TreeSet<String>();
+		SortedSet<String> d = new TreeSet<String>();
+		buildFileSet(fs, f, d, ".");
+		boolean ok = false;
+		for (int i=0; i < files.length; i++) {
+			SortedSet<String> fe = new TreeSet<String>(Arrays.asList(files[i]));
+			if (fe.equals(f))
+				ok = true;
+			else {
+				log += "expected: " + fe + "\n";
+				log += "found:    " + f + "\n";
+				error = true;
+			}
+		}
+		if (ok) {
+			error = false;
+			log += "please ignore some of the above expect statements\n";
+		}
+		if (!de.equals(d)) {
+			log += "expected: " + de + "\n";
+			log += "found:    " + d + "\n";
+			error = true;
+		}
+	}
+
 	protected void expect(Filesystem fs, String[] files, String[] dirs) {
 		expect_nocopy(fs, files, dirs);
 		if (error) {

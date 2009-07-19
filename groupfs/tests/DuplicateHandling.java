@@ -39,7 +39,14 @@ public class DuplicateHandling extends Test {
 			error = true;
 			return;
 		}
-		expect(fs,
+		expect_alternatives(fs,
+			new String[] {
+				".",
+				"./.pl",
+				"./Manual",
+				"./Random",
+				"./Random/Manual",
+			},
 			new String[] {
 				"./Manual/perl.pl",
 				"./Random/perl-in-perl.pl",
@@ -49,11 +56,12 @@ public class DuplicateHandling extends Test {
 				"./.pl/perl.pl",
 			},
 			new String[] {
-				".",
-				"./.pl",
-				"./Manual",
-				"./Random",
-				"./Random/Manual",
+				"./Manual/perl.pl",
+				"./Random/perl-in-perl.pl.0",
+				"./Random/perl.pl",
+				"./Random/Manual/perl.pl",
+				"./.pl/perl-in-perl.pl.0",
+				"./.pl/perl.pl",
 			}
 		);
 		try {

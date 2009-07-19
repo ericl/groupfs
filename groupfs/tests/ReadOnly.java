@@ -1,14 +1,10 @@
 package groupfs.tests;
 
+import java.util.*;
+
 import groupfs.Filesystem;
 
 import groupfs.backend.*;
-
-import fuse.FuseException;
-
-import java.util.*;
-
-import groupfs.*;
 
 public class ReadOnly extends Test {
 	public void run() {

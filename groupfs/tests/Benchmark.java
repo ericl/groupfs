@@ -6,7 +6,8 @@ public class Benchmark {
 	public static void main(String[] args) {
 		Benchmark tests = new Benchmark();
 		tests.runTests(new Test[] {
-			new ReadOnly(),
+//			new ReadOnly(),
+			new ReadWrite(),
 		});
 		if (tests.error) {
 			System.err.println("One or more benchmarks FAILED.");

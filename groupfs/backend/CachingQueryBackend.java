@@ -95,7 +95,7 @@ public abstract class CachingQueryBackend implements QueryBackendWithCache {
 			Set<QueryGroup> selection = null;
 			for (Set<QueryGroup> sel : broader(groups)) {
 				selection = sel;
-				if (CACHING || cache.getNodes(sel) != null) {
+				if (!CACHING || cache.getNodes(sel) != null) {
 					break;
 				}
 			}

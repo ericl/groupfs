@@ -26,6 +26,7 @@ public class Slow extends Test {
 			SortedSet<String> d = new TreeSet<String>();
 			buildFileSet(fs, f, d, ".");
 			System.err.println(i + " crawl " + (System.currentTimeMillis() - time) + " ms");
+			System.gc();
 		}
 	}
 

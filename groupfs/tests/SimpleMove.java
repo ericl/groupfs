@@ -12,7 +12,7 @@ import groupfs.*;
 // file losing all tags
 public class SimpleMove extends Test {
 	public void run() {
-		QueryBackend backend = getNewBackend();
+		JournalingBackend backend = getNewBackend();
 		syn(backend, "perl-in-perl.pl", "Manual");
 		Filesystem fs = new Filesystem(backend);
 		try {

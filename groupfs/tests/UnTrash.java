@@ -11,7 +11,7 @@ import groupfs.*;
  */
 public class UnTrash extends Test {
 	public void run() {
-		QueryBackend backend = getNewBackend();
+		JournalingBackend backend = getNewBackend();
 		syn(backend, "foo.png");
 		Filesystem fs = new Filesystem(backend);
 		try {

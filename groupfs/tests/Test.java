@@ -26,8 +26,8 @@ public abstract class Test {
 
 	public abstract void run();
 
-	protected QueryBackend getNewBackend() {
-		return new FlexibleBackend(source = new VirtualFileSource());
+	protected JournalingBackend getNewBackend() {
+		return new JournalingBackend(source = new VirtualFileSource());
 	}
 
 	class Node {
@@ -56,7 +56,7 @@ public abstract class Test {
 		return cl.substring(cl.lastIndexOf(".") + 1);
 	}
 
-	protected void syn(QueryBackend backend, String name, String ... tags) {
+	protected void syn(JournalingBackend backend, String name, String ... tags) {
 		Set<QueryGroup> groups = new HashSet<QueryGroup>();
 		for (String tag : tags)
 			groups.add(QueryGroup.create(tag, Type.TAG));
@@ -66,7 +66,7 @@ public abstract class Test {
 			groups.add(QueryGroup.GROUP_NO_GROUP);
 		}
 		try {
-			backend.raw_create(groups, name);
+			backend.create(groups, name);
 		} catch (FuseException e) {
 			throw new AssertionError(e);
 		}
@@ -75,10 +75,11 @@ public abstract class Test {
 	protected void expect(Filesystem fs, String[] files, String[] dirs) {
 		expect_nocopy(fs, files, dirs);
 		if (error) {
-			System.out.println("first run failed, not rebuilding filesystem");
+			if (FilesystemTests.SHOWERR)
+				System.out.println("first run failed, not rebuilding filesystem");
 			return;
 		}
-		expect_nocopy(new Filesystem(new FlexibleBackend(source)), files, dirs);
+		expect_nocopy(new Filesystem(new JournalingBackend(source)), files, dirs);
 	}
 
 	protected void expect_nocopy(Filesystem fs, String[] files, String[] dirs) {

@@ -12,14 +12,16 @@ import fuse.FuseGetattrSetter;
 
 import groupfs.QueryGroup.Type;
 
-import groupfs.backend.QueryBackend;
+import groupfs.backend.Entry;
+import groupfs.backend.JournalingBackend;
+import groupfs.backend.Node;
 
 import static groupfs.Util.*;
 
-public class RootDirectory implements Directory {
-	protected QueryBackend backend;
+public class JournalingDirectory implements Directory {
+	protected Entry head;
+	protected JournalingBackend backend;
 	protected long time = System.currentTimeMillis();
-	protected long stamp = System.nanoTime();
 	protected boolean populated;
 	protected final Set<QueryGroup> groups, raw_groups;
 	protected Map<String,View> views = new HashMap<String,View>();
@@ -27,8 +29,9 @@ public class RootDirectory implements Directory {
 		false, false, false, true, true, true, false
 	);
 
-	public RootDirectory(QueryBackend backend) {
+	public JournalingDirectory(JournalingBackend backend) {
 		this.backend = backend;
+		head = backend.journal.head();
 		groups = Collections.unmodifiableSet(raw_groups = new HashSet<QueryGroup>());
 	}
 
@@ -63,9 +66,12 @@ public class RootDirectory implements Directory {
 		return fuse.Errno.EPERM;
 	}
 
+	protected Set<Node> getPool() {
+		return backend.getAll();
+	}
+
 	protected void populateSelf() {
-		views.clear();
-		for (QueryGroup group : backend.subclass(groups)) {
+		for (QueryGroup group : backend.findAllGroups()) {
 			if (group.getType() == Type.MIME)
 				register("." + group.getValue(), new SubclassingDirectory(backend, this, group));
 			else {
@@ -116,19 +122,28 @@ public class RootDirectory implements Directory {
 		return null;
 	}
 
-	protected synchronized void update() {
-		if (!QueryGroup.allValid(stamp))
-			populated = false;
+	public Map<String,View> list() {
+		update();
+		return views;
+	}
+
+	protected void update() {
 		if (!populated) {
 			populateSelf();
 			populated = true;
 			time = System.currentTimeMillis();
-			stamp = System.nanoTime();
+		}
+		if (head != backend.journal.head()) {
+			replayJournal();
+			time = System.currentTimeMillis();
 		}
 	}
 
-	public Map<String,View> list() {
-		update();
-		return views;
+	protected void replayJournal() {
+		// for now just destroy everything and restart
+		views.clear();
+		populateSelf();
+		// TODO fine grained journal replay
+		head = backend.journal.head();
 	}
 }

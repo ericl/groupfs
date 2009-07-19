@@ -10,7 +10,7 @@ import fuse.FuseException;
 import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
-import groupfs.Filesystem.ViewMapper;
+import groupfs.ViewMapper;
 
 import static groupfs.Util.*;
 

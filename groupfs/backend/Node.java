@@ -37,9 +37,10 @@ public abstract class Node implements View {
 		return name;
 	}
 
-	protected abstract void update(Set<QueryGroup> all, Set<QueryGroup> add, Set<QueryGroup> remove);
+	protected abstract void logDifference(Set<QueryGroup> original, Set<QueryGroup> current);
 
 	public int rename(String from, String to, View target, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd) throws FuseException {
+		Set<QueryGroup> original = new HashSet<QueryGroup>(groups);
 		boolean hadMime = hasMime(groups);
 		if (target != null && target != this) {
 			// the common rename-swap-file-to-write behavior
@@ -53,7 +54,7 @@ public abstract class Node implements View {
 		if (!hintRemove.equals(hintAdd))
 			changeQueryGroups(hintAdd, hintRemove);
 		else
-			update(groups, hintAdd, hintRemove);
+			logDifference(original, groups);
 		setName(new File(to).getName(), hadMime);
 		return 0;
 	}

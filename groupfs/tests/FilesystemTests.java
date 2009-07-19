@@ -2,6 +2,7 @@ package groupfs.tests;
 
 public class FilesystemTests {
 	protected boolean error;
+	public final static boolean SHOWERR = true;
 
 	public static void main(String[] args) {
 		FilesystemTests tests = new FilesystemTests();
@@ -29,11 +30,17 @@ public class FilesystemTests {
 
 	public void runTests(Test[] tests) {
 		for (Test test : tests) {
-			System.out.println("Running test: " + test);
+			if (SHOWERR)
+				System.out.println("Running test: " + test);
 			test.run();
 			if (test.error) {
-				System.out.println(test.log);
+				if (SHOWERR)
+					System.out.println(test.log);
+				else
+					System.out.println("FAIL " + test);
 				error = true;
+			} else if (!SHOWERR) {
+				System.out.println("OK   " + test);
 			}
 		}
 	}

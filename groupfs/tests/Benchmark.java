@@ -6,7 +6,7 @@ public class Benchmark {
 	public static void main(String[] args) {
 		Benchmark tests = new Benchmark();
 		tests.runTests(new Test[] {
-			new Slow(),
+			new ReadOnly(),
 		});
 		if (tests.error) {
 			System.err.println("One or more benchmarks FAILED.");

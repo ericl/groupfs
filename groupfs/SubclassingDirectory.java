@@ -1,5 +1,7 @@
 package groupfs;
 
+import java.io.File;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,8 +17,8 @@ import groupfs.backend.Node;
 import static groupfs.Util.*;
 
 public class SubclassingDirectory extends JournalingDirectory {
-	private final JournalingDirectory parent;
-	private final QueryGroup group;
+	private JournalingDirectory parent;
+	private QueryGroup group;
 
 	protected static Permissions class_tag_perms = new Permissions(
 		true, true, true, true, true, true, true
@@ -29,6 +31,15 @@ public class SubclassingDirectory extends JournalingDirectory {
 		super(backend);
 		this.parent = parent;
 		this.group = group;
+		raw_groups.addAll(parent.getQueryGroups());
+		raw_groups.add(group);
+	}
+
+	public SubclassingDirectory(JournalingBackend backend, JournalingDirectory parent, QueryGroup group, NameMapper mapper) {
+		super(backend);
+		this.parent = parent;
+		this.group = group;
+		this.mapper = mapper;
 		raw_groups.addAll(parent.getQueryGroups());
 		raw_groups.add(group);
 	}
@@ -53,7 +64,9 @@ public class SubclassingDirectory extends JournalingDirectory {
 		Set<QueryGroup> del = new HashSet<QueryGroup>();
 		del.add(group);
 		Map<String,View> views = mapper.viewMap();
-		for (String ref : views.keySet()) {
+		if (getPool().isEmpty()) {
+			parent.mapper.unmap(group);
+		} else for (String ref : views.keySet()) {
 			View v = views.get(ref);
 			if (v instanceof Node) {
 				Node n = (Node)v;
@@ -93,18 +106,31 @@ public class SubclassingDirectory extends JournalingDirectory {
 	}
 
 	private boolean fromEqualsThis(String from) {
-		Set<QueryGroup> remove = new HashSet<QueryGroup>();
+		Set<QueryGroup> fromGroups = new HashSet<QueryGroup>();
 		for (String tag : tagsOf(from))
-			remove.add(QueryGroup.create(tag, Type.TAG));
-		return remove.equals(groups);
+			fromGroups.add(QueryGroup.create(tag, Type.TAG));
+		return fromGroups.equals(groups);
 	}
 
-	public int rename(String from, String to, View target, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd) throws FuseException {
+	public int rename(String from, String to, View target, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd, Directory parent) throws FuseException {
 		assert fromEqualsThis(from);
 		if (target != null)
 			return fuse.Errno.EPERM;
 		if (group.getType() == Type.MIME)
 			return fuse.Errno.EPERM;
+		QueryGroup myGroup = QueryGroup.create(new File(to).getName(), Type.TAG);
+		if (hintRemove.contains(myGroup))
+			return fuse.Errno.EPERM;
+		if (getPool().isEmpty()) {
+			this.parent.mapper.unmap(group);
+			this.group = QueryGroup.create(Path.get(to).name(), Type.TAG);
+			this.raw_groups.clear();
+			this.raw_groups.add(this.group);
+			this.raw_groups.addAll(parent.getQueryGroups());
+			this.parent = (JournalingDirectory)parent;
+			this.parent.mapper.map(this);
+			return 0;
+		}
 		Set<QueryGroup> add = new HashSet<QueryGroup>();
 		for (String tag : tagsOf(to))
 			add.add(QueryGroup.create(tag, Type.TAG));

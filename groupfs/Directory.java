@@ -14,6 +14,7 @@ public interface Directory extends View {
 	public Directory getParent();
 	public Map<String,View> list();
 	public Permissions getPerms();
+	public void mkdir(QueryGroup group);
 }
 
 class Permissions {

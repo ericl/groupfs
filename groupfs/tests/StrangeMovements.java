@@ -116,6 +116,7 @@ public class StrangeMovements extends Test {
 			new String[] {
 				"./Perl/foo",
 				"./Foo/node",
+				"./Foo/Bar/node",
 				"./Bar/node",
 				"./.undefined/node",
 				"./.undefined/foo",

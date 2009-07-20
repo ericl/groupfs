@@ -15,6 +15,7 @@ public class NameMapper {
 
 	private Map<String,View> views_ro = Collections.unmodifiableMap(views);
 	private Set<Node> files_keyset_ro = Collections.unmodifiableSet(files.keySet());
+	private Set<QueryGroup> dirs_keyset_ro = Collections.unmodifiableSet(dirs.keySet());
 
 	public void clear() {
 		views.clear();
@@ -28,6 +29,10 @@ public class NameMapper {
 
 	public Set<Node> getPool() {
 		return files_keyset_ro;
+	}
+
+	public Set<QueryGroup> getMappedGroups() {
+		return dirs_keyset_ro;
 	}
 
 	public void map(JournalingDirectory dir) {

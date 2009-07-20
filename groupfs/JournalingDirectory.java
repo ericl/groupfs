@@ -14,7 +14,6 @@ import groupfs.QueryGroup.Type;
 import groupfs.backend.Entry;
 import groupfs.backend.JournalingBackend;
 import groupfs.backend.Node;
-import groupfs.backend.Update;
 
 import static groupfs.Util.*;
 
@@ -48,7 +47,7 @@ public class JournalingDirectory implements Directory {
 		return 0;
 	}
 
-	public int rename(String from, String to, View v, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd) throws FuseException {
+	public int rename(String from, String to, View v, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd, Directory parent) throws FuseException {
 		return fuse.Errno.EPERM;
 	}
 
@@ -116,6 +115,10 @@ public class JournalingDirectory implements Directory {
 		return mapper.viewMap();
 	}
 
+	public void mkdir(QueryGroup g) {
+		mapper.map(new SubclassingDirectory(backend, this, g));
+	}
+
 	protected void update() {
 		if (!populated) {
 			populateSelf();
@@ -156,18 +159,18 @@ public class JournalingDirectory implements Directory {
 	// getPoolDirect() will return correct value then
 	protected void process_dirs(Entry e) {
 		int current = getPoolDirect().size();
-		for (Update u : e.getUpdates()) {
-			if (!getQueryGroups().contains(u.group)) {
+		for (QueryGroup u : e.getGroups()) {
+			if (!getQueryGroups().contains(u)) {
 				int next = 0;
 				for (Node n : getPoolDirect())
-					if (n.getQueryGroups().contains(u.group))
+					if (n.getQueryGroups().contains(u))
 						next++;
 				if (next > 0 && (next < current || getQueryGroups().isEmpty())) {
-					if (!mapper.contains(u.group))
-						mapper.map(new SubclassingDirectory(backend, this, u.group));
+					if (!mapper.contains(u))
+						mapper.map(new SubclassingDirectory(backend, this, u));
 				} else {
-					if (mapper.contains(u.group))
-						mapper.unmap(u.group);
+					if (mapper.contains(u))
+						mapper.unmap(u);
 				}
 			}
 		}

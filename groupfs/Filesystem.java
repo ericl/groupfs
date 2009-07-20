@@ -80,7 +80,6 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		Map<String,View> list = d.list();
 		for (String ref : list.keySet())
 			dirFiller.add(ref, 0, list.get(ref).getFType());
-		mapper.finish(path, list.keySet(), dirFiller);
 		return 0;
 	}
 
@@ -90,7 +89,6 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		if (!canMknod(path.parent()) || name.startsWith("."))
 			return fuse.Errno.EPERM;
 		Directory d = mapper.getDir(path.parent());
-		mapper.delete(path.parent(), false);
 		Set<QueryGroup> groups = null;
 		if (d == null) {
 			groups = new HashSet<QueryGroup>();
@@ -101,7 +99,8 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		String ext = extensionOf(path.name());
 		if (ext != null)
 			groups.add(QueryGroup.create(ext, Type.MIME));
-		mapper.notifyLatest(path, backend.create(groups, name));
+		Node node = backend.create(groups, name);
+		mapper.notifyLatest(path, node);
 		return 0;
 	}
 
@@ -128,7 +127,10 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			return fuse.Errno.ENOENT;
 		else if (!parent.getPerms().canMkdir())
 			return fuse.Errno.EPERM;
-		mapper.createFloat(path);
+		QueryGroup group = QueryGroup.create(name, Type.TAG);
+		if (group == parent.getGroup())
+			return fuse.Errno.EPERM;
+		parent.mkdir(group);
 		return 0;
 	}
 
@@ -173,9 +175,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			return fuse.Errno.EPERM;
 		else if (new File(to.value).getName().startsWith("."))
 			return fuse.Errno.EPERM;
-		if (o instanceof Node)
-			mapper.delete(to.parent(), true);
-		return o.rename(from.value, to.value, mapper.get(to), d.getQueryGroups(), dd.getQueryGroups());
+		return o.rename(from.value, to.value, mapper.get(to), d.getQueryGroups(), dd.getQueryGroups(), dd);
 	}
 
 	public int link(String from, String to) throws FuseException {

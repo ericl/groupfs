@@ -12,6 +12,7 @@ import fuse.FuseException;
 import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
+import groupfs.Directory;
 import groupfs.QueryGroup;
 import groupfs.View;
 
@@ -39,7 +40,7 @@ public abstract class Node implements View {
 
 	protected abstract void logDifference(Set<QueryGroup> original, Set<QueryGroup> current);
 
-	public int rename(String from, String to, View target, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd) throws FuseException {
+	public int rename(String from, String to, View target, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd, Directory parent) throws FuseException {
 		Set<QueryGroup> original = new HashSet<QueryGroup>(groups);
 		boolean hadMime = hasMime(groups);
 		if (target != null && target != this) {

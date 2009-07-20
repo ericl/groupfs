@@ -2,10 +2,8 @@ package groupfs.backend;
 
 import java.nio.ByteBuffer;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import fuse.FuseException;
@@ -52,10 +50,7 @@ public class JournalingBackend {
 		FileHandler fh = source.create(name, groups);
 		Node node = new JournalingNode(this, fh);
 		nodes.add(node);
-		List<Update> updates = new ArrayList<Update>();
-		for (QueryGroup group : groups)
-			updates.add(new Update(group, true));
-		journal.log(node, updates);
+		journal.log(node, groups);
 		return node;
 	}
 
@@ -140,10 +135,7 @@ class JournalingNode extends Node {
 
 	public int deleteFromBackingMedia() {
 		backend.unref(this);
-		List<Update> updates = new ArrayList<Update>();
-		for (QueryGroup g : groups)
-			updates.add(new Update(g, true));
-		backend.journal.log(this, updates);
+		backend.journal.log(this, groups);
 		raw_groups.clear();
 		fh.delete();
 		return 0;
@@ -190,19 +182,8 @@ class JournalingNode extends Node {
 	}
 
 	protected void logDifference(Set<QueryGroup> original, Set<QueryGroup> current) {
-		List<Update> updates = new ArrayList<Update>();
-
-		Set<QueryGroup> neutral = new HashSet<QueryGroup>(original);
-		neutral.retainAll(current);
-		for (QueryGroup g : neutral)
-			updates.add(new Update(g, false));
-
-		Set<QueryGroup> changed = new HashSet<QueryGroup>(original);
-		changed.addAll(current);
-		changed.removeAll(neutral);
-		for (QueryGroup g : changed)
-			updates.add(new Update(g, true));
-
-		backend.journal.log(this, updates);
+		Set<QueryGroup> all = new HashSet<QueryGroup>(original);
+		all.addAll(current);
+		backend.journal.log(this, all);
 	}
 }

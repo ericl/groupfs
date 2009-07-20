@@ -21,7 +21,7 @@ public class JournalingDirectory implements Directory {
 	protected Entry head;
 	protected JournalingBackend backend;
 	protected Set<QueryGroup> queued = new HashSet<QueryGroup>();
-	protected NameMapper mapper = new NameMapper();
+	protected NameMapper mapper;
 	protected long time = System.currentTimeMillis();
 	protected boolean populated;
 	protected final Set<QueryGroup> groups, raw_groups;
@@ -31,6 +31,7 @@ public class JournalingDirectory implements Directory {
 
 	public JournalingDirectory(JournalingBackend backend) {
 		this.backend = backend;
+		mapper = new NameMapper(backend);
 		head = backend.journal.head();
 		groups = Collections.unmodifiableSet(raw_groups = new HashSet<QueryGroup>());
 	}
@@ -67,7 +68,7 @@ public class JournalingDirectory implements Directory {
 
 	protected void populateSelf() {
 		for (QueryGroup group : backend.findAllGroups())
-			mapper.map(new SubclassingDirectory(backend, this, group));
+			mapper.map(backend.get(this, group));
 	}
 
 	public View get(String name) {
@@ -117,7 +118,7 @@ public class JournalingDirectory implements Directory {
 	}
 
 	public void mkdir(QueryGroup g) {
-		mapper.map(new SubclassingDirectory(backend, this, g));
+		mapper.map(backend.get(this, g));
 	}
 
 	protected void update() {
@@ -179,7 +180,7 @@ public class JournalingDirectory implements Directory {
 						next++;
 				if (next > 0 && (next < current || getQueryGroups().isEmpty())) {
 					if (!mapper.contains(u))
-						mapper.map(new SubclassingDirectory(backend, this, u));
+						mapper.map(backend.get(this, u));
 				} else {
 					if (mapper.contains(u))
 						mapper.unmap(u);
@@ -196,7 +197,7 @@ public class JournalingDirectory implements Directory {
 					mapper.unmap(g);
 			} else {
 				if (!mapper.contains(g))
-					mapper.map(new SubclassingDirectory(backend, this, g));
+					mapper.map(backend.get(this, g));
 			}
 		}
 	}

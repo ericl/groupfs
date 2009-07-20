@@ -6,7 +6,6 @@ public class Benchmark {
 	public static void main(String[] args) {
 		Benchmark tests = new Benchmark();
 		tests.runTests(new Test[] {
-//			new ReadOnly(),
 			new ReadWrite(),
 		});
 		if (tests.error) {

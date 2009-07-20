@@ -10,31 +10,31 @@ import groupfs.*;
 // directory move in
 public class MoveDirectory extends Test {
 	public void run() {
-//		JournalingBackend backend = getNewBackend();
-//		syn(backend, "perl-in-perl.pl", "Manual");
-//		Filesystem fs = new Filesystem(backend);
-//		try {
-//			fs.rename("/Manual", "/Perl");
-//		} catch (FuseException e) {
-//			log += e;
-//			error = true;
-//			return;
-//		}
-//		expect(fs,
-//			new String[] {
-//				"./Perl/perl-in-perl.pl",
-//				"./.pl/perl-in-perl.pl",
-//			},
-//			new String[] {
-//				".",
-//				"./.pl",
-//				"./Perl",
-//			}
-//		);
 		JournalingBackend backend = getNewBackend();
+		syn(backend, "perl-in-perl.pl", "Manual");
+		Filesystem fs = new Filesystem(backend);
+		try {
+			fs.rename("/Manual", "/Perl");
+		} catch (FuseException e) {
+			log += e;
+			error = true;
+			return;
+		}
+		expect(fs,
+			new String[] {
+				"./Perl/perl-in-perl.pl",
+				"./.pl/perl-in-perl.pl",
+			},
+			new String[] {
+				".",
+				"./.pl",
+				"./Perl",
+			}
+		);
+		backend = getNewBackend();
 		syn(backend, "perl-in-perl.pl", "Manual", "Perl");
 		syn(backend, "bash-in-bash.sh", "Bash");
-		Filesystem fs = new Filesystem(backend);
+		fs = new Filesystem(backend);
 		try {
 			fs.rename("/Bash", "/Manual/Bash");
 		} catch (FuseException e) {

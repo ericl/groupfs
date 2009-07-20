@@ -19,8 +19,8 @@ import groupfs.backend.Node;
 import static groupfs.Util.*;
 
 public class SubclassingDirectory extends JournalingDirectory {
-	private JournalingDirectory parent;
-	private QueryGroup group;
+	protected JournalingDirectory parent;
+	protected QueryGroup group;
 
 	protected static Permissions class_tag_perms = new Permissions(
 		true, true, true, true, true, true, true
@@ -102,7 +102,7 @@ public class SubclassingDirectory extends JournalingDirectory {
 			}
 		}
 		for (QueryGroup group : output)
-			mapper.map(new SubclassingDirectory(backend, this, group));
+			mapper.map(backend.get(this, group));
 		for (Node node : pool)
 			mapper.map(node);
 	}

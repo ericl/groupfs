@@ -5,16 +5,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import groupfs.backend.Node;
 import groupfs.QueryGroup.Type;
 
+import groupfs.backend.JournalingBackend;
+import groupfs.backend.Node;
+
 public class NameMapper {
+	protected JournalingBackend backend;
 	private Map<String,View> views = new HashMap<String,View>();
 	private Map<QueryGroup,String> dirs = new HashMap<QueryGroup,String>();
 	private Map<Node,String> files = new HashMap<Node,String>();
 
 	private Map<String,View> views_ro = Collections.unmodifiableMap(views);
 	private Set<Node> files_keyset_ro = Collections.unmodifiableSet(files.keySet());
+
+	public NameMapper(JournalingBackend backend) {
+		this.backend = backend;
+	}
 
 	public Map<String,View> viewMap() {
 		return views_ro;
@@ -36,7 +43,6 @@ public class NameMapper {
 			key += "." + num;
 		}
 		views.put(key, dir);
-		assert !dirs.containsKey(group);
 		dirs.put(group, key);
 	}
 
@@ -70,6 +76,9 @@ public class NameMapper {
 	public void unmap(QueryGroup group) {
 		String key = dirs.get(group);
 		dirs.remove(group);
+		View dir = views.get(key);
+		if (dir != null && dir instanceof JournalingDirectory)
+			backend.drop(((JournalingDirectory)dir).getQueryGroups());
 		views.remove(key);
 	}
 

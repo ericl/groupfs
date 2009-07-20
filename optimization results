@@ -1,0 +1,43 @@
+(no journaling)
+Running benchmark: ReadWrite
+base build 8270 ms					7276 build time
+base crawl 994 ms
+rename 4x  6212 ms
+ren crawl  642 ms
+ren crawl2 832 ms					5580 rename time
+delete 4x  5527 ms
+del crawl  659 ms
+del crawl2 680 ms					4847 delete time
+
+this run: 24s
+min cpu freq run: 43s
+
+(journaling)
+Running benchmark: ReadWrite
+base build 6533 ms					5800 build time
+base crawl 733 ms
+rename 4x  2715 ms					
+ren crawl  1407 ms
+ren crawl2 1331 ms					1384 rename time
+delete 4x  1054 ms
+del crawl  1439 ms
+del crawl2 740 ms					314 delete time
+
+this run: 16s
+min cpu freq run: 24s
+
+
+(journaling with caching and optimizations)
+BUILD COMPLETE
+Running benchmark: ReadWrite
+base build 3660 ms					2793 build time
+base crawl 807 ms
+rename 4x  1262 ms					472 delete time
+ren crawl  911 ms
+ren crawl2 790 ms
+delete 4x  800 ms					0 delete time
+del crawl  1108 ms
+del crawl2 815 ms
+
+this run: 10s
+min cpu freq run:  18s

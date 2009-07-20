@@ -3,14 +3,19 @@ package groupfs.backend;
 import java.nio.ByteBuffer;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import fuse.FuseException;
 import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
+import groupfs.JournalingDirectory;
 import groupfs.QueryGroup;
+import groupfs.SubclassingDirectory;
+import groupfs.Wrap;
 
 import static groupfs.QueryGroup.Type.*;
 
@@ -21,6 +26,24 @@ public class JournalingBackend {
 	private final Set<Node> nodes = new HashSet<Node>();
 	private final FileSource source;
 	private final Set<Node> nodes_ro = Collections.unmodifiableSet(nodes);
+	protected Map<Set<QueryGroup>,SubclassingDirectory> cache = new HashMap<Set<QueryGroup>,SubclassingDirectory>();
+
+	public SubclassingDirectory get(JournalingDirectory parent, QueryGroup group) {
+		Set<QueryGroup> key = new HashSet<QueryGroup>(parent.getQueryGroups());
+		key.add(group);
+		SubclassingDirectory link = cache.get(key);
+		if (link == null) {
+			link = new SubclassingDirectory(this, parent, group);
+			cache.put(key, link);
+			return link;
+		} else {
+			return new Wrap(this, parent, group, link);
+		}
+	}
+
+	public void drop(Set<QueryGroup> groups) {
+		cache.remove(groups);
+	}
 
 	public JournalingBackend(FileSource source) {
 		this.source = source;

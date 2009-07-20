@@ -131,12 +131,9 @@ public class JournalingDirectory implements Directory {
 	protected void replayJournal() {
 		while (head != backend.journal.head()) {
 			Entry next = head.getNext();
-			if (next != null) {
-				head = next;
-				if (isPertinent(head)) {
-					process(head);
-				}
-			}
+			head = next;
+			if (isPertinent(head))
+				process(head);
 		}
 	}
 

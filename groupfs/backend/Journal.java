@@ -18,6 +18,5 @@ public class Journal {
 		if (head != null)
 			head.setNext(next);
 		head = next;
-//		System.out.println("log " + head);
 	}
 }

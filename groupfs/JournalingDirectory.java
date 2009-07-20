@@ -134,7 +134,6 @@ public class JournalingDirectory implements Directory {
 			if (next != null) {
 				head = next;
 				if (isPertinent(head)) {
-//					System.out.println("process by " + getQueryGroups() + " " + head);
 					process(head);
 				}
 			}
@@ -167,11 +166,9 @@ public class JournalingDirectory implements Directory {
 					if (n.getQueryGroups().contains(u.group))
 						next++;
 				if (next > 0 && (next < current || getQueryGroups().isEmpty())) {
-//					System.out.println("create " + u.group);
 					if (!mapper.contains(u.group))
 						mapper.map(new SubclassingDirectory(backend, this, u.group));
 				} else {
-//					System.out.println("delete " + u.group);
 					if (mapper.contains(u.group))
 						mapper.unmap(u.group);
 				}
@@ -181,7 +178,6 @@ public class JournalingDirectory implements Directory {
 		for (Node node : getPoolDirect())
 			others.addAll(node.getQueryGroups());
 		others.removeAll(e.getGroups());
-//		System.out.println("OTHERS: " + others);
 		for (QueryGroup g : others) {
 			if (mapper.count(g) == current) {
 				if (mapper.contains(g))

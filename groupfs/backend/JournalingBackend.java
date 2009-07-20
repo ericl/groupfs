@@ -166,9 +166,6 @@ class JournalingNode extends Node {
 	}
 
 	protected void changeQueryGroups(Set<QueryGroup> add, Set<QueryGroup> remove, boolean allowMimetypeChange) throws FuseException {
-//		System.out.println(getName() + " changes groups"
-//			+ "\nadd: " + add
-//			+ "\nremove: " + remove);
 		Set<QueryGroup> original = new HashSet<QueryGroup>(groups);
 		if (remove != null)
 			for (QueryGroup r : remove) {
@@ -193,8 +190,6 @@ class JournalingNode extends Node {
 	}
 
 	protected void logDifference(Set<QueryGroup> original, Set<QueryGroup> current) {
-//		System.out.println("0" + original);
-//		System.out.println("1" + current);
 		List<Update> updates = new ArrayList<Update>();
 
 		Set<QueryGroup> neutral = new HashSet<QueryGroup>(original);
@@ -207,8 +202,6 @@ class JournalingNode extends Node {
 		changed.removeAll(neutral);
 		for (QueryGroup g : changed)
 			updates.add(new Update(g, true));
-
-//		System.out.println(updates);
 
 		backend.journal.log(this, updates);
 	}

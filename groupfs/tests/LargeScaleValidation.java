@@ -9,7 +9,7 @@ import groupfs.*;
 // shows necessity of fine-grained invalidation of groups
 public class LargeScaleValidation extends Test {
 	public void run() {
-		QueryBackend backend = getNewBackend();
+		JournalingBackend backend = getNewBackend();
 		syn(backend, "1.jpg", "Concert", "Art");
 		syn(backend, "2.jpg", "Concert", "Art");
 		syn(backend, "3.jpg", "Concert", "Art");

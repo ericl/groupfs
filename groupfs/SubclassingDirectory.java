@@ -1,5 +1,6 @@
 package groupfs;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -7,14 +8,16 @@ import java.util.Set;
 import fuse.FuseException;
 
 import groupfs.QueryGroup.Type;
-import groupfs.backend.QueryBackend;
+
+import groupfs.backend.JournalingBackend;
 import groupfs.backend.Node;
 
 import static groupfs.Util.*;
 
-public class SubclassingDirectory extends RootDirectory {
-	private final Directory parent;
+public class SubclassingDirectory extends JournalingDirectory {
+	private final JournalingDirectory parent;
 	private final QueryGroup group;
+
 	protected static Permissions class_tag_perms = new Permissions(
 		true, true, true, true, true, true, true
 	);
@@ -22,7 +25,7 @@ public class SubclassingDirectory extends RootDirectory {
 		false, false, false, false, true, false, true
 	);
 
-	public SubclassingDirectory(QueryBackend backend, Directory parent, QueryGroup group) {
+	public SubclassingDirectory(JournalingBackend backend, JournalingDirectory parent, QueryGroup group) {
 		super(backend);
 		this.parent = parent;
 		this.group = group;
@@ -37,9 +40,19 @@ public class SubclassingDirectory extends RootDirectory {
 			return class_tag_perms;
 	}
 
+	protected Set<Node> getPool() {
+		update();
+		return getPoolDirect();
+	}
+
+	protected Set<Node> getPoolDirect() {
+		return mapper.getPool();
+	}
+
 	public int delete() throws FuseException {
 		Set<QueryGroup> del = new HashSet<QueryGroup>();
 		del.add(group);
+		Map<String,View> views = mapper.viewMap();
 		for (String ref : views.keySet()) {
 			View v = views.get(ref);
 			if (v instanceof Node) {
@@ -50,10 +63,33 @@ public class SubclassingDirectory extends RootDirectory {
 		return 0;
 	}
 
+	private Set<Node> filter(QueryGroup x, Set<Node> all) {
+		Set<Node> pool = new HashSet<Node>();
+		for (Node n : all)
+			if (n.getQueryGroups().contains(x))
+				pool.add(n);
+		return pool;
+	}
+
 	protected void populateSelf() {
-		super.populateSelf();
-		for (Node node : backend.query(groups))
-			register(node.getName(), node);
+		Set<Node> pool = filter(group, parent.getPool());
+		Set<QueryGroup> output = new HashSet<QueryGroup>();
+		if (group.getType() != Type.MIME) {
+			Map<QueryGroup,Integer> gcount = new HashMap<QueryGroup,Integer>();
+			for (Node node : pool) {
+				for (QueryGroup group : node.getQueryGroups()) {
+					Integer n = gcount.get(group);
+					gcount.put(group, n == null ? 1 : n + 1);
+				}
+			}
+			for (QueryGroup g : gcount.keySet())
+				if (!groups.contains(g) && (groups.isEmpty() || gcount.get(g) < pool.size()))
+					output.add(g);
+		}
+		for (QueryGroup group : output)
+			mapper.map(new SubclassingDirectory(backend, this, group));
+		for (Node node : pool)
+			mapper.map(node);
 	}
 
 	private boolean fromEqualsThis(String from) {
@@ -72,7 +108,7 @@ public class SubclassingDirectory extends RootDirectory {
 		Set<QueryGroup> add = new HashSet<QueryGroup>();
 		for (String tag : tagsOf(to))
 			add.add(QueryGroup.create(tag, Type.TAG));
-		for (Node n : backend.query(groups))
+		for (Node n : getPool())
 			n.changeQueryGroups(add, groups);
 		return 0;
 	}
@@ -83,16 +119,5 @@ public class SubclassingDirectory extends RootDirectory {
 
 	public Directory getParent() {
 		return parent;
-	}
-
-	protected synchronized void update() {
-		if (!group.stampValid(stamp))
-			populated = false;
-		super.update();
-	}
-
-	public Map<String,View> list() {
-		update();
-		return views;
 	}
 }

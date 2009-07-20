@@ -8,7 +8,7 @@ import groupfs.backend.*;
 
 public class ReadOnly extends Test {
 	public void run() {
-		QueryBackend backend = getNewBackend();
+		JournalingBackend backend = getNewBackend();
 		long time = System.currentTimeMillis();
 		for (int i=0; i < 1000; i++)
 			syn(backend, "generic file." + rstr(), rstr(), rstr(), rstr(), rstr());

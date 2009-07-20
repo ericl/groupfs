@@ -13,7 +13,7 @@ import groupfs.*;
 // moving of nested empty directories
 public class MovingEmptyDirs extends Test {
 	public void run() {
-		QueryBackend backend = getNewBackend();
+		JournalingBackend backend = getNewBackend();
 		syn(backend, "perl-in-perl.pl", "Manual");
 		Filesystem fs = new Filesystem(backend);
 		try {

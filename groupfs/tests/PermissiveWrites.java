@@ -10,7 +10,7 @@ import groupfs.*;
 // mknod 2x in nested new dirs
 public class PermissiveWrites extends Test {
 	public void run() {
-		QueryBackend backend = getNewBackend();
+		JournalingBackend backend = getNewBackend();
 		Filesystem fs = new Filesystem(backend);
 		try {
 			int ret = fs.mkdir("/foo/bar", 0);

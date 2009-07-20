@@ -1,0 +1,27 @@
+(journaling branch)
+Running benchmark: ReadWrite
+base build 6533 ms					6533 original
+base crawl 733 ms
+rename 4x  2715 ms					
+ren crawl  1407 ms
+ren crawl2 1331 ms					1384 process rename time
+delete 4x  1054 ms
+del crawl  1439 ms
+del crawl2 740 ms					314 process delete time
+
+this run: 16s
+min cpu freq run: 24s
+
+(master branch)
+Running benchmark: ReadWrite
+base build 8270 ms					8270 original
+base crawl 994 ms
+rename 4x  6212 ms
+ren crawl  642 ms
+ren crawl2 832 ms					5580 process rename time
+delete 4x  5527 ms
+del crawl  659 ms
+del crawl2 680 ms					4847 process delete time
+
+this run: 24s
+min cpu freq run: 43s

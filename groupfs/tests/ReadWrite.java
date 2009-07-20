@@ -10,7 +10,7 @@ import groupfs.backend.*;
 
 public class ReadWrite extends Test {
 	public void run() {
-		QueryBackend backend = getNewBackend();
+		JournalingBackend backend = getNewBackend();
 		Random r = new Random(123);
 		for (int i=0; i < 1000; i++) {
 			String a = rstr(r);

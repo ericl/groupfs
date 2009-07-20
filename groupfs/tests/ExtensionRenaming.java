@@ -13,7 +13,7 @@ import groupfs.*;
 // rmdir mime dir -> fail
 public class ExtensionRenaming extends Test {
 	public void run() {
-		QueryBackend backend = getNewBackend();
+		JournalingBackend backend = getNewBackend();
 		syn(backend, "perl.pl", "Manual");
 		syn(backend, "doc.txt", "Manual");
 		syn(backend, "doc2.txt", "Manual");

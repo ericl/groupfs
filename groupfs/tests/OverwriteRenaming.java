@@ -9,7 +9,7 @@ import groupfs.*;
 // overwriting file with another
 public class OverwriteRenaming extends Test {
 	public void run() {
-		QueryBackend backend = getNewBackend();
+		JournalingBackend backend = getNewBackend();
 		syn(backend, "Random Book.txt", "Book", "Readable");
 		Filesystem fs = new Filesystem(backend);
 		try {

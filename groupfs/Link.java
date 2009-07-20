@@ -10,10 +10,10 @@ import fuse.FuseGetattrSetter;
 import groupfs.backend.JournalingBackend;
 import groupfs.backend.Node;
 
-public class Wrap extends SubclassingDirectory {
+public class Link extends SubclassingDirectory {
 	private final SubclassingDirectory link;
 
-	public Wrap(JournalingBackend backend, JournalingDirectory parent, QueryGroup group, SubclassingDirectory link) {
+	public Link(JournalingBackend backend, JournalingDirectory parent, QueryGroup group, SubclassingDirectory link) {
 		super(backend, parent, group);
 		this.backend = backend;
 		this.link = link;

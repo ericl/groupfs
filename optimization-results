@@ -32,7 +32,7 @@ BUILD COMPLETE
 Running benchmark: ReadWrite
 base build 3660 ms					2793 build time
 base crawl 807 ms
-rename 4x  1262 ms					472 delete time
+rename 4x  1262 ms					472 rename time
 ren crawl  911 ms
 ren crawl2 790 ms
 delete 4x  800 ms					0 delete time

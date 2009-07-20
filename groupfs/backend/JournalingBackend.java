@@ -15,7 +15,7 @@ import fuse.FuseGetattrSetter;
 import groupfs.JournalingDirectory;
 import groupfs.QueryGroup;
 import groupfs.SubclassingDirectory;
-import groupfs.Wrap;
+import groupfs.Link;
 
 import static groupfs.QueryGroup.Type.*;
 
@@ -37,7 +37,7 @@ public class JournalingBackend {
 			cache.put(key, link);
 			return link;
 		} else {
-			return new Wrap(this, parent, group, link);
+			return new Link(this, parent, group, link);
 		}
 	}
 

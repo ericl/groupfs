@@ -20,6 +20,7 @@ import static groupfs.Util.*;
 public class JournalingDirectory implements Directory {
 	protected Entry head;
 	protected JournalingBackend backend;
+	protected Set<QueryGroup> queued = new HashSet<QueryGroup>();
 	protected NameMapper mapper = new NameMapper();
 	protected long time = System.currentTimeMillis();
 	protected boolean populated;
@@ -138,6 +139,7 @@ public class JournalingDirectory implements Directory {
 			if (isPertinent(head))
 				process(head);
 		}
+		process_queued();
 	}
 
 	protected boolean isPertinent(Entry e) {
@@ -146,20 +148,30 @@ public class JournalingDirectory implements Directory {
 
 	protected void process(Entry e) {
 		if (getGroup() == null) {
-			process_dirs(e);
+			queue_dirs(e);
 		} else if (getGroup().getType() == Type.MIME) {
 			process_file(e);
 		} else {
 			process_file(e);
-			process_dirs(e);
+			queue_dirs(e);
 		}
+	}
+
+	protected void process_queued() {
+		if (!queued.isEmpty())
+			process_dirs(queued);
+		queued.clear();
+	}
+
+	protected void queue_dirs(Entry e) {
+		queued.addAll(e.getGroups());
 	}
 
 	// always call after process_file since getPoolDirect() is called
 	// getPoolDirect() will return correct value then
-	protected void process_dirs(Entry e) {
+	protected void process_dirs(Set<QueryGroup> e) {
 		int current = getPoolDirect().size();
-		for (QueryGroup u : e.getGroups()) {
+		for (QueryGroup u : e) {
 			if (!getQueryGroups().contains(u)) {
 				int next = 0;
 				for (Node n : getPoolDirect())
@@ -177,7 +189,7 @@ public class JournalingDirectory implements Directory {
 		Set<QueryGroup> others = new HashSet<QueryGroup>();
 		for (Node node : getPoolDirect())
 			others.addAll(node.getQueryGroups());
-		others.removeAll(e.getGroups());
+		others.removeAll(e);
 		for (QueryGroup g : others) {
 			if (mapper.count(g) == current) {
 				if (mapper.contains(g))

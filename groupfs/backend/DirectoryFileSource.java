@@ -127,37 +127,33 @@ class DirectoryFileHandler implements FileHandler {
 		assert maxOneMimeGroup(groups);
 		raw_groups.clear();
 		raw_groups.addAll(groups);
-		synchronized (this) {
-			File loc = null;
-			try {
-				Set<QueryGroup> consideredGroups = new HashSet<QueryGroup>(groups);
-				consideredGroups.remove(QueryGroup.GROUP_NO_GROUP);
-				loc = getDestination(newPath(root, consideredGroups), name);
-			} catch (IOException e) {
-				throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
-			}
-			file.renameTo(loc);
-			rmdirs(file.getParentFile());
-			file = loc;
-			close();
+		File loc = null;
+		try {
+			Set<QueryGroup> consideredGroups = new HashSet<QueryGroup>(groups);
+			consideredGroups.remove(QueryGroup.GROUP_NO_GROUP);
+			loc = getDestination(newPath(root, consideredGroups), name);
+		} catch (IOException e) {
+			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
 		}
+		file.renameTo(loc);
+		rmdirs(file.getParentFile());
+		file = loc;
+		close();
 	}
 
 	public void setName(String name) throws FuseException {
 		if (this.name.equals(name))
 			return;
 		this.name = name;
-		synchronized (this) {
-			File dest = null;
-			try {
-				dest = getDestination(file.getParent(), name);
-			} catch (IOException e) {
-				throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
-			}
-			file.renameTo(dest);
-			file = dest;
-			close();
+		File dest = null;
+		try {
+			dest = getDestination(file.getParent(), name);
+		} catch (IOException e) {
+			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
 		}
+		file.renameTo(dest);
+		file = dest;
+		close();
 	}
 
 	public void delete() {
@@ -177,17 +173,15 @@ class DirectoryFileHandler implements FileHandler {
 	}
 
 	public void close() throws FuseException {
-		synchronized (this) {
-			if (channel == null)
-				return;
-			try {
-				channel.close();
-			} catch (IOException eio) {
-				throw new FuseException("IO Exception", eio).initErrno(FuseException.EIO);
-			}
-			channel = null;
-			channelFlags = FilesystemConstants.O_RDONLY;
+		if (channel == null)
+			return;
+		try {
+			channel.close();
+		} catch (IOException eio) {
+			throw new FuseException("IO Exception", eio).initErrno(FuseException.EIO);
 		}
+		channel = null;
+		channelFlags = FilesystemConstants.O_RDONLY;
 	}
 
 	public int read(ByteBuffer buf, long offset) throws FuseException {
@@ -222,20 +216,18 @@ class DirectoryFileHandler implements FileHandler {
 	}
 
 	private void open(int flags) throws FuseException {
-		synchronized (this) {
-			if (!file.exists())
-				throw new FuseException("No Such Entry").initErrno(FuseException.ENOENT);
-			if (channel == null || channelFlags < flags) {
-				try {
-					String mode = "r";
-					if (flags > FilesystemConstants.O_RDONLY)
-						mode = "rw";
-					channel = new RandomAccessFile(file, mode).getChannel();
-				} catch (FileNotFoundException e) {
-					throw new FuseException("No Such Entry", e).initErrno(FuseException.ENOENT);
-				}
-				channelFlags = flags;
+		if (!file.exists())
+			throw new FuseException("No Such Entry").initErrno(FuseException.ENOENT);
+		if (channel == null || channelFlags < flags) {
+			try {
+				String mode = "r";
+				if (flags > FilesystemConstants.O_RDONLY)
+					mode = "rw";
+				channel = new RandomAccessFile(file, mode).getChannel();
+			} catch (FileNotFoundException e) {
+				throw new FuseException("No Such Entry", e).initErrno(FuseException.ENOENT);
 			}
+			channelFlags = flags;
 		}
 	}
 }

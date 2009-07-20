@@ -6,7 +6,6 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 
-import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -62,9 +61,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int getattr(String path, FuseGetattrSetter getattrSetter) throws FuseException {
-		int ticket = ticket();
 		View o = mapper.get(Path.get(path));
-		verify(ticket);
 		if (o == null)
 			return fuse.Errno.ENOENT;
 		else
@@ -76,7 +73,6 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int getdir(String input, FuseDirFiller dirFiller) throws FuseException {
-		int ticket = ticket();
 		Path path = Path.get(input);
 		Directory d = mapper.getDir(path);
 		if (d == null)
@@ -85,12 +81,10 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		for (String ref : list.keySet())
 			dirFiller.add(ref, 0, list.get(ref).getFType());
 		mapper.finish(path, list.keySet(), dirFiller);
-		verify(ticket);
 		return 0;
 	}
 
 	public int mknod(String input, int mode, int rdev) throws FuseException {
-		int ticket = ticket();
 		Path path = Path.get(input);
 		String name = path.name();
 		if (!canMknod(path.parent()) || name.startsWith("."))
@@ -108,7 +102,6 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		if (ext != null)
 			groups.add(QueryGroup.create(ext, Type.MIME));
 		mapper.notifyLatest(path, backend.create(groups, name));
-		verify(ticket);
 		return 0;
 	}
 
@@ -126,7 +119,6 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int mkdir(String input, int mode) throws FuseException {
-		int ticket = ticket();
 		Path path = Path.get(input);
 		String name = path.name();
 		if (name.startsWith("."))
@@ -137,12 +129,10 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		else if (!parent.getPerms().canMkdir())
 			return fuse.Errno.EPERM;
 		mapper.createFloat(path);
-		verify(ticket);
 		return 0;
 	}
 
 	public int unlink(String input) throws FuseException {
-		int ticket = ticket();
 		Path path = Path.get(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
@@ -154,19 +144,16 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			return n.deleteFromBackingMedia();
 		} else if (!d.getPerms().canDeleteNode())
 			return fuse.Errno.EPERM;
-		verify(ticket);
 		return n.unlink();
 	}
 
 	public int rmdir(String input) throws FuseException {
-		int ticket = ticket();
 		Path path = Path.get(input);
 		Directory d = mapper.getDir(path);
 		if (d == null)
 			return fuse.Errno.ENOENT;
 		else if (!d.getPerms().canDelete())
 			return fuse.Errno.EPERM;
-		verify(ticket);
 		return d.delete();
 	}
 
@@ -175,7 +162,6 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int rename(String fi, String ft) throws FuseException {
-		int ticket = ticket();
 		Path from = Path.get(fi);
 		Path to = Path.get(ft);
 		View o = mapper.get(from);
@@ -189,7 +175,6 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			return fuse.Errno.EPERM;
 		if (o instanceof Node)
 			mapper.delete(to.parent(), true);
-		verify(ticket);
 		return o.rename(from.value, to.value, mapper.get(to), d.getQueryGroups(), dd.getQueryGroups());
 	}
 
@@ -206,27 +191,22 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int truncate(String input, long size) throws FuseException {
-		int ticket = ticket();
 		Path path = Path.get(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
-		verify(ticket);
 		return n.truncate(size);
 	}
 
 	public int utime(String input, int atime, int mtime) throws FuseException {
-		int ticket = ticket();
 		Path path = Path.get(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
-		verify(ticket);
 		return n.setModified(mtime);
 	}
 
 	public int statfs(FuseStatfsSetter statfsSetter) throws FuseException {
-		int ticket = ticket();
 		statfsSetter.set(
 			blksize, // blockSize
 			(int)(backend.getTotalSpace() / blksize), // blocks
@@ -236,38 +216,31 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			0, // filesFree
 			0 // namelen
 		);
-		verify(ticket);
 		return 0;
 	}
 
 	public int open(String input, int flags, FuseOpenSetter openSetter) throws FuseException {
-		int ticket = ticket();
 		Path path = Path.get(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
 		// not really opening file; flags aren't supported by backend anyways
-		verify(ticket);
 		return 0;
 	}
 
 	public int read(String input, Object fh, ByteBuffer buf, long offset) throws FuseException {
-		int ticket = ticket();
 		Path path = Path.get(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
-		verify(ticket);
 		return n.read(buf, offset);
 	}
 
 	public int write(String input, Object fh, boolean isWritepage, ByteBuffer buf, long offset) throws FuseException {
-		int ticket = ticket();
 		Path path = Path.get(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
-		verify(ticket);
 		return n.write(buf, offset);
 	}
 
@@ -276,13 +249,11 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int release(String input, Object fh, int flags) throws FuseException {
-		int ticket = ticket();
 		Path path = Path.get(input);
 		Node n = mapper.getNode(path);
 		if (n == null)
 			return fuse.Errno.ENOENT;
 		n.close();
-		verify(ticket);
 		return 0;
 	}
 
@@ -308,16 +279,5 @@ public class Filesystem implements Filesystem3, XattrSupport {
 
 	public int removexattr(String path, String name) throws FuseException {
 		return fuse.Errno.ENOENT;
-	}
-
-	private int guard;
-
-	private int ticket() {
-		return guard = (int)(Integer.MAX_VALUE * Math.random());
-	}
-
-	private void verify(int ticket) {
-		if (ticket != guard)
-			throw new ConcurrentModificationException();
 	}
 }

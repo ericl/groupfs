@@ -7,7 +7,8 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 
 import java.util.HashSet;
-import java.util.Map;
+
+import java.util.Map.Entry;
 import java.util.Set;
 
 import fuse.Filesystem3;
@@ -77,9 +78,8 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		Directory d = mapper.getDir(path);
 		if (d == null)
 			return fuse.Errno.ENOENT;
-		Map<String,View> list = d.list();
-		for (String ref : list.keySet())
-			dirFiller.add(ref, 0, list.get(ref).getFType());
+		for (Entry<String,View> entry : d.list().entrySet())
+			dirFiller.add(entry.getKey(), 0, entry.getValue().getFType());
 		return 0;
 	}
 

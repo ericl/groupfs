@@ -5,6 +5,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+
+import java.util.Map.Entry;
 import java.util.Set;
 
 import fuse.FuseException;
@@ -63,11 +65,9 @@ public class SubclassingDirectory extends JournalingDirectory {
 	public int delete() throws FuseException {
 		Set<QueryGroup> del = new HashSet<QueryGroup>();
 		del.add(group);
-		Map<String,View> views = mapper.viewMap();
 		if (getPool().isEmpty()) {
 			parent.mapper.unmap(group);
-		} else for (String ref : views.keySet()) {
-			View v = views.get(ref);
+		} else for (View v : mapper.viewMap().values()) {
 			if (v instanceof Node) {
 				Node n = (Node)v;
 				n.changeQueryGroups(null, del);
@@ -95,9 +95,11 @@ public class SubclassingDirectory extends JournalingDirectory {
 					gcount.put(group, n == null ? 1 : n + 1);
 				}
 			}
-			for (QueryGroup g : gcount.keySet())
-				if (!groups.contains(g) && (groups.isEmpty() || gcount.get(g) < pool.size()))
+			for (Entry<QueryGroup,Integer> entry : gcount.entrySet()) {
+				QueryGroup g = entry.getKey();
+				if (!groups.contains(g) && (groups.isEmpty() || entry.getValue() < pool.size()))
 					output.add(g);
+			}
 		}
 		for (QueryGroup group : output)
 			mapper.map(new SubclassingDirectory(backend, this, group));

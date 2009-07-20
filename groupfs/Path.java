@@ -2,13 +2,10 @@ package groupfs;
 
 import java.io.File;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Stack;
 
 final class Path {
 	public final String value;
-	private static final Map<String,Path> cache = new HashMap<String,Path>();
 	private String name;
 	private Path parent;
 
@@ -40,12 +37,7 @@ final class Path {
 	}
 
 	public static Path get(String path) {
-		Path p = cache.get(path);
-		if (p != null)
-			return p;
-		p = new Path(path);
-		cache.put(path, p);
-		return p;
+		return new Path(path);
 	}
 
 	public Path parent() {

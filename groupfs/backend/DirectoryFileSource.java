@@ -66,7 +66,7 @@ public class DirectoryFileSource implements FileSource {
 		tags.remove("");
 		for (String tag : tags)
 			groups.add(QueryGroup.create(tag, Type.TAG));
-		groups.add(QueryGroup.create(extensionOf(file), Type.MIME));
+		groups.add(QueryGroup.create(extensionOf(file.getName()), Type.MIME));
 		assert maxOneMimeGroup(groups);
 		return groups;
 	}

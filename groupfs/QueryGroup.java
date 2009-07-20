@@ -9,9 +9,7 @@ import java.util.Set;
 public final class QueryGroup {
 	public enum Type { TAG, MIME }
 	private final String value;
-	private long time = System.nanoTime();
 	private final Type type;
-	private static long alltime = System.nanoTime();
 	private static Map<String,QueryGroup> mimetypes = new HashMap<String,QueryGroup>();
 	private static Map<String,QueryGroup> tags = new HashMap<String,QueryGroup>();
 	public final static QueryGroup GROUP_NO_GROUP = QueryGroup.create("Trash", Type.MIME);
@@ -30,17 +28,13 @@ public final class QueryGroup {
 		switch (type) {
 			case MIME:
 				q = mimetypes.get(value);
-				if (q == null) {
+				if (q == null)
 					mimetypes.put(value, q = new QueryGroup(value, Type.MIME));
-					QueryGroup.touchRoot();
-				}
 				break;
 			case TAG:
 				q = tags.get(value);
-				if (q == null) {
+				if (q == null)
 					tags.put(value, q = new QueryGroup(value, Type.TAG));
-					QueryGroup.touchRoot();
-				}
 				break;
 		}
 		assert q != null;
@@ -50,22 +44,6 @@ public final class QueryGroup {
 	private QueryGroup(String value, Type type) {
 		this.type = type;
 		this.value = value;
-	}
-
-	public static boolean allValid(long timestamp) {
-		return timestamp >= alltime;
-	}
-
-	public boolean stampValid(long timestamp) {
-		return timestamp >= time;
-	}
-
-	public void touch() {
-		time = System.nanoTime();
-	}
-
-	public static void touchRoot() {
-		alltime = System.nanoTime();
 	}
 
 	public Type getType() {

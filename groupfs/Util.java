@@ -17,10 +17,6 @@ public final class Util {
 
 	private Util() {}
 
-	public static String extensionOf(File file) {
-		return extensionOf(file.getName());
-	}
-
 	public static void validate(File origin, File mount) throws IOException {
 		if (!origin.exists() || !origin.isDirectory())
 			throw new IllegalArgumentException("Origin is invalid.");

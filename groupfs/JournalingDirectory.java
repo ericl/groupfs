@@ -32,7 +32,6 @@ public class JournalingDirectory implements Directory {
 	public JournalingDirectory(JournalingBackend backend) {
 		this.backend = backend;
 		mapper = new NameMapper(backend);
-		head = backend.journal.head();
 		groups = Collections.unmodifiableSet(raw_groups = new HashSet<QueryGroup>());
 	}
 
@@ -130,14 +129,15 @@ public class JournalingDirectory implements Directory {
 			populateSelf();
 			populated = true;
 			time = System.currentTimeMillis();
-		}
-		if (head != backend.journal.head()) {
+			head = backend.journal.head(); // we're up to date
+		} else if (head != backend.journal.head()) {
 			replayJournal();
 			time = System.currentTimeMillis();
 		}
 	}
 
 	protected void replayJournal() {
+		assert head != null;
 		while (head != backend.journal.head()) {
 			Entry next = head.getNext();
 			head = next;

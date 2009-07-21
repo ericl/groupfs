@@ -125,6 +125,9 @@ public class SubclassingDirectory extends JournalingDirectory {
 			return fuse.Errno.EPERM;
 		if (getPool().isEmpty()) {
 			this.parent.getMapper().unmap(group);
+			// reassigning these directly is ok
+			// because empty dirs still around are
+			// not created cached
 			this.group = QueryGroup.create(Path.get(to).name(), Type.TAG);
 			this.raw_groups.clear();
 			this.raw_groups.add(this.group);

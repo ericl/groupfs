@@ -111,5 +111,42 @@ public class MkdirRenamed extends Test {
 				"./.png",
 			}
 		);
+		try {
+			fs.mkdir("/foobar", 0);
+			fs.rename("/foobar", "/s!!!!");
+		} catch (FuseException e) {
+			log += e;
+			error = true;
+			return;
+		}
+		expect_nocopy(fs,
+			new String[] {
+				"./fish/fish recipe.txt",
+				"./fish/recipe/fish recipe.txt",
+				"./fish/fish picture.png",
+				"./fish/.png/fish picture.png",
+				"./fish/.txt/fish recipe.txt",
+				"./recipe/fish/fish recipe.txt",
+				"./recipe/fish recipe.txt",
+				"./recipe/pizza recipe.txt",
+				"./.txt/fish recipe.txt",
+				"./.txt/pizza recipe.txt",
+				"./.png/fish picture.png",
+			},
+			new String[] {
+				".",
+				"./s!!!!",
+				"./fish",
+				"./fish/recipe",
+				"./fish/recipe/new",
+				"./fish/.png",
+				"./fish/.txt",
+				"./recipe",
+				"./recipe/fish",
+				"./recipe/fish/new",
+				"./.txt",
+				"./.png",
+			}
+		);
 	}
 }

@@ -118,7 +118,7 @@ public class JournalingDirectory implements Directory {
 	}
 
 	public void mkdir(QueryGroup g) {
-		mapper.map(backend.get(this, g));
+		mapper.map(new SubclassingDirectory(backend, this, g));
 	}
 
 	protected NameMapper getMapper() {

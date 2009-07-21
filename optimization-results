@@ -26,18 +26,17 @@ del crawl2 740 ms					314 delete time
 this run: 16s
 min cpu freq run: 24s
 
-
 (journaling with caching and optimizations)
 BUILD COMPLETE
 Running benchmark: ReadWrite
-base build 3660 ms					2793 build time
-base crawl 807 ms
-rename 4x  1262 ms					472 rename time
-ren crawl  911 ms
-ren crawl2 790 ms
-delete 4x  800 ms					0 delete time
-del crawl  1108 ms
-del crawl2 815 ms
+base build 3597 ms					2811 build time
+base crawl 786 ms
+rename 4x  1041 ms					324 rename time
+ren crawl  779 ms
+ren crawl2 717 ms
+delete 4x  934 ms					293 delete time
+del crawl  676 ms
+del crawl2 641 ms
 
-this run: 10s
-min cpu freq run:  18s
+this run: 9s
+min cpu freq run:  16s

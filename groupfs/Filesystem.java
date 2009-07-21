@@ -128,7 +128,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		else if (!parent.getPerms().canMkdir())
 			return fuse.Errno.EPERM;
 		QueryGroup group = QueryGroup.create(name, Type.TAG);
-		if (group == parent.getGroup())
+		if (parent.getQueryGroups().contains(group))
 			return fuse.Errno.EPERM;
 		parent.mkdir(group);
 		return 0;

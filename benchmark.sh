@@ -9,4 +9,4 @@ else
 	exit 1
 fi
 
-java -ea groupfs.tests.Benchmark 2>&1 | tee tests.log
+java groupfs.tests.Benchmark 2>&1 | tee tests.log

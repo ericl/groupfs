@@ -124,13 +124,13 @@ public class SubclassingDirectory extends JournalingDirectory {
 		if (hintRemove.contains(myGroup))
 			return fuse.Errno.EPERM;
 		if (getPool().isEmpty()) {
-			this.parent.mapper.unmap(group);
+			this.parent.getMapper().unmap(group);
 			this.group = QueryGroup.create(Path.get(to).name(), Type.TAG);
 			this.raw_groups.clear();
 			this.raw_groups.add(this.group);
 			this.raw_groups.addAll(parent.getQueryGroups());
 			this.parent = (JournalingDirectory)parent;
-			this.parent.mapper.map(this);
+			this.parent.getMapper().map(this);
 			return 0;
 		}
 		Set<QueryGroup> add = new HashSet<QueryGroup>();

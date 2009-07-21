@@ -24,7 +24,7 @@ public class JournalingDirectory implements Directory {
 	protected NameMapper mapper;
 	protected long time = System.currentTimeMillis();
 	protected boolean populated;
-	protected final Set<QueryGroup> groups, raw_groups;
+	protected Set<QueryGroup> groups, raw_groups;
 	protected static Permissions root_perms = new Permissions(
 		false, false, false, true, true, true, false
 	);
@@ -119,6 +119,10 @@ public class JournalingDirectory implements Directory {
 
 	public void mkdir(QueryGroup g) {
 		mapper.map(backend.get(this, g));
+	}
+
+	protected NameMapper getMapper() {
+		return mapper;
 	}
 
 	protected void update() {

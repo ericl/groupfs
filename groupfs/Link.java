@@ -15,8 +15,11 @@ public class Link extends SubclassingDirectory {
 
 	public Link(JournalingBackend backend, JournalingDirectory parent, QueryGroup group, SubclassingDirectory link) {
 		super(backend, parent, group);
-		this.backend = backend;
 		this.link = link;
+		// guard against mistaken access
+		groups = null;
+		raw_groups = null;
+		mapper = null;
 	}
 
 	public Permissions getPerms() {
@@ -25,6 +28,10 @@ public class Link extends SubclassingDirectory {
 
 	public int getFType() {
 		return FuseFtype.TYPE_DIR;
+	}
+
+	protected NameMapper getMapper() {
+		return link.getMapper();
 	}
 
 	public int setModified(long mtime) throws FuseException {
@@ -48,10 +55,12 @@ public class Link extends SubclassingDirectory {
 	}
 
 	public View get(String name) {
+		assert groups == null && raw_groups == null && mapper == null;
 		return link.get(name);
 	}
 
 	public Directory getDir(String name) {
+		assert groups == null && raw_groups == null && mapper == null;
 		return link.getDir(name);
 	}
 
@@ -64,6 +73,7 @@ public class Link extends SubclassingDirectory {
 	}
 
 	public Set<QueryGroup> getQueryGroups() {
+		assert groups == null && raw_groups == null && mapper == null;
 		return link.getQueryGroups();
 	}
 
@@ -72,6 +82,7 @@ public class Link extends SubclassingDirectory {
 	}
 
 	public Map<String,View> list() {
+		assert groups == null && raw_groups == null && mapper == null;
 		return link.list();
 	}
 

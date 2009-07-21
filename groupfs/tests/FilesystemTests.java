@@ -21,6 +21,7 @@ public class FilesystemTests {
 			new LargeScale2(),
 			new PermissiveWrites(),
 			new UnTrash(),
+			new MkdirRenamed(),
 		});
 		if (tests.error) {
 			System.err.println("One or more tests FAILED.");

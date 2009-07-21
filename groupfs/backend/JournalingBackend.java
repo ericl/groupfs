@@ -13,9 +13,9 @@ import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
 import groupfs.JournalingDirectory;
+import groupfs.Link;
 import groupfs.QueryGroup;
 import groupfs.SubclassingDirectory;
-import groupfs.Link;
 
 import static groupfs.QueryGroup.Type.*;
 

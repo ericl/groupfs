@@ -12,9 +12,9 @@ public class LargeScale2 extends Test {
 		JournalingBackend backend = getNewBackend();
 		syn(backend, "old.jpg");
 		syn(backend, "old2.jpg");
-		syn(backend, "1.jpg", "Concert", "Art");
-		syn(backend, "2.jpg", "Concert", "Art");
-		syn(backend, "3.jpg", "Concert", "Art");
+		syn(backend, "1.jpg", "Concert", "jpg");
+		syn(backend, "2.jpg", "Concert", "jpg");
+		syn(backend, "3.jpg", "Concert", "jpg");
 		syn(backend, "4.jpg", "Concert", "Portrait", "Family");
 		syn(backend, "5.jpg", "Concert", "Portrait", "Family");
 		syn(backend, "6.jpg", "Concert", "Portrait", "Eric");
@@ -25,7 +25,7 @@ public class LargeScale2 extends Test {
 		syn(backend, "11.jpg", "Festival", "Portrait", "Eric");
 		Filesystem fs = new Filesystem(backend);
 		try {
-			fs.rename("/Art/1.jpg", "/1.jpg");
+			fs.rename("/jpg/1.jpg", "/1.jpg");
 		} catch (FuseException e) {
 			log += e;
 			error = true;
@@ -47,8 +47,8 @@ public class LargeScale2 extends Test {
 				"./.jpg/8.jpg",
 				"./.jpg/9.jpg",
 				"./Architecture/8.jpg",
-				"./Art/2.jpg",
-				"./Art/3.jpg",
+				"./jpg/2.jpg",
+				"./jpg/3.jpg",
 				"./Competition/9.jpg",
 				"./Concert/1.jpg",
 				"./Concert/2.jpg",
@@ -59,8 +59,8 @@ public class LargeScale2 extends Test {
 				"./Concert/7.jpg",
 				"./Concert/8.jpg",
 				"./Concert/Architecture/8.jpg",
-				"./Concert/Art/2.jpg",
-				"./Concert/Art/3.jpg",
+				"./Concert/jpg/2.jpg",
+				"./Concert/jpg/3.jpg",
 				"./Concert/Eric/6.jpg",
 				"./Concert/Family/4.jpg",
 				"./Concert/Family/5.jpg",
@@ -123,11 +123,11 @@ public class LargeScale2 extends Test {
 				"./.jpg",
 				"./.Trash",
 				"./Architecture",
-				"./Art",
+				"./jpg",
 				"./Competition",
 				"./Concert",
 				"./Concert/Architecture",
-				"./Concert/Art",
+				"./Concert/jpg",
 				"./Concert/Eric",
 				"./Concert/Family",
 				"./Concert/Portrait",
@@ -186,8 +186,8 @@ public class LargeScale2 extends Test {
 				"./.jpg/8.jpg",
 				"./.jpg/9.jpg",
 				"./Architecture/8.jpg",
-				"./Art/2.jpg",
-				"./Art/3.jpg",
+				"./jpg/2.jpg",
+				"./jpg/3.jpg",
 				"./Competition/9.jpg",
 				"./Concert/2.jpg",
 				"./Concert/3.jpg",
@@ -197,8 +197,8 @@ public class LargeScale2 extends Test {
 				"./Concert/7.jpg",
 				"./Concert/8.jpg",
 				"./Concert/Architecture/8.jpg",
-				"./Concert/Art/2.jpg",
-				"./Concert/Art/3.jpg",
+				"./Concert/jpg/2.jpg",
+				"./Concert/jpg/3.jpg",
 				"./Concert/Eric/6.jpg",
 				"./Concert/Family/4.jpg",
 				"./Concert/Family/5.jpg",
@@ -261,11 +261,11 @@ public class LargeScale2 extends Test {
 				"./.jpg",
 				"./.Trash",
 				"./Architecture",
-				"./Art",
+				"./jpg",
 				"./Competition",
 				"./Concert",
 				"./Concert/Architecture",
-				"./Concert/Art",
+				"./Concert/jpg",
 				"./Concert/Eric",
 				"./Concert/Family",
 				"./Concert/Portrait",

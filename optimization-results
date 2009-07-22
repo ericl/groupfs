@@ -14,28 +14,31 @@ min cpu freq run: 43s
 
 (journaling)
 Running benchmark: ReadWrite
-base build 6533 ms					5800 build time
+base build 6533 ms					5800 build time		1.3x speedup
 base crawl 733 ms
 rename 4x  2715 ms					
 ren crawl  1407 ms
-ren crawl2 1331 ms					1384 rename time
+ren crawl2 1331 ms					1384 rename time	4x speedup
 delete 4x  1054 ms
 del crawl  1439 ms
-del crawl2 740 ms					314 delete time
+del crawl2 740 ms					314 delete time		15x speedup
 
 this run: 16s
 min cpu freq run: 24s
 
+(caching + further optimizations)
 BUILD COMPLETE
-Running benchmark: ReadWrite
-base build 3070 ms					2332 build time
-base crawl 738 ms
-rename 4x  1313 ms					429 build time
-ren crawl  884 ms
-ren crawl2 964 ms
-delete 4x  1077 ms					164 delete time
-del crawl  913 ms
-del crawl2 946 ms
+Running benchmark: ReadWrite		2139 build time		3.4x, 2.7x speedup
+base build 2686 ms
+base crawl 547 ms
+rename 4x  1007 ms					408 rename time		14x, 3.4x speedup
+ren crawl  798 ms
+ren crawl2 599 ms
+delete 4x  634 ms					65 delete time		75x, 5x speedup
+del crawl  666 ms
+del crawl2 659 ms
 
-this run: 9s
-min cpu freq run:  16s
+this run: 7.6s
+min cpu freq run:  15s
+
+vim: ts=4

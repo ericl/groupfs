@@ -7,7 +7,7 @@ public final class Path {
 
 	private Path(String path, boolean parseNeeded) {
 		if (parseNeeded) {
-			this.value = parse(path).intern();
+			this.value = parse(path);
 			assert value.equals(reference_parse(path))
 				: "\"" + value + "\" vs \"" + reference_parse(path) + "\"";
 		} else {

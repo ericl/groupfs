@@ -24,7 +24,6 @@ public class JournalingDirectory implements Directory {
 	protected NameMapper mapper;
 	protected long time = System.currentTimeMillis();
 	protected boolean populated;
-	protected Set<QueryGroup> groups, raw_groups;
 	protected static Permissions root_perms = new Permissions(
 		false, false, false, true, true, true, false
 	);
@@ -32,7 +31,6 @@ public class JournalingDirectory implements Directory {
 	public JournalingDirectory(DataProvider backend) {
 		this.backend = backend;
 		mapper = new NameMapper(backend);
-		groups = Collections.unmodifiableSet(raw_groups = new HashSet<QueryGroup>());
 	}
 
 	public Permissions getPerms() {
@@ -184,8 +182,9 @@ public class JournalingDirectory implements Directory {
 	// getPoolDirect() will return correct value then
 	protected void process_dirs(Set<QueryGroup> e) {
 		int current = getPoolDirect().size();
+		Set<QueryGroup> groups = getQueryGroups();
 		for (QueryGroup u : e) {
-			if (!getQueryGroups().contains(u)) {
+			if (!groups.contains(u)) {
 				int next = 0;
 				for (Node n : getPoolDirect())
 					if (n.getQueryGroups().contains(u))
@@ -199,6 +198,7 @@ public class JournalingDirectory implements Directory {
 				}
 			}
 		}
+		// hide/unhide dirs that do not narrow the query
 		Set<QueryGroup> others = new HashSet<QueryGroup>();
 		for (Node node : getPoolDirect())
 			others.addAll(node.getQueryGroups());
@@ -212,11 +212,15 @@ public class JournalingDirectory implements Directory {
 					mapper.map(backend.get(this, g));
 			}
 		}
+		// reap repeated directories (from mkdir/moves)
+		for (QueryGroup o : mapper.getGroups())
+			if (groups.contains(o))
+				mapper.unmap(o);
 	}
 
 	protected void process_file(Entry e) {
 		Node node = e.getNode();
-		if (node.getQueryGroups().containsAll(groups)) {
+		if (node.getQueryGroups().containsAll(getQueryGroups())) {
 			if (mapper.contains(node))
 				mapper.unmap(node);
 			mapper.map(node);

@@ -17,8 +17,6 @@ public class Link extends SubclassingDirectory {
 		super(backend, parent, group);
 		this.link = link;
 		// guard against mistaken access
-		groups = null;
-		raw_groups = null;
 		mapper = null;
 	}
 
@@ -55,12 +53,10 @@ public class Link extends SubclassingDirectory {
 	}
 
 	public View get(String name) {
-		assert groups == null && raw_groups == null && mapper == null;
 		return link.get(name);
 	}
 
 	public Directory getDir(String name) {
-		assert groups == null && raw_groups == null && mapper == null;
 		return link.getDir(name);
 	}
 
@@ -73,7 +69,6 @@ public class Link extends SubclassingDirectory {
 	}
 
 	public Set<QueryGroup> getQueryGroups() {
-		assert groups == null && raw_groups == null && mapper == null;
 		return link.getQueryGroups();
 	}
 
@@ -82,7 +77,6 @@ public class Link extends SubclassingDirectory {
 	}
 
 	public Map<String,View> list() {
-		assert groups == null && raw_groups == null && mapper == null;
 		return link.list();
 	}
 

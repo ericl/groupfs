@@ -31,8 +31,6 @@ public class SubclassingDirectory extends JournalingDirectory {
 		super(backend);
 		this.parent = parent;
 		this.group = group;
-		raw_groups.addAll(parent.getQueryGroups());
-		raw_groups.add(group);
 	}
 
 	public SubclassingDirectory(DataProvider backend, JournalingDirectory parent, QueryGroup group, NameMapper mapper) {
@@ -40,8 +38,6 @@ public class SubclassingDirectory extends JournalingDirectory {
 		this.parent = parent;
 		this.group = group;
 		this.mapper = mapper;
-		raw_groups.addAll(parent.getQueryGroups());
-		raw_groups.add(group);
 	}
 
 	public Permissions getPerms() {
@@ -85,6 +81,7 @@ public class SubclassingDirectory extends JournalingDirectory {
 	protected void populateSelf() {
 		Set<Node> pool = filter(group, parent.getPool());
 		Set<QueryGroup> output = new HashSet<QueryGroup>();
+		Set<QueryGroup> groups = getQueryGroups();
 		if (group.getType() != Type.MIME) {
 			Map<QueryGroup,Integer> gcount = new HashMap<QueryGroup,Integer>();
 			for (Node node : pool) {
@@ -109,7 +106,7 @@ public class SubclassingDirectory extends JournalingDirectory {
 		Set<QueryGroup> fromGroups = new HashSet<QueryGroup>();
 		for (String tag : tagsOf(from))
 			fromGroups.add(QueryGroup.create(tag, Type.TAG));
-		return fromGroups.equals(groups);
+		return fromGroups.equals(getQueryGroups());
 	}
 
 	public int rename(Path from, Path to, View target, Directory orig, Directory dest) throws FuseException {
@@ -118,25 +115,20 @@ public class SubclassingDirectory extends JournalingDirectory {
 			return fuse.Errno.EPERM;
 		if (group.getType() == Type.MIME)
 			return fuse.Errno.EPERM;
-		QueryGroup myGroup = QueryGroup.create(to.name(), Type.TAG);
-		if (orig.getQueryGroups().contains(myGroup))
-			return fuse.Errno.EPERM;
 		if (getPool().isEmpty()) {
 			this.parent.getMapper().unmap(group);
 			// reassigning these directly is ok
 			// because empty dirs still around are
 			// not created cached
 			this.group = QueryGroup.create(to.name(), Type.TAG);
-			this.raw_groups.clear();
-			this.raw_groups.add(this.group);
-			this.raw_groups.addAll(dest.getQueryGroups());
 			this.parent = (JournalingDirectory)dest;
 			this.parent.getMapper().map(this);
 			return 0;
 		}
 		Set<QueryGroup> add = new HashSet<QueryGroup>();
-		for (String tag : tagsOf(to.value))
-			add.add(QueryGroup.create(tag, Type.TAG));
+		add.addAll(dest.getQueryGroups());
+		add.add(QueryGroup.create(to.name(), Type.TAG));
+		Set<QueryGroup> groups = getQueryGroups();
 		for (Node n : getPool())
 			n.changeQueryGroups(add, groups);
 		return 0;

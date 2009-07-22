@@ -18,6 +18,7 @@ public class NameMapper {
 
 	private Map<String,View> views_ro = Collections.unmodifiableMap(views);
 	private Set<Node> files_keyset_ro = Collections.unmodifiableSet(files.keySet());
+	private Set<QueryGroup> dirs_keyset_ro = Collections.unmodifiableSet(dirs.keySet());
 
 	public NameMapper(DataProvider backend) {
 		this.backend = backend;
@@ -25,6 +26,10 @@ public class NameMapper {
 
 	public Map<String,View> viewMap() {
 		return views_ro;
+	}
+
+	public Set<QueryGroup> getGroups() {
+		return dirs_keyset_ro;
 	}
 
 	public Set<Node> getPool() {

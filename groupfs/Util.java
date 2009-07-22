@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,6 +31,17 @@ public final class Util {
 			mp += "/";
 		if (mp.startsWith(op) || op.startsWith(mp))
 			throw new IllegalArgumentException("Mount point overlaps origin.");
+	}
+
+	public static boolean allUnique(Path path) {
+		List<String> tags = Arrays.asList(path.value.split("/"));
+		Set<String> tmp = new HashSet<String>();
+		for (String tag : tags) {
+			if (tmp.contains(tag))
+				return false;
+			tmp.add(tag);
+		}
+		return true;
 	}
 
 	public static void rmdirs(File f) {

@@ -181,7 +181,8 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		// forbid creation of mime-type dirs or nodes
 		else if (to.name().startsWith("."))
 			return fuse.Errno.EPERM;
-
+		if (!allUnique(to))
+			return fuse.Errno.EPERM;
 		return view.rename(from, to, mapper.get(to), orig, dest);
 	}
 

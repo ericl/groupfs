@@ -17,7 +17,7 @@ import groupfs.*;
  */
 public class StrangeMovements extends Test {
 	public void run() {
-		JournalingBackend backend = getNewBackend();
+		DataProvider backend = getNewBackend();
 		Filesystem fs = new Filesystem(backend);
 		try {
 			fs.mkdir("/Perl", 0);

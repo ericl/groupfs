@@ -7,13 +7,13 @@ import fuse.FuseException;
 import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
-import groupfs.backend.JournalingBackend;
+import groupfs.backend.DataProvider;
 import groupfs.backend.Node;
 
 public class Link extends SubclassingDirectory {
 	private final SubclassingDirectory link;
 
-	public Link(JournalingBackend backend, JournalingDirectory parent, QueryGroup group, SubclassingDirectory link) {
+	public Link(DataProvider backend, JournalingDirectory parent, QueryGroup group, SubclassingDirectory link) {
 		super(backend, parent, group);
 		this.link = link;
 		// guard against mistaken access

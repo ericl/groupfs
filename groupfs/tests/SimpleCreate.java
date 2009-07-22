@@ -13,7 +13,7 @@ import groupfs.*;
 // mknod of dotfile
 public class SimpleCreate extends Test {
 	public void run() {
-		JournalingBackend backend = getNewBackend();
+		DataProvider backend = getNewBackend();
 		syn(backend, "sed.txt", "Manual", "Readable");
 		syn(backend, "Random Book.txt", "Book", "Readable");
 		syn(backend, "trashed.txt");

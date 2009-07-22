@@ -7,11 +7,11 @@ import java.util.Set;
 
 import groupfs.QueryGroup.Type;
 
-import groupfs.backend.JournalingBackend;
+import groupfs.backend.DataProvider;
 import groupfs.backend.Node;
 
 public class NameMapper {
-	protected JournalingBackend backend;
+	protected DataProvider backend;
 	private Map<String,View> views = new HashMap<String,View>();
 	private Map<QueryGroup,String> dirs = new HashMap<QueryGroup,String>();
 	private Map<Node,String> files = new HashMap<Node,String>();
@@ -19,7 +19,7 @@ public class NameMapper {
 	private Map<String,View> views_ro = Collections.unmodifiableMap(views);
 	private Set<Node> files_keyset_ro = Collections.unmodifiableSet(files.keySet());
 
-	public NameMapper(JournalingBackend backend) {
+	public NameMapper(DataProvider backend) {
 		this.backend = backend;
 	}
 

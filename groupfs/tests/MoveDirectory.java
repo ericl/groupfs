@@ -10,7 +10,7 @@ import groupfs.*;
 // directory move in
 public class MoveDirectory extends Test {
 	public void run() {
-		JournalingBackend backend = getNewBackend();
+		DataProvider backend = getNewBackend();
 		syn(backend, "perl-in-perl.pl", "Manual");
 		Filesystem fs = new Filesystem(backend);
 		try {

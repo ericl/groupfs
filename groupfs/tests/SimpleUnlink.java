@@ -11,7 +11,7 @@ import groupfs.*;
 // unlink from Trash
 public class SimpleUnlink extends Test {
 	public void run() {
-		JournalingBackend backend = getNewBackend();
+		DataProvider backend = getNewBackend();
 		syn(backend, "sed.txt", "Manual", "Doc");
 		syn(backend, "sed2.txt", "Manual", "Doc");
 		Filesystem fs = new Filesystem(backend);

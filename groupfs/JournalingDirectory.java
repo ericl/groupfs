@@ -12,14 +12,14 @@ import fuse.FuseGetattrSetter;
 import groupfs.QueryGroup.Type;
 
 import groupfs.backend.Entry;
-import groupfs.backend.JournalingBackend;
+import groupfs.backend.DataProvider;
 import groupfs.backend.Node;
 
 import static groupfs.Util.*;
 
 public class JournalingDirectory implements Directory {
 	protected Entry head;
-	protected JournalingBackend backend;
+	protected DataProvider backend;
 	protected Set<QueryGroup> queued = new HashSet<QueryGroup>();
 	protected NameMapper mapper;
 	protected long time = System.currentTimeMillis();
@@ -29,7 +29,7 @@ public class JournalingDirectory implements Directory {
 		false, false, false, true, true, true, false
 	);
 
-	public JournalingDirectory(JournalingBackend backend) {
+	public JournalingDirectory(DataProvider backend) {
 		this.backend = backend;
 		mapper = new NameMapper(backend);
 		groups = Collections.unmodifiableSet(raw_groups = new HashSet<QueryGroup>());

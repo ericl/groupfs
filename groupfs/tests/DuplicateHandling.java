@@ -11,7 +11,7 @@ import groupfs.*;
 // node moved to have same name
 public class DuplicateHandling extends Test {
 	public void run() {
-		JournalingBackend backend = getNewBackend();
+		DataProvider backend = getNewBackend();
 		syn(backend, "perl-in-perl.pl", "Manual", "Random");
 		syn(backend, "perl-in-perl.pl", "Random");
 		Filesystem fs = new Filesystem(backend);

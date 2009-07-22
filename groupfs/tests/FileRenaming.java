@@ -11,7 +11,7 @@ import groupfs.*;
 // file losing TAG
 public class FileRenaming extends Test {
 	public void run() {
-		JournalingBackend backend = getNewBackend();
+		DataProvider backend = getNewBackend();
 		syn(backend, "perl-in-perl.pl", "Manual", "Random");
 		syn(backend, "x.pl", "Random");
 		Filesystem fs = new Filesystem(backend);

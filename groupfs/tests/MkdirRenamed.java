@@ -9,7 +9,7 @@ import groupfs.*;
 // shows new dirs showing up (correctly) in multiple directories because of the cache
 public class MkdirRenamed extends Test {
 	public void run() {
-		JournalingBackend backend = getNewBackend();
+		DataProvider backend = getNewBackend();
 		syn(backend, "fish recipe.txt", "fish", "recipe");
 		syn(backend, "pizza recipe.txt", "recipe");
 		syn(backend, "fish picture.png", "fish");

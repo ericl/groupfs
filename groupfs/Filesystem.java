@@ -9,6 +9,7 @@ import java.nio.CharBuffer;
 import java.util.HashSet;
 
 import java.util.Map.Entry;
+
 import java.util.Set;
 
 import fuse.Filesystem3;
@@ -24,8 +25,8 @@ import fuse.XattrSupport;
 
 import groupfs.QueryGroup.Type;
 
+import groupfs.backend.DataProvider;
 import groupfs.backend.DirectoryFileSource;
-import groupfs.backend.JournalingBackend;
 import groupfs.backend.Node;
 
 import org.apache.commons.logging.Log;
@@ -36,7 +37,7 @@ import static groupfs.Util.*;
 public class Filesystem implements Filesystem3, XattrSupport {
 	public static final Log log = LogFactory.getLog(Filesystem.class);
 	public static final int blksize = 1024;
-	private JournalingBackend backend;
+	private DataProvider backend;
 	private ViewMapper mapper;
 
 	public static void main(String[] args) {
@@ -50,13 +51,15 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		File mountPoint = new File(args[args.length - 2]);
 		try {
 			validate(originDir, mountPoint);
-			FuseMount.mount(fuseArgs, new Filesystem(new JournalingBackend(new DirectoryFileSource(originDir))), log);
+			FuseMount.mount(fuseArgs, new Filesystem(
+				new DataProvider(new DirectoryFileSource(originDir))
+			), log);
 		} catch (Exception e) {
 			log.error(e);
 		}
 	}
 
-	public Filesystem(JournalingBackend backend) {
+	public Filesystem(DataProvider backend) {
 		this.backend = backend;
 		mapper = new ViewMapper(new JournalingDirectory(backend));
 	}

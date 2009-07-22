@@ -11,7 +11,7 @@ import fuse.FuseException;
 
 import groupfs.QueryGroup.Type;
 
-import groupfs.backend.JournalingBackend;
+import groupfs.backend.DataProvider;
 import groupfs.backend.Node;
 
 import static groupfs.Util.*;
@@ -27,7 +27,7 @@ public class SubclassingDirectory extends JournalingDirectory {
 		false, false, false, false, true, false, true
 	);
 
-	public SubclassingDirectory(JournalingBackend backend, JournalingDirectory parent, QueryGroup group) {
+	public SubclassingDirectory(DataProvider backend, JournalingDirectory parent, QueryGroup group) {
 		super(backend);
 		this.parent = parent;
 		this.group = group;
@@ -35,7 +35,7 @@ public class SubclassingDirectory extends JournalingDirectory {
 		raw_groups.add(group);
 	}
 
-	public SubclassingDirectory(JournalingBackend backend, JournalingDirectory parent, QueryGroup group, NameMapper mapper) {
+	public SubclassingDirectory(DataProvider backend, JournalingDirectory parent, QueryGroup group, NameMapper mapper) {
 		super(backend);
 		this.parent = parent;
 		this.group = group;

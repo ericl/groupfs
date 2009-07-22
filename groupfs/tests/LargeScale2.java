@@ -9,7 +9,7 @@ import groupfs.*;
 // shows validation in deleting tag
 public class LargeScale2 extends Test {
 	public void run() {
-		JournalingBackend backend = getNewBackend();
+		DataProvider backend = getNewBackend();
 		syn(backend, "old.jpg");
 		syn(backend, "old2.jpg");
 		syn(backend, "1.jpg", "Concert", "jpg");

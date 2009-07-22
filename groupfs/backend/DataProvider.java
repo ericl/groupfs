@@ -21,12 +21,18 @@ import static groupfs.QueryGroup.Type.*;
 
 import static groupfs.Util.*;
 
-public class JournalingBackend {
+public class DataProvider {
 	public final Journal journal = new Journal();
 	private final Set<Node> nodes = new HashSet<Node>();
 	private final FileSource source;
 	private final Set<Node> nodes_ro = Collections.unmodifiableSet(nodes);
 	protected Map<Set<QueryGroup>,SubclassingDirectory> cache = new HashMap<Set<QueryGroup>,SubclassingDirectory>();
+
+	public DataProvider(FileSource source) {
+		this.source = source;
+		for (FileHandler fh : source.getAll())
+			nodes.add(makeNode(fh));
+	}
 
 	public SubclassingDirectory get(JournalingDirectory parent, QueryGroup group) {
 		Set<QueryGroup> key = new HashSet<QueryGroup>(parent.getQueryGroups());
@@ -43,12 +49,6 @@ public class JournalingBackend {
 
 	public void drop(Set<QueryGroup> groups) {
 		cache.remove(groups);
-	}
-
-	public JournalingBackend(FileSource source) {
-		this.source = source;
-		for (FileHandler fh : source.getAll())
-			nodes.add(makeNode(fh));
 	}
 
 	private JournalingNode makeNode(FileHandler fh) {
@@ -96,9 +96,9 @@ public class JournalingBackend {
 
 class JournalingNode extends Node {
 	private FileHandler fh;
-	private JournalingBackend backend;
+	private DataProvider backend;
 
-	protected JournalingNode(JournalingBackend backend, FileHandler fh) {
+	protected JournalingNode(DataProvider backend, FileHandler fh) {
 		super(fh.getAllGroups());
 		this.backend = backend;
 		this.fh = fh;

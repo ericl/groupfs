@@ -1,7 +1,5 @@
 package groupfs.backend;
 
-import java.io.File;
-
 import java.nio.ByteBuffer;
 
 import java.util.Collections;
@@ -13,6 +11,7 @@ import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
 import groupfs.Directory;
+import groupfs.Path;
 import groupfs.QueryGroup;
 import groupfs.View;
 
@@ -40,7 +39,7 @@ public abstract class Node implements View {
 
 	protected abstract void logDifference(Set<QueryGroup> original, Set<QueryGroup> current);
 
-	public int rename(String from, String to, View target, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd, Directory parent) throws FuseException {
+	public int rename(Path from, Path to, View target, Directory orig, Directory dest) throws FuseException {
 		Set<QueryGroup> original = new HashSet<QueryGroup>(groups);
 		boolean hadMime = hasMime(groups);
 		if (target != null && target != this) {
@@ -50,13 +49,13 @@ public abstract class Node implements View {
 				changeQueryGroups(node.getQueryGroups(), null);
 				node.deleteFromBackingMedia();
 			}
-			// if not a node then probably root dir !?
+			// if not a node then probably root dir
 		}
-		if (!hintRemove.equals(hintAdd))
-			changeQueryGroups(hintAdd, hintRemove);
+		if (!dest.getQueryGroups().equals(orig.getQueryGroups()))
+			changeQueryGroups(dest.getQueryGroups(), orig.getQueryGroups());
 		else
 			logDifference(original, groups);
-		setName(new File(to).getName(), hadMime);
+		setName(to.name(), hadMime);
 		return 0;
 	}
 

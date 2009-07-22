@@ -163,19 +163,23 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		return fuse.Errno.ENOTSUPP;
 	}
 
-	public int rename(String fi, String ft) throws FuseException {
-		Path from = Path.get(fi);
-		Path to = Path.get(ft);
-		View o = mapper.get(from);
-		Directory d = mapper.getDir(from.parent());
-		Directory dd = mapper.getDir(to.parent());
-		if (o == null || d == null || dd == null)
+	public int rename(String fromPath, String toPath) throws FuseException {
+		Path from = Path.get(fromPath);
+		Path to = Path.get(toPath);
+		View view = mapper.get(from);
+		Directory orig = mapper.getDir(from.parent());
+		Directory dest = mapper.getDir(to.parent());
+
+		if (view == null || orig == null || dest == null)
 			return fuse.Errno.ENOENT;
-		else if (d != dd && (!d.getPerms().canMoveOut() || !dd.getPerms().canMoveIn()))
+		// allow renaming within mime dir
+		else if (orig != dest && (!orig.getPerms().canMoveOut() || !dest.getPerms().canMoveIn()))
 			return fuse.Errno.EPERM;
-		else if (new File(to.value).getName().startsWith("."))
+		// forbid creation of mime-type dirs or nodes
+		else if (to.name().startsWith("."))
 			return fuse.Errno.EPERM;
-		return o.rename(from.value, to.value, mapper.get(to), d.getQueryGroups(), dd.getQueryGroups(), dd);
+
+		return view.rename(from, to, mapper.get(to), orig, dest);
 	}
 
 	public int link(String from, String to) throws FuseException {

@@ -1,7 +1,5 @@
 package groupfs;
 
-import java.io.File;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -114,30 +112,30 @@ public class SubclassingDirectory extends JournalingDirectory {
 		return fromGroups.equals(groups);
 	}
 
-	public int rename(String from, String to, View target, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd, Directory parent) throws FuseException {
-		assert fromEqualsThis(from);
+	public int rename(Path from, Path to, View target, Directory orig, Directory dest) throws FuseException {
+		assert fromEqualsThis(from.value);
 		if (target != null)
 			return fuse.Errno.EPERM;
 		if (group.getType() == Type.MIME)
 			return fuse.Errno.EPERM;
-		QueryGroup myGroup = QueryGroup.create(new File(to).getName(), Type.TAG);
-		if (hintRemove.contains(myGroup))
+		QueryGroup myGroup = QueryGroup.create(to.name(), Type.TAG);
+		if (orig.getQueryGroups().contains(myGroup))
 			return fuse.Errno.EPERM;
 		if (getPool().isEmpty()) {
 			this.parent.getMapper().unmap(group);
 			// reassigning these directly is ok
 			// because empty dirs still around are
 			// not created cached
-			this.group = QueryGroup.create(Path.get(to).name(), Type.TAG);
+			this.group = QueryGroup.create(to.name(), Type.TAG);
 			this.raw_groups.clear();
 			this.raw_groups.add(this.group);
-			this.raw_groups.addAll(parent.getQueryGroups());
-			this.parent = (JournalingDirectory)parent;
+			this.raw_groups.addAll(dest.getQueryGroups());
+			this.parent = (JournalingDirectory)dest;
 			this.parent.getMapper().map(this);
 			return 0;
 		}
 		Set<QueryGroup> add = new HashSet<QueryGroup>();
-		for (String tag : tagsOf(to))
+		for (String tag : tagsOf(to.value))
 			add.add(QueryGroup.create(tag, Type.TAG));
 		for (Node n : getPool())
 			n.changeQueryGroups(add, groups);

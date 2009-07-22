@@ -38,8 +38,8 @@ public class Link extends SubclassingDirectory {
 		return link.setModified(mtime);
 	}
 
-	public int rename(String from, String to, View v, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd, Directory parent) throws FuseException {
-		return link.rename(from, to, v, hintRemove, hintAdd, parent);
+	public int rename(Path from, Path to, View target, Directory orig, Directory dest) throws FuseException {
+		return link.rename(from, to, target, orig, dest);
 	}
 
 	public int delete() throws FuseException {

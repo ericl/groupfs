@@ -48,7 +48,7 @@ public class JournalingDirectory implements Directory {
 		return 0;
 	}
 
-	public int rename(String from, String to, View v, Set<QueryGroup> hintRemove, Set<QueryGroup> hintAdd, Directory parent) throws FuseException {
+	public int rename(Path from, Path to, View target, Directory orig, Directory dest) throws FuseException {
 		return fuse.Errno.EPERM;
 	}
 

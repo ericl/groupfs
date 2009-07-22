@@ -1,18 +1,74 @@
 package groupfs;
 
-import java.io.File;
-
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Stack;
 
-final class Path {
+public final class Path {
 	public final String value;
-	private static final Map<String,Path> cache = new HashMap<String,Path>();
-	private String name;
-	private Path parent;
+
+	private Path(String path, boolean parseNeeded) {
+		if (parseNeeded) {
+			this.value = parse(path).intern();
+			assert value.equals(reference_parse(path))
+				: "\"" + value + "\" vs \"" + reference_parse(path) + "\"";
+		} else {
+			this.value = path;
+		}
+	}
+
+	public Path parent() {
+		return new Path(parent(value), false);
+	}
+
+	public static Path get(String path) {
+		return new Path(path, true);
+	}
+
+	public String name() {
+		return name(value);
+	}
+
+	public boolean equals(Object other) {
+		return other instanceof Path && value.equals(((Path)other).value);
+	}
+
+	public int hashCode() {
+		return value.hashCode();
+	}
 
 	private static String parse(String path) {
+		final int len = path.length();
+		final char[] output = new char[len+2];
+		output[0] = '/';
+		int index = 1, last = 1;
+		for (int i=0; i < len + 1; i++) {
+			if (i == len || path.charAt(i) == '/') {
+				int diff = index - last;
+				if (diff == 0) {
+					continue;
+				} else if (diff == 1 && output[last] == '.') {
+					index = last - 1;
+					output[index++] = '/';
+				} else if (diff == 2 && output[last] == '.' && output[last+1] == '.') {
+					index = last - 1;
+					while (index > 0) {
+						if (output[--index] == '/')
+							break;
+					}
+					output[index++] = '/';
+				} else {
+					output[index++] = '/';
+					last = index;
+				}
+			} else {
+				output[index++] = path.charAt(i);
+			}
+		}
+		while (index > 1 && output[index-1] == '/')
+			index--;
+		return new String(output, 0, index);
+	}
+
+	private static String reference_parse(String path) {
 		String[] parts = path.split("/");
 		Stack<String> stack = new Stack<String>();
 		for (int i=0; i < parts.length; i++) {
@@ -35,36 +91,19 @@ final class Path {
 		return ret;
 	}
 
-	private Path(String path) {
-		this.value = parse(path).intern();
+	private static String parent(String path) {
+		int index = path.lastIndexOf('/');
+		if (index < 1)
+			return "/";
+		else
+			return path.substring(0, index);
 	}
 
-	public static Path get(String path) {
-		Path p = cache.get(path);
-		if (p != null)
-			return p;
-		p = new Path(path);
-		cache.put(path, p);
-		return p;
-	}
-
-	public Path parent() {
-		if (parent != null)
-			return parent;
-		return parent = Path.get(new File(value).getParent());
-	}
-
-	public String name() {
-		if (name != null)
-			return name;
-		return name = new File(value).getName();
-	}
-
-	public boolean equals(Object other) {
-		return other instanceof Path && value.equals(((Path)other).value);
-	}
-
-	public int hashCode() {
-		return value.hashCode();
+	private static String name(String path) {
+		int index = path.lastIndexOf('/');
+		if (index < 1)
+			return path.substring(1);
+		else
+			return path.substring(index + 1);
 	}
 }

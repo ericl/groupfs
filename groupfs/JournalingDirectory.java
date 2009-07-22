@@ -104,7 +104,15 @@ public class JournalingDirectory implements Directory {
 	}
 
 	public Set<QueryGroup> getQueryGroups() {
-		return groups;
+		Set<QueryGroup> x = new HashSet<QueryGroup>();
+		Directory p = this;
+		QueryGroup g = getGroup();
+		while (p != null && g != null) {
+			x.add(g);
+			p = p.getParent();
+			g = p.getGroup();
+		}
+		return x;
 	}
 
 	public Directory getParent() {

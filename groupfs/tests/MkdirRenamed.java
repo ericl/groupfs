@@ -7,6 +7,7 @@ import groupfs.backend.*;
 import groupfs.*;
 
 // shows new dirs showing up (correctly) in multiple directories because of the cache
+// empty dir keeping correct groups after moving
 public class MkdirRenamed extends Test {
 	public void run() {
 		DataProvider backend = getNewBackend();
@@ -146,6 +147,36 @@ public class MkdirRenamed extends Test {
 				"./recipe/fish/new",
 				"./.txt",
 				"./.png",
+			}
+		);
+		backend = getNewBackend();
+		fs = new Filesystem(backend);
+		try {
+			fs.mkdir("/a", 0);
+			fs.mkdir("/a/b", 0);
+			fs.mkdir("/a/b/c", 0);
+			fs.mkdir("/d", 0);
+			fs.rename("/a/b", "/d/b");
+			fs.mknod("/d/b/c/node", 0, 0);
+		} catch (FuseException e) {
+			log += e;
+			error = true;
+			return;
+		}
+		expect_nocopy(fs,
+			new String[] {
+				"./b/node",
+				"./c/node",
+				"./d/node",
+				"./.undefined/node",
+			},
+			new String[] {
+				".",
+				"./a",
+				"./b",
+				"./c",
+				"./d",
+				"./.undefined",
 			}
 		);
 	}

@@ -24,7 +24,11 @@ public final class Path {
 	}
 
 	public String name() {
-		return name(value);
+		int index = value.lastIndexOf('/');
+		if (index < 1)
+			return value.substring(1);
+		else
+			return value.substring(index + 1);
 	}
 
 	public boolean equals(Object other) {
@@ -97,13 +101,5 @@ public final class Path {
 			return "/";
 		else
 			return path.substring(0, index);
-	}
-
-	private static String name(String path) {
-		int index = path.lastIndexOf('/');
-		if (index < 1)
-			return path.substring(1);
-		else
-			return path.substring(index + 1);
 	}
 }

@@ -59,6 +59,16 @@ public final class Util {
 		return tags;
 	}
 
+	public static Set<QueryGroup> groupsOf(Path path) {
+		Set<QueryGroup> groups = new HashSet<QueryGroup>();
+		for (String tag : tagsOf(path.parent().value))
+			groups.add(QueryGroup.create(tag, Type.TAG));
+		String ext = extensionOf(path.name());
+		if (ext != null)
+			groups.add(QueryGroup.create(ext, Type.MIME));
+		return groups;
+	}
+
 	public static String unNumbered(String name) {
 		if (name.matches(".*\\.[0-9]+"))
 			name = name.substring(0, name.lastIndexOf("."));

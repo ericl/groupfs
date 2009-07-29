@@ -88,22 +88,9 @@ public class Filesystem implements Filesystem3, XattrSupport {
 
 	public int mknod(String input, int mode, int rdev) throws FuseException {
 		Path path = Path.get(input);
-		String name = path.name();
-		if (!canMknod(path.parent()) || name.startsWith("."))
+		if (!canMknod(path.parent()) || path.name().startsWith("."))
 			return fuse.Errno.EPERM;
-		Directory d = mapper.getDir(path.parent());
-		Set<QueryGroup> groups = null;
-		if (d == null) {
-			groups = new HashSet<QueryGroup>();
-			for (String tag : tagsOf(path.parent().value))
-				groups.add(QueryGroup.create(tag, Type.TAG));
-		} else
-			groups = new HashSet<QueryGroup>(d.getQueryGroups());
-		String ext = extensionOf(path.name());
-		if (ext != null)
-			groups.add(QueryGroup.create(ext, Type.MIME));
-		Node node = backend.create(groups, name);
-		mapper.notifyLatest(path, node);
+		mapper.notifyLatest(path, backend.create(groupsOf(path), path.name()));
 		return 0;
 	}
 

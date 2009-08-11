@@ -1,0 +1,6 @@
+FUSE filesystem for organizing file collections.
+
+Depends on FUSE-J (java bindings for FUSE)
+	http://sourceforge.net/projects/fuse-j/
+
+Usage: groupfs_mount.sh [-o options] /origin/dir /mount/point

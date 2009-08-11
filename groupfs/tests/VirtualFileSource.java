@@ -1,5 +1,7 @@
 package groupfs.tests;
 
+import java.io.IOException;
+
 import java.nio.ByteBuffer;
 
 import java.util.HashSet;
@@ -82,15 +84,15 @@ class VirtualFileHandler implements FileHandler {
 
 	public void close() {}
 
-	public int read(ByteBuffer buf, long offset) throws FuseException {
+	public int read(ByteBuffer buf, long offset) throws IOException {
 		return fuse.Errno.ENOTSUPP;
 	}
 
-	public int write(ByteBuffer buf, long offset) throws FuseException {
+	public int write(ByteBuffer buf, long offset) throws IOException {
 		return fuse.Errno.ENOTSUPP;
 	}
 
-	public int truncate(long size) throws FuseException {
+	public int truncate(long size) throws IOException {
 		return fuse.Errno.ENOTSUPP;
 	}
 }

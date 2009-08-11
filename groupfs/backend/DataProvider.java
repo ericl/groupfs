@@ -1,5 +1,7 @@
 package groupfs.backend;
 
+import java.io.IOException;
+
 import java.nio.ByteBuffer;
 
 import java.util.Collections;
@@ -139,6 +141,12 @@ class JournalingNode extends Node {
 		String extI = extensionOf(this.name);
 		String extF = extensionOf(name);
 		assert maxOneMimeGroup(groups);
+		try {
+			fh.setName(name);
+			this.name = name;
+		} catch (IOException e) {
+			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
+		}
 		if (!hadMime || !extI.equals(extF)) {
 			Set<QueryGroup> add = new HashSet<QueryGroup>();
 			Set<QueryGroup> remove = new HashSet<QueryGroup>();
@@ -147,8 +155,6 @@ class JournalingNode extends Node {
 			changeQueryGroups(add, remove, true);
 		}
 		assert maxOneMimeGroup(groups);
-		this.name = name;
-		fh.setName(name);
 	}
 
 	public int unlink() throws FuseException {
@@ -165,19 +171,35 @@ class JournalingNode extends Node {
 	}
 
 	public void close() throws FuseException {
-		fh.close();
+		try {
+			fh.close();
+		} catch (IOException e) {
+			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
+		}
 	}
 
 	public int read(ByteBuffer buf, long offset) throws FuseException {
-		return fh.read(buf, offset);
+		try {
+			return fh.read(buf, offset);
+		} catch (IOException e) {
+			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
+		}
 	}
 
 	public int write(ByteBuffer buf, long offset) throws FuseException {
-		return fh.write(buf, offset);
+		try {
+			return fh.write(buf, offset);
+		} catch (IOException e) {
+			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
+		}
 	}
 
 	public int truncate(long size) throws FuseException {
-		return fh.truncate(size);
+		try {
+			return fh.truncate(size);
+		} catch (IOException e) {
+			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
+		}
 	}
 
 	protected void changeQueryGroups(Set<QueryGroup> add, Set<QueryGroup> remove, boolean allowMimetypeChange) throws FuseException {
@@ -199,7 +221,13 @@ class JournalingNode extends Node {
 			if (!groups.contains(QueryGroup.GROUP_NO_GROUP))
 				raw_groups.add(QueryGroup.GROUP_NO_GROUP);
 		}
-		fh.setTagGroups(groups);
+		try {
+			fh.setTagGroups(groups);
+		} catch (IOException e) {
+			raw_groups.clear();
+			raw_groups.addAll(original);
+			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
+		}
 		logDifference(original, groups);
 		assert maxOneMimeGroup(groups);
 	}

@@ -212,10 +212,6 @@ public class JournalingDirectory implements Directory {
 					mapper.map(backend.get(this, g));
 			}
 		}
-		// reap repeated directories (from mkdir/moves)
-		for (QueryGroup o : mapper.getGroups())
-			if (groups.contains(o))
-				mapper.unmap(o);
 	}
 
 	protected void process_file(Entry e) {

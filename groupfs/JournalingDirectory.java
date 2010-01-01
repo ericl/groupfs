@@ -63,9 +63,17 @@ public class JournalingDirectory implements Directory {
 		return backend.getAll();
 	}
 
-	protected void populateSelf() {
-		for (QueryGroup group : backend.findAllGroups())
-			mapper.map(backend.get(this, group));
+	protected boolean populateSelf() {
+		if (!populated) {
+			for (QueryGroup group : backend.findAllGroups())
+				mapper.map(backend.get(this, group));
+			populated = true;
+			time = System.currentTimeMillis();
+			head = backend.journal.head(); // we're up to date
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	public View get(String name) {
@@ -131,12 +139,7 @@ public class JournalingDirectory implements Directory {
 	}
 
 	protected void update() {
-		if (!populated) {
-			populateSelf();
-			populated = true;
-			time = System.currentTimeMillis();
-			head = backend.journal.head(); // we're up to date
-		} else if (head != backend.journal.head()) {
+		if (!populateSelf() && head != backend.journal.head()) {
 			replayJournal();
 			time = System.currentTimeMillis();
 		}
@@ -205,8 +208,7 @@ public class JournalingDirectory implements Directory {
 		others.removeAll(e);
 		for (QueryGroup g : others) {
 			if (mapper.count(g) == current) {
-				if (mapper.contains(g))
-					mapper.unmap(g);
+				mapper.unmap(g);
 			} else {
 				if (!mapper.contains(g))
 					mapper.map(backend.get(this, g));

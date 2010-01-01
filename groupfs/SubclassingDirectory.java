@@ -78,28 +78,36 @@ public class SubclassingDirectory extends JournalingDirectory {
 		return pool;
 	}
 
-	protected void populateSelf() {
-		Set<Node> pool = filter(group, parent.getPool());
-		Set<QueryGroup> output = new HashSet<QueryGroup>();
-		Set<QueryGroup> groups = getQueryGroups();
-		if (group.getType() != Type.MIME) {
-			Map<QueryGroup,Integer> gcount = new HashMap<QueryGroup,Integer>();
-			for (Node node : pool) {
-				for (QueryGroup group : node.getQueryGroups()) {
-					Integer n = gcount.get(group);
-					gcount.put(group, n == null ? 1 : n + 1);
+	protected boolean populateSelf() {
+		if (!populated) {
+			Set<Node> pool = filter(group, parent.getPool());
+			Set<QueryGroup> output = new HashSet<QueryGroup>();
+			Set<QueryGroup> groups = getQueryGroups();
+			if (group.getType() != Type.MIME) {
+				Map<QueryGroup,Integer> gcount = new HashMap<QueryGroup,Integer>();
+				for (Node node : pool) {
+					for (QueryGroup group : node.getQueryGroups()) {
+						Integer n = gcount.get(group);
+						gcount.put(group, n == null ? 1 : n + 1);
+					}
+				}
+				for (Entry<QueryGroup,Integer> entry : gcount.entrySet()) {
+					QueryGroup g = entry.getKey();
+					if (!groups.contains(g) && (groups.isEmpty() || entry.getValue() < pool.size()))
+						output.add(g);
 				}
 			}
-			for (Entry<QueryGroup,Integer> entry : gcount.entrySet()) {
-				QueryGroup g = entry.getKey();
-				if (!groups.contains(g) && (groups.isEmpty() || entry.getValue() < pool.size()))
-					output.add(g);
-			}
+			for (QueryGroup group : output)
+				mapper.map(backend.get(this, group));
+			for (Node node : pool)
+				mapper.map(node);
+			populated = true;
+			time = System.currentTimeMillis();
+			head = backend.journal.head(); // we're up to date
+			return true;
+		} else {
+			return false;
 		}
-		for (QueryGroup group : output)
-			mapper.map(backend.get(this, group));
-		for (Node node : pool)
-			mapper.map(node);
 	}
 
 	private boolean fromEqualsThis(String from) {

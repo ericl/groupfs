@@ -37,6 +37,7 @@ clean_exit() {
 
 trap "clean_exit 1" SIGINT SIGTERM SIGHUP
 
+# disabling multithreading with '-s'
 java -Dorg.apache.commons.logging.Log=fuse.logging.FuseLog \
      -Dfuse.logging.level=${LOGLEVEL-INFO} \
      groupfs.Filesystem ${OPTIONS-$DEFOPTS} -f -s "$MOUNTPOINT" "$ORIGIN"

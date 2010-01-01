@@ -21,13 +21,16 @@ public class ReadWrite extends Test {
 			syn(backend, "generic file", a, b, c, d, e);
 		}
 		Filesystem fs = new Filesystem(backend);
+		long total = 0;
 		System.out.print("base build ");
 		for (int i=0; i < 8; i++) {
 			long time = System.currentTimeMillis();
 			SortedSet<String> f = new TreeSet<String>();
 			SortedSet<String> d = new TreeSet<String>();
 			buildFileSet(fs, f, d, ".");
-			System.err.println((System.currentTimeMillis() - time) + " ms");
+			long diff = System.currentTimeMillis() - time;
+			total += diff;
+			System.err.println(diff + " ms");
 			System.gc();
 			try {
 				switch (i) {
@@ -67,6 +70,7 @@ public class ReadWrite extends Test {
 				throw new RuntimeException(e);
 			}
 		}
+		System.out.println("total " + total + " ms");
 	}
 
 	private String rstr(Random rand) {

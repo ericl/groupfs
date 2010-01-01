@@ -5,6 +5,9 @@ import java.util.Set;
 
 import fuse.FuseException;
 
+/**
+ * All directories must implement this.
+ */
 public interface Directory extends View {
 	public int delete() throws FuseException;
 	public View get(String name);

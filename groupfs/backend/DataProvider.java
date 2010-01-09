@@ -14,12 +14,12 @@ import fuse.FuseException;
 import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
-import groupfs.JournalingDirectory;
+import groupfs.BaseDirectory;
 import groupfs.Link;
-import groupfs.QueryGroup;
-import groupfs.SubclassingDirectory;
+import groupfs.Group;
+import groupfs.SubDirectory;
 
-import static groupfs.QueryGroup.Type.*;
+import static groupfs.Group.Type.*;
 
 import static groupfs.Util.*;
 
@@ -28,7 +28,7 @@ public class DataProvider {
 	private final Set<Node> nodes = new HashSet<Node>();
 	private final FileSource source;
 	private final Set<Node> nodes_ro = Collections.unmodifiableSet(nodes);
-	protected Map<Set<QueryGroup>,SubclassingDirectory> cache = new HashMap<Set<QueryGroup>,SubclassingDirectory>();
+	protected Map<Set<Group>,SubDirectory> cache = new HashMap<Set<Group>,SubDirectory>();
 
 	public DataProvider(FileSource source) {
 		this.source = source;
@@ -36,12 +36,12 @@ public class DataProvider {
 			nodes.add(makeNode(fh));
 	}
 
-	public SubclassingDirectory get(JournalingDirectory parent, QueryGroup group) {
-		Set<QueryGroup> key = new HashSet<QueryGroup>(parent.getQueryGroups());
+	public SubDirectory get(BaseDirectory parent, Group group) {
+		Set<Group> key = new HashSet<Group>(parent.getGroups());
 		key.add(group);
-		SubclassingDirectory link = cache.get(key);
+		SubDirectory link = cache.get(key);
 		if (link == null) {
-			link = new SubclassingDirectory(this, parent, group);
+			link = new SubDirectory(this, parent, group);
 			cache.put(key, link);
 			return link;
 		} else {
@@ -49,12 +49,12 @@ public class DataProvider {
 		}
 	}
 
-	public void drop(Set<QueryGroup> groups) {
+	public void drop(Set<Group> groups) {
 		cache.remove(groups);
 	}
 
 	private JournalingNode makeNode(FileHandler fh) {
-		Set<QueryGroup> groups = fh.getAllGroups();
+		Set<Group> groups = fh.getAllGroups();
 		assert maxOneMimeGroup(groups);
 		return new JournalingNode(this, fh);
 	}
@@ -63,14 +63,14 @@ public class DataProvider {
 		return nodes_ro;
 	}
 
-	public Set<QueryGroup> findAllGroups() {
-		Set<QueryGroup> output = new HashSet<QueryGroup>();
+	public Set<Group> findAllGroups() {
+		Set<Group> output = new HashSet<Group>();
 		for (Node node : getAll())
-			output.addAll(node.getQueryGroups());
+			output.addAll(node.getGroups());
 		return output;
 	}
 
-	public Node create(Set<QueryGroup> groups, String name) throws FuseException {
+	public Node create(Set<Group> groups, String name) throws FuseException {
 		assert maxOneMimeGroup(groups);
 		FileHandler fh = source.create(name, groups);
 		Node node = new JournalingNode(this, fh);
@@ -133,8 +133,8 @@ class JournalingNode extends Node {
 		return 0;
 	}
 
-	public void changeQueryGroups(Set<QueryGroup> add, Set<QueryGroup> remove) throws FuseException {
-		changeQueryGroups(add, remove, false);
+	public void changeGroups(Set<Group> add, Set<Group> remove) throws FuseException {
+		changeGroups(add, remove, false);
 	}
 
 	protected void setName(String name, boolean hadMime) throws FuseException {
@@ -148,17 +148,17 @@ class JournalingNode extends Node {
 			throw new FuseException(e.getMessage()).initErrno(FuseException.EIO);
 		}
 		if (!hadMime || !extI.equals(extF)) {
-			Set<QueryGroup> add = new HashSet<QueryGroup>();
-			Set<QueryGroup> remove = new HashSet<QueryGroup>();
-			remove.add(QueryGroup.create(extI, MIME));
-			add.add(QueryGroup.create(extF, MIME));
-			changeQueryGroups(add, remove, true);
+			Set<Group> add = new HashSet<Group>();
+			Set<Group> remove = new HashSet<Group>();
+			remove.add(Group.create(extI, MIME));
+			add.add(Group.create(extF, MIME));
+			changeGroups(add, remove, true);
 		}
 		assert maxOneMimeGroup(groups);
 	}
 
 	public int unlink() throws FuseException {
-		changeQueryGroups(null, new HashSet<QueryGroup>(groups), true);
+		changeGroups(null, new HashSet<Group>(groups), true);
 		return 0;
 	}
 
@@ -202,24 +202,24 @@ class JournalingNode extends Node {
 		}
 	}
 
-	protected void changeQueryGroups(Set<QueryGroup> add, Set<QueryGroup> remove, boolean allowMimetypeChange) throws FuseException {
-		Set<QueryGroup> original = new HashSet<QueryGroup>(groups);
+	protected void changeGroups(Set<Group> add, Set<Group> remove, boolean allowMimetypeChange) throws FuseException {
+		Set<Group> original = new HashSet<Group>(groups);
 		if (remove != null)
-			for (QueryGroup r : remove) {
-				if (allowMimetypeChange || r.getType() != MIME)
+			for (Group r : remove) {
+				if (allowMimetypeChange || r.type != MIME)
 					raw_groups.remove(r);
 			}
 		if (add != null)
-			for (QueryGroup a : add) {
-				if (allowMimetypeChange || a.getType() != MIME)
+			for (Group a : add) {
+				if (allowMimetypeChange || a.type != MIME)
 					raw_groups.add(a);
 			}
 		if (hasCategory(groups)) {
-			raw_groups.remove(QueryGroup.GROUP_NO_GROUP);
+			raw_groups.remove(Group.GROUP_NO_GROUP);
 		} else {
 			raw_groups.clear();
-			if (!groups.contains(QueryGroup.GROUP_NO_GROUP))
-				raw_groups.add(QueryGroup.GROUP_NO_GROUP);
+			if (!groups.contains(Group.GROUP_NO_GROUP))
+				raw_groups.add(Group.GROUP_NO_GROUP);
 		}
 		try {
 			fh.setTagGroups(groups);
@@ -232,8 +232,8 @@ class JournalingNode extends Node {
 		assert maxOneMimeGroup(groups);
 	}
 
-	protected void logDifference(Set<QueryGroup> original, Set<QueryGroup> current) {
-		Set<QueryGroup> all = new HashSet<QueryGroup>(original);
+	protected void logDifference(Set<Group> original, Set<Group> current) {
+		Set<Group> all = new HashSet<Group>(original);
 		all.addAll(current);
 		backend.journal.log(this, all);
 	}

@@ -17,10 +17,10 @@ import groupfs.backend.DataProvider;
  * Used transparently by the filesystem implementation to eliminate
  * duplicate computation for the contents of, say, /A/B vs /B/A.
  */
-public class Link extends SubclassingDirectory {
-	private final SubclassingDirectory link;
+public class Link extends SubDirectory {
+	private final SubDirectory link;
 
-	public Link(DataProvider backend, JournalingDirectory parent, QueryGroup group, SubclassingDirectory link) {
+	public Link(DataProvider backend, BaseDirectory parent, Group group, SubDirectory link) {
 		super(backend, parent, group);
 		this.link = link;
 		mapper = link.mapper;

@@ -8,17 +8,17 @@ import java.util.Set;
 
 import fuse.FuseException;
 
-import groupfs.QueryGroup;
+import groupfs.Group;
 
 public interface FileHandler {
-	public Set<QueryGroup> getAllGroups();
+	public Set<Group> getAllGroups();
 	public String getName();
 	public void delete();
 	public long lastModified();
 	public long length();
 	public void setLastModified(long mtime);
 	public void close() throws IOException;
-	public void setTagGroups(Set<QueryGroup> groups) throws IOException;
+	public void setTagGroups(Set<Group> groups) throws IOException;
 	public void setName(String name) throws IOException;
 	public int read(ByteBuffer buf, long offset) throws IOException;
 	public int write(ByteBuffer buf, long offset) throws IOException;

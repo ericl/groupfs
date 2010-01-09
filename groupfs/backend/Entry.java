@@ -1,21 +1,21 @@
 package groupfs.backend;
 
-import groupfs.QueryGroup;
+import groupfs.Group;
 
 import java.util.*;
 
 public class Entry {
 	private final Node node;
-	private final Set<QueryGroup> updates;
+	private final Set<Group> updates;
 	private long UUID = System.nanoTime() % 10000;
 	private Entry next;
 
-	public Entry(Node node, Set<QueryGroup> updates) {
+	public Entry(Node node, Set<Group> updates) {
 		this.node = node;
-		this.updates = Collections.unmodifiableSet(new HashSet<QueryGroup>(updates));
+		this.updates = Collections.unmodifiableSet(new HashSet<Group>(updates));
 	}
 
-	public Set<QueryGroup> getGroups() {
+	public Set<Group> getGroups() {
 		return updates;
 	}
 

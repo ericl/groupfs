@@ -2,21 +2,41 @@ package groupfs;
 
 import groupfs.backend.Node;
 
-public class ViewMapper {
+/**
+ * Maps full filesystem paths to inodes.
+ */
+public class PathMapper {
 	private final Directory root;
-	private Path latestPath;
-	private Node latestNode;
 
-	ViewMapper(Directory root) {
+	PathMapper(Directory root) {
 		this.root = root;
 	}
 
+	/**
+	 * XXX cache an inode to support operations like
+	 *	mknod() and then accessing the node
+	 *	while the underlying directory structure has shifted
+	 * This is impossible otherwise since there is no way
+	 * to know if it is ok to let the structures shift
+	 * in the middle of a sequence of operations.
+	 */
+	private Path latestPath;
+	private Node latestNode;
+
+	/**
+	 * XXX support operations on new nodes
+	 * @param	path	Path of the new node.
+	 * @param	node	Node of the new node.
+	 */
 	void notifyLatest(Path path, Node node) {
 		latestPath = path;
 		latestNode = node;
 	}
 
-	View get(Path path) {
+	/**
+	 * @return Inode of path or null.
+	 */
+	Inode get(Path path) {
 		if (latestPath != null && latestPath.equals(path))
 			return latestNode;
 		String[] parts = path.value.split("/");
@@ -38,22 +58,28 @@ public class ViewMapper {
 				}
 			}
 		}
-		View output = null;
+		Inode output = null;
 		if (parent_ok)
 			output = directory.get(parts[parts.length-1]);
 		return output;
 	}
 
+	/**
+	 * @return Directory at path iff inode is a directory.
+	 */
 	Directory getDir(Path path) {
-		View dir = get(path);
+		Inode dir = get(path);
 		if (dir instanceof Directory)
 			return (Directory)dir;
 		else
 			return null;
 	}
 
+	/**
+	 * @return File node at path iff inode is a file node.
+	 */
 	Node getNode(Path path) {
-		View dir = get(path);
+		Inode dir = get(path);
 		if (dir instanceof Node)
 			return (Node)dir;
 		else

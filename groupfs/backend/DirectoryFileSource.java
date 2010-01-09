@@ -17,9 +17,9 @@ import java.util.Set;
 import fuse.FilesystemConstants;
 import fuse.FuseException;
 
-import groupfs.QueryGroup.Type;
+import groupfs.Group.Type;
 
-import groupfs.QueryGroup;
+import groupfs.Group;
 
 import groupfs.backend.FileHandler;
 import groupfs.backend.FileSource;
@@ -45,18 +45,18 @@ public class DirectoryFileSource implements FileSource {
 				if (!child.getName().startsWith("."))
 					scan(child);
 			} else {
-				Set<QueryGroup> groups = groupsOf(child);
+				Set<Group> groups = groupsOf(child);
 				raw_files.add(new DirectoryFileHandler(root, child, groups));
 			}
 		}
 	}
 
-	private Set<QueryGroup> groupsOf(File file) {
+	private Set<Group> groupsOf(File file) {
 		String a = file.getParentFile().getAbsolutePath();
 		String b = root.getAbsolutePath();
-		Set<QueryGroup> groups = new HashSet<QueryGroup>();
+		Set<Group> groups = new HashSet<Group>();
 		if (a.equals(b)) {
-			groups.add(QueryGroup.GROUP_NO_GROUP);
+			groups.add(Group.GROUP_NO_GROUP);
 			return groups; // else things are broken by substring()
 		}
 		String path = a.substring(b.length() + 1);
@@ -65,8 +65,8 @@ public class DirectoryFileSource implements FileSource {
 		);
 		tags.remove("");
 		for (String tag : tags)
-			groups.add(QueryGroup.create(tag, Type.TAG));
-		groups.add(QueryGroup.create(extensionOf(file.getName()), Type.MIME));
+			groups.add(Group.create(tag, Type.TAG));
+		groups.add(Group.create(extensionOf(file.getName()), Type.MIME));
 		assert maxOneMimeGroup(groups);
 		return groups;
 	}
@@ -75,7 +75,7 @@ public class DirectoryFileSource implements FileSource {
 		return files;
 	}
 
-	public FileHandler create(String name, Set<QueryGroup> groups) throws FuseException {
+	public FileHandler create(String name, Set<Group> groups) throws FuseException {
 		File file = null;
 		try {
 			file = getDestination(newPath(root, groups), name);
@@ -104,18 +104,18 @@ public class DirectoryFileSource implements FileSource {
 class DirectoryFileHandler implements FileHandler {
 	private FileChannel channel;
 	private int channelFlags = FilesystemConstants.O_RDONLY;
-	private final Set<QueryGroup> groups, raw_groups;
+	private final Set<Group> groups, raw_groups;
 	private File file, root;
 	private String name;
 	
-	public DirectoryFileHandler(File root, File file, Set<QueryGroup> groups) {
+	public DirectoryFileHandler(File root, File file, Set<Group> groups) {
 		this.root = root;
 		this.file = file;
 		this.name = file.getName();
-		this.groups = Collections.unmodifiableSet(raw_groups = new HashSet<QueryGroup>(groups));
+		this.groups = Collections.unmodifiableSet(raw_groups = new HashSet<Group>(groups));
 	}
 
-	public Set<QueryGroup> getAllGroups() {
+	public Set<Group> getAllGroups() {
 		return groups;
 	}
 
@@ -123,11 +123,11 @@ class DirectoryFileHandler implements FileHandler {
 		return name;
 	}
 
-	public void setTagGroups(Set<QueryGroup> groups) throws IOException {
+	public void setTagGroups(Set<Group> groups) throws IOException {
 		assert maxOneMimeGroup(groups);
 		File loc = null;
-		Set<QueryGroup> consideredGroups = new HashSet<QueryGroup>(groups);
-		consideredGroups.remove(QueryGroup.GROUP_NO_GROUP);
+		Set<Group> consideredGroups = new HashSet<Group>(groups);
+		consideredGroups.remove(Group.GROUP_NO_GROUP);
 		loc = getDestination(newPath(root, consideredGroups), name);
 		raw_groups.clear();
 		raw_groups.addAll(groups);

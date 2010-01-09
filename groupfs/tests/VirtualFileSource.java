@@ -9,7 +9,7 @@ import java.util.Set;
 
 import fuse.FuseException;
 
-import groupfs.QueryGroup;
+import groupfs.Group;
 
 import groupfs.backend.FileHandler;
 import groupfs.backend.FileSource;
@@ -21,7 +21,7 @@ public class VirtualFileSource implements FileSource {
 		return files;
 	}
 
-	public FileHandler create(String name, Set<QueryGroup> groups) {
+	public FileHandler create(String name, Set<Group> groups) {
 		FileHandler fh = new VirtualFileHandler(name, groups);
 		files.add(fh);
 		return fh;
@@ -42,15 +42,15 @@ public class VirtualFileSource implements FileSource {
 
 class VirtualFileHandler implements FileHandler {
 	private long time = System.currentTimeMillis();
-	private Set<QueryGroup> groups;
+	private Set<Group> groups;
 	private String name;
 	
-	public VirtualFileHandler(String name, Set<QueryGroup> groups) {
+	public VirtualFileHandler(String name, Set<Group> groups) {
 		this.groups = groups;
 		this.name = name;
 	}
 
-	public Set<QueryGroup> getAllGroups() {
+	public Set<Group> getAllGroups() {
 		return groups;
 	}
 
@@ -58,8 +58,8 @@ class VirtualFileHandler implements FileHandler {
 		return name;
 	}
 
-	public void setTagGroups(Set<QueryGroup> groups) {
-		this.groups = new HashSet<QueryGroup>(groups);
+	public void setTagGroups(Set<Group> groups) {
+		this.groups = new HashSet<Group>(groups);
 	}
 
 	public void setName(String name) {

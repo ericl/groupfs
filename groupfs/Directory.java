@@ -8,16 +8,16 @@ import fuse.FuseException;
 /**
  * All directories must implement this.
  */
-public interface Directory extends View {
+public interface Directory extends Inode {
 	public int delete() throws FuseException;
-	public View get(String name);
+	public Inode get(String name);
 	public Directory getDir(String name);
-	public QueryGroup getGroup();
-	public Set<QueryGroup> getQueryGroups();
+	public Group getGroup();
+	public Set<Group> getGroups();
 	public Directory getParent();
-	public Map<String,View> list();
+	public Map<String,Inode> list();
 	public Permissions getPerms();
-	public void mkdir(QueryGroup group);
+	public void mkdir(Group group);
 }
 
 class Permissions {

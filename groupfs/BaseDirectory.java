@@ -9,7 +9,7 @@ import fuse.FuseException;
 import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
-import groupfs.QueryGroup.Type;
+import groupfs.Group.Type;
 
 import groupfs.backend.Entry;
 import groupfs.backend.DataProvider;
@@ -17,10 +17,10 @@ import groupfs.backend.Node;
 
 import static groupfs.Util.*;
 
-public class JournalingDirectory implements Directory {
+public class BaseDirectory implements Directory {
 	protected Entry head;
 	protected DataProvider backend;
-	protected Set<QueryGroup> queued = new HashSet<QueryGroup>();
+	protected Set<Group> queued = new HashSet<Group>();
 	protected NameMapper mapper;
 	protected long time = System.currentTimeMillis();
 	protected boolean populated;
@@ -28,7 +28,7 @@ public class JournalingDirectory implements Directory {
 		false, false, false, true, true, true, false
 	);
 
-	public JournalingDirectory(DataProvider backend) {
+	public BaseDirectory(DataProvider backend) {
 		this.backend = backend;
 		mapper = new NameMapper(backend);
 	}
@@ -46,7 +46,7 @@ public class JournalingDirectory implements Directory {
 		return 0;
 	}
 
-	public int rename(Path from, Path to, View target, Directory orig, Directory dest) throws FuseException {
+	public int rename(Path from, Path to, Inode target, Directory orig, Directory dest) throws FuseException {
 		return fuse.Errno.EPERM;
 	}
 
@@ -65,7 +65,7 @@ public class JournalingDirectory implements Directory {
 
 	protected boolean populateSelf() {
 		if (!populated) {
-			for (QueryGroup group : backend.findAllGroups())
+			for (Group group : backend.findAllGroups())
 				mapper.map(backend.get(this, group));
 			populated = true;
 			time = System.currentTimeMillis();
@@ -76,13 +76,13 @@ public class JournalingDirectory implements Directory {
 		}
 	}
 
-	public View get(String name) {
+	public Inode get(String name) {
 		update();
-		return mapper.viewMap().get(name);
+		return mapper.inodeMap().get(name);
 	}
 
 	public Directory getDir(String name) {
-		View v = get(name);
+		Inode v = get(name);
 		if (v != null && v instanceof Directory)
 			return (Directory)v;
 		return null;
@@ -105,14 +105,14 @@ public class JournalingDirectory implements Directory {
 		return 0;
 	}
 
-	public QueryGroup getGroup() {
+	public Group getGroup() {
 		return null;
 	}
 
-	public Set<QueryGroup> getQueryGroups() {
-		Set<QueryGroup> x = new HashSet<QueryGroup>();
+	public Set<Group> getGroups() {
+		Set<Group> x = new HashSet<Group>();
 		Directory p = this;
-		QueryGroup g = getGroup();
+		Group g = getGroup();
 		while (p != null && g != null) {
 			x.add(g);
 			p = p.getParent();
@@ -125,13 +125,13 @@ public class JournalingDirectory implements Directory {
 		return null;
 	}
 
-	public Map<String,View> list() {
+	public Map<String,Inode> list() {
 		update();
-		return mapper.viewMap();
+		return mapper.inodeMap();
 	}
 
-	public void mkdir(QueryGroup g) {
-		mapper.map(new SubclassingDirectory(backend, this, g));
+	public void mkdir(Group g) {
+		mapper.map(new SubDirectory(backend, this, g));
 	}
 
 	protected NameMapper getMapper() {
@@ -157,13 +157,13 @@ public class JournalingDirectory implements Directory {
 	}
 
 	protected boolean isPertinent(Entry e) {
-		return e != null && e.getNode() != null && e.getGroups().containsAll(getQueryGroups());
+		return e != null && e.getNode() != null && e.getGroups().containsAll(getGroups());
 	}
 
 	protected void process(Entry e) {
 		if (getGroup() == null) {
 			queue_dirs(e);
-		} else if (getGroup().getType() == Type.MIME) {
+		} else if (getGroup().type == Type.MIME) {
 			process_file(e);
 		} else {
 			process_file(e);
@@ -183,16 +183,16 @@ public class JournalingDirectory implements Directory {
 
 	// always call after process_file since getPoolDirect() is called
 	// getPoolDirect() will return correct value then
-	protected void process_dirs(Set<QueryGroup> e) {
+	protected void process_dirs(Set<Group> e) {
 		int current = getPoolDirect().size();
-		Set<QueryGroup> groups = getQueryGroups();
-		for (QueryGroup u : e) {
+		Set<Group> groups = getGroups();
+		for (Group u : e) {
 			if (!groups.contains(u)) {
 				int next = 0;
 				for (Node n : getPoolDirect())
-					if (n.getQueryGroups().contains(u))
+					if (n.getGroups().contains(u))
 						next++;
-				if (next > 0 && (next < current || getQueryGroups().isEmpty())) {
+				if (next > 0 && (next < current || getGroups().isEmpty())) {
 					if (!mapper.contains(u))
 						mapper.map(backend.get(this, u));
 				} else {
@@ -202,11 +202,11 @@ public class JournalingDirectory implements Directory {
 			}
 		}
 		// hide/unhide dirs that do not narrow the query
-		Set<QueryGroup> others = new HashSet<QueryGroup>();
+		Set<Group> others = new HashSet<Group>();
 		for (Node node : getPoolDirect())
-			others.addAll(node.getQueryGroups());
+			others.addAll(node.getGroups());
 		others.removeAll(e);
-		for (QueryGroup g : others) {
+		for (Group g : others) {
 			if (mapper.count(g) == current) {
 				mapper.unmap(g);
 			} else {
@@ -218,7 +218,7 @@ public class JournalingDirectory implements Directory {
 
 	protected void process_file(Entry e) {
 		Node node = e.getNode();
-		if (node.getQueryGroups().containsAll(getQueryGroups())) {
+		if (node.getGroups().containsAll(getGroups())) {
 			if (mapper.contains(node))
 				mapper.unmap(node);
 			mapper.map(node);

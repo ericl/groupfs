@@ -12,24 +12,24 @@ import fuse.FuseGetattrSetter;
 
 import groupfs.Directory;
 import groupfs.Path;
-import groupfs.QueryGroup;
-import groupfs.View;
+import groupfs.Group;
+import groupfs.Inode;
 
 import static groupfs.Util.*;
 
-public abstract class Node implements View {
-	protected final Set<QueryGroup> groups, raw_groups;
+public abstract class Node implements Inode {
+	protected final Set<Group> groups, raw_groups;
 	protected String name;
 
-	public Node(Set<QueryGroup> groups) {
-		this.groups = Collections.unmodifiableSet(this.raw_groups = new HashSet<QueryGroup>(groups));
+	public Node(Set<Group> groups) {
+		this.groups = Collections.unmodifiableSet(this.raw_groups = new HashSet<Group>(groups));
 	}
 
 	public int getFType() {
 		return FuseFtype.TYPE_FILE;
 	}
 
-	public Set<QueryGroup> getQueryGroups() {
+	public Set<Group> getGroups() {
 		return groups;
 	}
 
@@ -37,22 +37,22 @@ public abstract class Node implements View {
 		return name;
 	}
 
-	protected abstract void logDifference(Set<QueryGroup> original, Set<QueryGroup> current);
+	protected abstract void logDifference(Set<Group> original, Set<Group> current);
 
-	public int rename(Path from, Path to, View target, Directory orig, Directory dest) throws FuseException {
-		Set<QueryGroup> original = new HashSet<QueryGroup>(groups);
+	public int rename(Path from, Path to, Inode target, Directory orig, Directory dest) throws FuseException {
+		Set<Group> original = new HashSet<Group>(groups);
 		boolean hadMime = hasMime(groups);
 		if (target != null && target != this) {
 			// the common rename-swap-file-to-write behavior
 			if (target instanceof Node) {
 				Node node = (Node)target;
-				changeQueryGroups(node.getQueryGroups(), null);
+				changeGroups(node.getGroups(), null);
 				node.deleteFromBackingMedia();
 			}
 			// if not a node then probably root dir
 		}
-		if (!dest.getQueryGroups().equals(orig.getQueryGroups()))
-			changeQueryGroups(dest.getQueryGroups(), orig.getQueryGroups());
+		if (!dest.getGroups().equals(orig.getGroups()))
+			changeGroups(dest.getGroups(), orig.getGroups());
 		else
 			logDifference(original, groups);
 		setName(to.name(), hadMime);
@@ -63,7 +63,7 @@ public abstract class Node implements View {
 
 	public abstract int setModified(long mtime) throws FuseException;
 
-	public abstract void changeQueryGroups(Set<QueryGroup> add, Set<QueryGroup> remove) throws FuseException;
+	public abstract void changeGroups(Set<Group> add, Set<Group> remove) throws FuseException;
 
 	protected abstract void setName(String name, boolean hadMime) throws FuseException;
 

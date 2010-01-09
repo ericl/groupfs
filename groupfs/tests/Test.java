@@ -13,7 +13,7 @@ import fuse.FuseFtype;
 
 import groupfs.*;
 
-import groupfs.QueryGroup.Type;
+import groupfs.Group.Type;
 
 import groupfs.backend.*;
 
@@ -57,13 +57,13 @@ public abstract class Test {
 	}
 
 	protected void syn(DataProvider backend, String name, String ... tags) {
-		Set<QueryGroup> groups = new HashSet<QueryGroup>();
+		Set<Group> groups = new HashSet<Group>();
 		for (String tag : tags)
-			groups.add(QueryGroup.create(tag, Type.TAG));
-		groups.add(QueryGroup.create(extensionOf(name), Type.MIME));
+			groups.add(Group.create(tag, Type.TAG));
+		groups.add(Group.create(extensionOf(name), Type.MIME));
 		if (!hasCategory(groups)) {
 			groups.clear();
-			groups.add(QueryGroup.GROUP_NO_GROUP);
+			groups.add(Group.GROUP_NO_GROUP);
 		}
 		try {
 			backend.create(groups, name);

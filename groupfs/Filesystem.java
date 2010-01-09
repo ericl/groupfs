@@ -23,7 +23,7 @@ import fuse.FuseStatfsSetter;
 import fuse.XattrLister;
 import fuse.XattrSupport;
 
-import groupfs.QueryGroup.Type;
+import groupfs.Group.Type;
 
 import groupfs.backend.DataProvider;
 import groupfs.backend.DirectoryFileSource;
@@ -38,7 +38,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	public static final Log log = LogFactory.getLog(Filesystem.class);
 	public static final int blksize = 1024;
 	private DataProvider backend;
-	private ViewMapper mapper;
+	private PathMapper mapper;
 
 	public static void main(String[] args) {
 		if (args.length < 2) {
@@ -61,11 +61,11 @@ public class Filesystem implements Filesystem3, XattrSupport {
 
 	public Filesystem(DataProvider backend) {
 		this.backend = backend;
-		mapper = new ViewMapper(new JournalingDirectory(backend));
+		mapper = new PathMapper(new BaseDirectory(backend));
 	}
 
 	public int getattr(String path, FuseGetattrSetter getattrSetter) throws FuseException {
-		View o = mapper.get(Path.get(path));
+		Inode o = mapper.get(Path.get(path));
 		if (o == null)
 			return fuse.Errno.ENOENT;
 		else
@@ -81,7 +81,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		Directory d = mapper.getDir(path);
 		if (d == null)
 			return fuse.Errno.ENOENT;
-		for (Entry<String,View> entry : d.list().entrySet())
+		for (Entry<String,Inode> entry : d.list().entrySet())
 			dirFiller.add(entry.getKey(), 0, entry.getValue().getFType());
 		return 0;
 	}
@@ -117,8 +117,8 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			return fuse.Errno.ENOENT;
 		else if (!parent.getPerms().canMkdir())
 			return fuse.Errno.EPERM;
-		QueryGroup group = QueryGroup.create(name, Type.TAG);
-		if (parent.getQueryGroups().contains(group))
+		Group group = Group.create(name, Type.TAG);
+		if (parent.getGroups().contains(group))
 			return fuse.Errno.EPERM;
 		parent.mkdir(group);
 		return 0;
@@ -132,7 +132,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		Directory d = mapper.getDir(path.parent());
 		if (d == null)
 			return fuse.Errno.ENOENT;
-		else if (d.getGroup() == QueryGroup.GROUP_NO_GROUP) {
+		else if (d.getGroup() == Group.GROUP_NO_GROUP) {
 			return n.deleteFromBackingMedia();
 		} else if (!d.getPerms().canDeleteNode())
 			return fuse.Errno.EPERM;
@@ -156,11 +156,11 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	public int rename(String fromPath, String toPath) throws FuseException {
 		Path from = Path.get(fromPath);
 		Path to = Path.get(toPath);
-		View view = mapper.get(from);
+		Inode inode = mapper.get(from);
 		Directory orig = mapper.getDir(from.parent());
 		Directory dest = mapper.getDir(to.parent());
 
-		if (view == null || orig == null || dest == null)
+		if (inode == null || orig == null || dest == null)
 			return fuse.Errno.ENOENT;
 		// allow renaming within mime dir
 		else if (orig != dest && (!orig.getPerms().canMoveOut() || !dest.getPerms().canMoveIn()))
@@ -170,7 +170,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			return fuse.Errno.EPERM;
 		if (!allUnique(to))
 			return fuse.Errno.EPERM;
-		return view.rename(from, to, mapper.get(to), orig, dest);
+		return inode.rename(from, to, mapper.get(to), orig, dest);
 	}
 
 	public int link(String from, String to) throws FuseException {

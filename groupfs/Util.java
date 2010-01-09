@@ -10,7 +10,7 @@ import java.util.Set;
 
 import com.sun.security.auth.module.UnixSystem;
 
-import groupfs.QueryGroup.Type;
+import groupfs.Group.Type;
 
 public final class Util {
 	public final static int UID = (int)new UnixSystem().getUid();
@@ -59,13 +59,13 @@ public final class Util {
 		return tags;
 	}
 
-	public static Set<QueryGroup> groupsOf(Path path) {
-		Set<QueryGroup> groups = new HashSet<QueryGroup>();
+	public static Set<Group> groupsOf(Path path) {
+		Set<Group> groups = new HashSet<Group>();
 		for (String tag : tagsOf(path.parent().value))
-			groups.add(QueryGroup.create(tag, Type.TAG));
+			groups.add(Group.create(tag, Type.TAG));
 		String ext = extensionOf(path.name());
 		if (ext != null)
-			groups.add(QueryGroup.create(ext, Type.MIME));
+			groups.add(Group.create(ext, Type.MIME));
 		return groups;
 	}
 
@@ -84,36 +84,36 @@ public final class Util {
 		return parts[parts.length-1].toLowerCase();
 	}
 
-	public static String newPath(File root, Set<QueryGroup> groups) {
+	public static String newPath(File root, Set<Group> groups) {
 		String path = root.getAbsolutePath();
-		for (QueryGroup group : groups)
-			if (group.getType() == Type.TAG)
-				path += "/" + group.getValue();
+		for (Group group : groups)
+			if (group.type == Type.TAG)
+				path += "/" + group.value;
 		return path;
 	}
 
-	public static boolean hasCategory(Set<QueryGroup> groups) {
+	public static boolean hasCategory(Set<Group> groups) {
 		if (groups != null) {
-			for (QueryGroup group : groups)
-				if (group.getType() != Type.MIME)
+			for (Group group : groups)
+				if (group.type != Type.MIME)
 					return true;
 		}
 		return false;
 	}
 
-	public static boolean hasMime(Set<QueryGroup> groups) {
+	public static boolean hasMime(Set<Group> groups) {
 		if (groups != null) {
-			for (QueryGroup group : groups)
-				if (group.getType() == Type.MIME && group != QueryGroup.GROUP_NO_GROUP)
+			for (Group group : groups)
+				if (group.type == Type.MIME && group != Group.GROUP_NO_GROUP)
 					return true;
 		}
 		return false;
 	}
 
-	public static boolean maxOneMimeGroup(Set<QueryGroup> groups) {
+	public static boolean maxOneMimeGroup(Set<Group> groups) {
 		int count = 0;
-		for (QueryGroup q : groups)
-			if (q.getType() == Type.MIME)
+		for (Group q : groups)
+			if (q.type == Type.MIME)
 			// GROUP_NO_GROUP counts too - trashed files must not show up elsewhere
 				count++;
 		return count <= 1;

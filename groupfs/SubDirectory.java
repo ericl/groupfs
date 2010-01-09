@@ -9,16 +9,16 @@ import java.util.Set;
 
 import fuse.FuseException;
 
-import groupfs.QueryGroup.Type;
+import groupfs.Group.Type;
 
 import groupfs.backend.DataProvider;
 import groupfs.backend.Node;
 
 import static groupfs.Util.*;
 
-public class SubclassingDirectory extends JournalingDirectory {
-	protected JournalingDirectory parent;
-	protected QueryGroup group;
+public class SubDirectory extends BaseDirectory {
+	protected BaseDirectory parent;
+	protected Group group;
 
 	protected static Permissions class_tag_perms = new Permissions(
 		true, true, true, true, true, true, true
@@ -27,13 +27,13 @@ public class SubclassingDirectory extends JournalingDirectory {
 		false, false, false, false, true, false, true
 	);
 
-	public SubclassingDirectory(DataProvider backend, JournalingDirectory parent, QueryGroup group) {
+	public SubDirectory(DataProvider backend, BaseDirectory parent, Group group) {
 		super(backend);
 		this.parent = parent;
 		this.group = group;
 	}
 
-	public SubclassingDirectory(DataProvider backend, JournalingDirectory parent, QueryGroup group, NameMapper mapper) {
+	public SubDirectory(DataProvider backend, BaseDirectory parent, Group group, NameMapper mapper) {
 		super(backend);
 		this.parent = parent;
 		this.group = group;
@@ -41,7 +41,7 @@ public class SubclassingDirectory extends JournalingDirectory {
 	}
 
 	public Permissions getPerms() {
-		if (group.getType() == Type.MIME)
+		if (group.type == Type.MIME)
 			return class_mime_perms;
 		else
 			return class_tag_perms;
@@ -57,23 +57,23 @@ public class SubclassingDirectory extends JournalingDirectory {
 	}
 
 	public int delete() throws FuseException {
-		Set<QueryGroup> del = new HashSet<QueryGroup>();
+		Set<Group> del = new HashSet<Group>();
 		del.add(group);
 		if (getPool().isEmpty()) {
 			parent.mapper.unmap(group);
-		} else for (View v : mapper.viewMap().values()) {
+		} else for (Inode v : mapper.inodeMap().values()) {
 			if (v instanceof Node) {
 				Node n = (Node)v;
-				n.changeQueryGroups(null, del);
+				n.changeGroups(null, del);
 			}
 		}
 		return 0;
 	}
 
-	private Set<Node> filter(QueryGroup x, Set<Node> all) {
+	private Set<Node> filter(Group x, Set<Node> all) {
 		Set<Node> pool = new HashSet<Node>();
 		for (Node n : all)
-			if (n.getQueryGroups().contains(x))
+			if (n.getGroups().contains(x))
 				pool.add(n);
 		return pool;
 	}
@@ -81,23 +81,23 @@ public class SubclassingDirectory extends JournalingDirectory {
 	protected boolean populateSelf() {
 		if (!populated) {
 			Set<Node> pool = filter(group, parent.getPool());
-			Set<QueryGroup> output = new HashSet<QueryGroup>();
-			Set<QueryGroup> groups = getQueryGroups();
-			if (group.getType() != Type.MIME) {
-				Map<QueryGroup,Integer> gcount = new HashMap<QueryGroup,Integer>();
+			Set<Group> output = new HashSet<Group>();
+			Set<Group> groups = getGroups();
+			if (group.type != Type.MIME) {
+				Map<Group,Integer> gcount = new HashMap<Group,Integer>();
 				for (Node node : pool) {
-					for (QueryGroup group : node.getQueryGroups()) {
+					for (Group group : node.getGroups()) {
 						Integer n = gcount.get(group);
 						gcount.put(group, n == null ? 1 : n + 1);
 					}
 				}
-				for (Entry<QueryGroup,Integer> entry : gcount.entrySet()) {
-					QueryGroup g = entry.getKey();
+				for (Entry<Group,Integer> entry : gcount.entrySet()) {
+					Group g = entry.getKey();
 					if (!groups.contains(g) && (groups.isEmpty() || entry.getValue() < pool.size()))
 						output.add(g);
 				}
 			}
-			for (QueryGroup group : output)
+			for (Group group : output)
 				mapper.map(backend.get(this, group));
 			for (Node node : pool)
 				mapper.map(node);
@@ -111,38 +111,38 @@ public class SubclassingDirectory extends JournalingDirectory {
 	}
 
 	private boolean fromEqualsThis(String from) {
-		Set<QueryGroup> fromGroups = new HashSet<QueryGroup>();
+		Set<Group> fromGroups = new HashSet<Group>();
 		for (String tag : tagsOf(from))
-			fromGroups.add(QueryGroup.create(tag, Type.TAG));
-		return fromGroups.equals(getQueryGroups());
+			fromGroups.add(Group.create(tag, Type.TAG));
+		return fromGroups.equals(getGroups());
 	}
 
-	public int rename(Path from, Path to, View target, Directory orig, Directory dest) throws FuseException {
+	public int rename(Path from, Path to, Inode target, Directory orig, Directory dest) throws FuseException {
 		assert fromEqualsThis(from.value);
 		if (target != null)
 			return fuse.Errno.EPERM;
-		if (group.getType() == Type.MIME)
+		if (group.type == Type.MIME)
 			return fuse.Errno.EPERM;
 		if (getPool().isEmpty()) {
 			this.parent.getMapper().unmap(group);
 			// reassigning these directly is ok
 			// because empty dirs still around are
 			// not created cached
-			this.group = QueryGroup.create(to.name(), Type.TAG);
-			this.parent = (JournalingDirectory)dest;
+			this.group = Group.create(to.name(), Type.TAG);
+			this.parent = (BaseDirectory)dest;
 			this.parent.getMapper().map(this);
 			return 0;
 		}
-		Set<QueryGroup> add = new HashSet<QueryGroup>();
-		add.addAll(dest.getQueryGroups());
-		add.add(QueryGroup.create(to.name(), Type.TAG));
-		Set<QueryGroup> groups = getQueryGroups();
+		Set<Group> add = new HashSet<Group>();
+		add.addAll(dest.getGroups());
+		add.add(Group.create(to.name(), Type.TAG));
+		Set<Group> groups = getGroups();
 		for (Node n : getPool())
-			n.changeQueryGroups(add, groups);
+			n.changeGroups(add, groups);
 		return 0;
 	}
 
-	public QueryGroup getGroup() {
+	public Group getGroup() {
 		return group;
 	}
 

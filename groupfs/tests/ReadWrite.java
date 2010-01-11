@@ -5,12 +5,13 @@ import java.util.*;
 import fuse.FuseException;
 
 import groupfs.Filesystem;
+import groupfs.state.Manager;
 
-import groupfs.backend.*;
+import groupfs.storage.*;
 
 public class ReadWrite extends Test {
 	public void run() {
-		DataProvider backend = getNewBackend();
+		Manager backend = getNewBackend();
 		Random r = new Random(123);
 		for (int i=0; i < 1000; i++) {
 			String a = rstr(r);

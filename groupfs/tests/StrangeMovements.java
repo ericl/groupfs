@@ -1,6 +1,7 @@
 package groupfs.tests;
 
-import groupfs.backend.*;
+import groupfs.storage.*;
+import groupfs.state.Manager;
 
 import fuse.FuseException;
 
@@ -17,7 +18,7 @@ import groupfs.*;
  */
 public class StrangeMovements extends Test {
 	public void run() {
-		DataProvider backend = getNewBackend();
+		Manager backend = getNewBackend();
 		Filesystem fs = new Filesystem(backend);
 		try {
 			fs.mkdir("/Perl", 0);

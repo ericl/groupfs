@@ -1,6 +1,7 @@
 package groupfs.tests;
 
-import groupfs.backend.*;
+import groupfs.storage.*;
+import groupfs.state.Manager;
 
 import fuse.FuseException;
 
@@ -11,7 +12,7 @@ import groupfs.*;
 // file losing TAG
 public class FileRenaming extends Test {
 	public void run() {
-		DataProvider backend = getNewBackend();
+		Manager backend = getNewBackend();
 		syn(backend, "perl-in-perl.pl", "Manual", "Random");
 		syn(backend, "x.pl", "Random");
 		Filesystem fs = new Filesystem(backend);

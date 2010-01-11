@@ -1,4 +1,4 @@
-package groupfs;
+package groupfs.state;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -9,11 +9,16 @@ import fuse.FuseException;
 import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
+import groupfs.Directory;
+import groupfs.Permissions;
+import groupfs.Group;
+import groupfs.Path;
+import groupfs.Inode;
 import groupfs.Group.Type;
 
-import groupfs.backend.Entry;
-import groupfs.backend.DataProvider;
-import groupfs.backend.Node;
+import groupfs.state.Entry;
+import groupfs.state.Manager;
+import groupfs.state.Node;
 
 import static groupfs.Util.*;
 
@@ -26,7 +31,7 @@ import static groupfs.Util.*;
  */
 public class BaseDirectory implements Directory {
 	protected Entry head;
-	protected DataProvider backend;
+	protected Manager backend;
 	protected Set<Group> queued = new HashSet<Group>();
 	protected NameMapper mapper;
 	protected long time = System.currentTimeMillis();
@@ -35,7 +40,7 @@ public class BaseDirectory implements Directory {
 		false, false, false, true, true, true, false
 	);
 
-	public BaseDirectory(DataProvider backend) {
+	public BaseDirectory(Manager backend) {
 		this.backend = backend;
 		mapper = new NameMapper(backend);
 	}

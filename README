@@ -43,7 +43,7 @@ Filesystem "axioms":
 	if d's group exists and does not represent a mimetype.
 
 Standard filesystem operations like moving, deleting, and creating files and directories
-are supported as well as possible while maintaining the logical consistency.
+are supported as well as possible while maintaining the logical consistency of the filesystem.
 EX:
 	- unlink() moves the file to the "trash"
 	- rmdir() removes the dir's group from the files of the dir
@@ -51,4 +51,4 @@ EX:
 	- rename() on a file simply changes its name
 
 The current storage mechanism represents groups with traditional directories,
-so any existing directory tree can be mounted with immediate benefits.
+so any existing directory tree can be mounted directly.

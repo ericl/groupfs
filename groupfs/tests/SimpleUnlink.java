@@ -1,17 +1,18 @@
 package groupfs.tests;
 
-import groupfs.backend.*;
+import groupfs.storage.*;
 
 import fuse.FuseException;
 
 import groupfs.*;
+import groupfs.state.Manager;
 
 // unlink from TAG
 // unlink from MIME
 // unlink from Trash
 public class SimpleUnlink extends Test {
 	public void run() {
-		DataProvider backend = getNewBackend();
+		Manager backend = getNewBackend();
 		syn(backend, "sed.txt", "Manual", "Doc");
 		syn(backend, "sed2.txt", "Manual", "Doc");
 		Filesystem fs = new Filesystem(backend);

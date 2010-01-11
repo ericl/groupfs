@@ -1,4 +1,4 @@
-package groupfs;
+package groupfs.state;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,10 +9,12 @@ import java.util.Set;
 
 import fuse.FuseException;
 
+import groupfs.Permissions;
+import groupfs.Directory;
 import groupfs.Group.Type;
-
-import groupfs.backend.DataProvider;
-import groupfs.backend.Node;
+import groupfs.Group;
+import groupfs.Path;
+import groupfs.Inode;
 
 import static groupfs.Util.*;
 
@@ -27,13 +29,13 @@ public class SubDirectory extends BaseDirectory {
 		false, false, false, false, true, false, true
 	);
 
-	public SubDirectory(DataProvider backend, BaseDirectory parent, Group group) {
+	public SubDirectory(Manager backend, BaseDirectory parent, Group group) {
 		super(backend);
 		this.parent = parent;
 		this.group = group;
 	}
 
-	public SubDirectory(DataProvider backend, BaseDirectory parent, Group group, NameMapper mapper) {
+	public SubDirectory(Manager backend, BaseDirectory parent, Group group, NameMapper mapper) {
 		super(backend);
 		this.parent = parent;
 		this.group = group;

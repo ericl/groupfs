@@ -1,6 +1,7 @@
 package groupfs.tests;
 
-import groupfs.backend.*;
+import groupfs.storage.*;
+import groupfs.state.Manager;
 
 import fuse.FuseException;
 
@@ -13,7 +14,7 @@ import groupfs.*;
 // rmdir mime dir -> fail
 public class ExtensionRenaming extends Test {
 	public void run() {
-		DataProvider backend = getNewBackend();
+		Manager backend = getNewBackend();
 		syn(backend, "perl.pl", "Manual");
 		syn(backend, "doc.txt", "Manual");
 		syn(backend, "doc2.txt", "Manual");

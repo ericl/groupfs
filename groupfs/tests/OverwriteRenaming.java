@@ -1,6 +1,7 @@
 package groupfs.tests;
 
-import groupfs.backend.*;
+import groupfs.storage.*;
+import groupfs.state.Manager;
 
 import fuse.FuseException;
 
@@ -9,7 +10,7 @@ import groupfs.*;
 // overwriting file with another
 public class OverwriteRenaming extends Test {
 	public void run() {
-		DataProvider backend = getNewBackend();
+		Manager backend = getNewBackend();
 		syn(backend, "Random Book.txt", "Book", "Readable");
 		Filesystem fs = new Filesystem(backend);
 		try {

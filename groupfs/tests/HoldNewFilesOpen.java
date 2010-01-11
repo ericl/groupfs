@@ -2,14 +2,15 @@ package groupfs.tests;
 
 import fuse.FuseException;
 
-import groupfs.backend.*;
+import groupfs.storage.*;
+import groupfs.state.Manager;
 
 import groupfs.*;
 
 // test a hack to allow new files to survive disappearing directories
 public class HoldNewFilesOpen extends Test {
 	public void run() {
-		DataProvider backend = getNewBackend();
+		Manager backend = getNewBackend();
 		Filesystem fs = new Filesystem(backend);
 		expect(fs,
 			new String[] {

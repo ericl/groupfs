@@ -1,4 +1,4 @@
-package groupfs.backend;
+package groupfs.storage;
 
 import java.io.IOException;
 

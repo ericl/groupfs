@@ -2,7 +2,8 @@ package groupfs.tests;
 
 import fuse.FuseException;
 
-import groupfs.backend.*;
+import groupfs.storage.*;
+import groupfs.state.Manager;
 
 import groupfs.*;
 
@@ -10,7 +11,7 @@ import groupfs.*;
 // empty dir keeping correct groups after moving
 public class MkdirRenamed extends Test {
 	public void run() {
-		DataProvider backend = getNewBackend();
+		Manager backend = getNewBackend();
 		syn(backend, "fish recipe.txt", "fish", "recipe");
 		syn(backend, "pizza recipe.txt", "recipe");
 		syn(backend, "fish picture.png", "fish");

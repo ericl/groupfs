@@ -1,4 +1,4 @@
-package groupfs.backend;
+package groupfs.storage;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,9 +20,6 @@ import fuse.FuseException;
 import groupfs.Group.Type;
 
 import groupfs.Group;
-
-import groupfs.backend.FileHandler;
-import groupfs.backend.FileSource;
 
 import static groupfs.Util.*;
 

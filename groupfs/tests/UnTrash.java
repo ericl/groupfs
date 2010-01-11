@@ -1,6 +1,7 @@
 package groupfs.tests;
 
-import groupfs.backend.*;
+import groupfs.storage.*;
+import groupfs.state.Manager;
 
 import fuse.FuseException;
 
@@ -11,7 +12,7 @@ import groupfs.*;
  */
 public class UnTrash extends Test {
 	public void run() {
-		DataProvider backend = getNewBackend();
+		Manager backend = getNewBackend();
 		syn(backend, "foo.png");
 		Filesystem fs = new Filesystem(backend);
 		try {

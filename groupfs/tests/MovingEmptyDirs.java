@@ -1,6 +1,7 @@
 package groupfs.tests;
 
-import groupfs.backend.*;
+import groupfs.storage.*;
+import groupfs.state.Manager;
 
 import fuse.FuseException;
 
@@ -13,7 +14,7 @@ import groupfs.*;
 // moving of nested empty directories
 public class MovingEmptyDirs extends Test {
 	public void run() {
-		DataProvider backend = getNewBackend();
+		Manager backend = getNewBackend();
 		syn(backend, "perl-in-perl.pl", "Manual");
 		Filesystem fs = new Filesystem(backend);
 		try {

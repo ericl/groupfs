@@ -2,7 +2,8 @@ package groupfs.tests;
 
 import fuse.FuseException;
 
-import groupfs.backend.*;
+import groupfs.storage.*;
+import groupfs.state.*;
 
 import groupfs.*;
 
@@ -11,7 +12,7 @@ import groupfs.*;
 // node moved to have same name
 public class DuplicateHandling extends Test {
 	public void run() {
-		DataProvider backend = getNewBackend();
+		Manager backend = getNewBackend();
 		syn(backend, "perl-in-perl.pl", "Manual", "Random");
 		syn(backend, "perl-in-perl.pl", "Random");
 		Filesystem fs = new Filesystem(backend);

@@ -1,4 +1,4 @@
-package groupfs;
+package groupfs.state;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.Set;
 
 import groupfs.Group.Type;
-
-import groupfs.backend.DataProvider;
-import groupfs.backend.Node;
+import groupfs.Group;
+import groupfs.Inode;
+import groupfs.Directory;
 
 /**
  * Maps "filenames" to their backing inodes in each directory.
@@ -20,7 +20,7 @@ import groupfs.backend.Node;
  *   Looking up all groups of file nodes.
  */
 public class NameMapper {
-	protected DataProvider backend;
+	protected Manager backend;
 	private Map<String,Inode> names = new HashMap<String,Inode>();
 	private Map<Group,String> dirs = new HashMap<Group,String>();
 	private Map<Node,String> files = new HashMap<Node,String>();
@@ -29,7 +29,7 @@ public class NameMapper {
 	private Set<Node> files_keyset_ro = Collections.unmodifiableSet(files.keySet());
 	private Set<Group> dirs_keyset_ro = Collections.unmodifiableSet(dirs.keySet());
 
-	public NameMapper(DataProvider backend) {
+	public NameMapper(Manager backend) {
 		this.backend = backend;
 	}
 

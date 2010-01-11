@@ -1,4 +1,4 @@
-package groupfs.backend;
+package groupfs.state;
 
 import java.io.IOException;
 
@@ -14,23 +14,28 @@ import fuse.FuseException;
 import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
-import groupfs.BaseDirectory;
-import groupfs.Link;
 import groupfs.Group;
-import groupfs.SubDirectory;
+import groupfs.storage.FileSource;
+import groupfs.storage.FileHandler;
 
 import static groupfs.Group.Type.*;
 
 import static groupfs.Util.*;
 
-public class DataProvider {
+/**
+ * Go-between filesystem and data storage.
+ * Abstracts away directory and data allocation, while
+ * tracking filesystem changes and ensuring the
+ * logical consistency of the filesystem.
+ */
+public class Manager {
 	public final Journal journal = new Journal();
 	private final Set<Node> nodes = new HashSet<Node>();
 	private final FileSource source;
 	private final Set<Node> nodes_ro = Collections.unmodifiableSet(nodes);
 	protected Map<Set<Group>,SubDirectory> cache = new HashMap<Set<Group>,SubDirectory>();
 
-	public DataProvider(FileSource source) {
+	public Manager(FileSource source) {
 		this.source = source;
 		for (FileHandler fh : source.getAll())
 			nodes.add(makeNode(fh));
@@ -98,9 +103,9 @@ public class DataProvider {
 
 class JournalingNode extends Node {
 	private FileHandler fh;
-	private DataProvider backend;
+	private Manager backend;
 
-	protected JournalingNode(DataProvider backend, FileHandler fh) {
+	protected JournalingNode(Manager backend, FileHandler fh) {
 		super(fh.getAllGroups());
 		this.backend = backend;
 		this.fh = fh;

@@ -1,4 +1,4 @@
-package groupfs.backend;
+package groupfs.state;
 
 import java.util.*;
 

@@ -1,4 +1,4 @@
-package groupfs.tests;
+package groupfs.storage;
 
 import java.io.IOException;
 
@@ -10,9 +10,6 @@ import java.util.Set;
 import fuse.FuseException;
 
 import groupfs.Group;
-
-import groupfs.backend.FileHandler;
-import groupfs.backend.FileSource;
 
 public class VirtualFileSource implements FileSource {
 	private Set<FileHandler> files = new HashSet<FileHandler>();

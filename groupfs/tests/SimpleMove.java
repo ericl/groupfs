@@ -1,10 +1,11 @@
 package groupfs.tests;
 
-import groupfs.backend.*;
+import groupfs.storage.*;
 
 import fuse.FuseException;
 
 import groupfs.*;
+import groupfs.state.Manager;
 
 // mkdir
 // file gaining TAG
@@ -12,7 +13,7 @@ import groupfs.*;
 // file losing all tags
 public class SimpleMove extends Test {
 	public void run() {
-		DataProvider backend = getNewBackend();
+		Manager backend = getNewBackend();
 		syn(backend, "perl-in-perl.pl", "Manual");
 		Filesystem fs = new Filesystem(backend);
 		try {

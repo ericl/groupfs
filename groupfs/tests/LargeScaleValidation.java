@@ -1,6 +1,7 @@
 package groupfs.tests;
 
-import groupfs.backend.*;
+import groupfs.storage.*;
+import groupfs.state.Manager;
 
 import fuse.FuseException;
 
@@ -9,7 +10,7 @@ import groupfs.*;
 // shows necessity of fine-grained invalidation of groups
 public class LargeScaleValidation extends Test {
 	public void run() {
-		DataProvider backend = getNewBackend();
+		Manager backend = getNewBackend();
 		syn(backend, "1.jpg", "Concert", "Art");
 		syn(backend, "2.jpg", "Concert", "Art");
 		syn(backend, "3.jpg", "Concert", "Art");

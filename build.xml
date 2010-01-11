@@ -1,9 +1,7 @@
 <project name="groupfs" default="compile" basedir=".">
 
 	<description>
-		groupfs - the grouping filesystem - presents the intersections
-		of sets of tagged files as directories. It supports modification
-		of data and metadata through typical filesystem operations.
+	Non-hierarchical filesystem for organizing large file collections. Unlike other implementations of the concept, it is designed to act as much like a "normal" filesystem as possible and can provide a complementary "view" of existing hierarchical trees.
 	</description>
 
 	<target name="compile">

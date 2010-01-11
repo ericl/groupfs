@@ -25,9 +25,10 @@ import fuse.XattrSupport;
 
 import groupfs.Group.Type;
 
-import groupfs.backend.DataProvider;
-import groupfs.backend.DirectoryFileSource;
-import groupfs.backend.Node;
+import groupfs.state.BaseDirectory;
+import groupfs.state.Manager;
+import groupfs.state.Node;
+import groupfs.storage.DirectoryFileSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,7 +38,7 @@ import static groupfs.Util.*;
 public class Filesystem implements Filesystem3, XattrSupport {
 	public static final Log log = LogFactory.getLog(Filesystem.class);
 	public static final int blksize = 1024;
-	private DataProvider backend;
+	private Manager backend;
 	private PathMapper mapper;
 
 	public static void main(String[] args) {
@@ -52,14 +53,14 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		try {
 			validate(originDir, mountPoint);
 			FuseMount.mount(fuseArgs, new Filesystem(
-				new DataProvider(new DirectoryFileSource(originDir))
+				new Manager(new DirectoryFileSource(originDir))
 			), log);
 		} catch (Exception e) {
 			log.error(e);
 		}
 	}
 
-	public Filesystem(DataProvider backend) {
+	public Filesystem(Manager backend) {
 		this.backend = backend;
 		mapper = new PathMapper(new BaseDirectory(backend));
 	}

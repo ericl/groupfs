@@ -1,6 +1,6 @@
 package groupfs;
 
-import groupfs.backend.Node;
+import groupfs.state.Node;
 
 /**
  * Maps full filesystem paths to inodes.

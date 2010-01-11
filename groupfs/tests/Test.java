@@ -15,7 +15,8 @@ import groupfs.*;
 
 import groupfs.Group.Type;
 
-import groupfs.backend.*;
+import groupfs.state.*;
+import groupfs.storage.*;
 
 import static groupfs.Util.*;
 
@@ -26,8 +27,8 @@ public abstract class Test {
 
 	public abstract void run();
 
-	protected DataProvider getNewBackend() {
-		return new DataProvider(source = new VirtualFileSource());
+	protected Manager getNewBackend() {
+		return new Manager(source = new VirtualFileSource());
 	}
 
 	class Node {
@@ -56,7 +57,7 @@ public abstract class Test {
 		return cl.substring(cl.lastIndexOf(".") + 1);
 	}
 
-	protected void syn(DataProvider backend, String name, String ... tags) {
+	protected void syn(Manager backend, String name, String ... tags) {
 		Set<Group> groups = new HashSet<Group>();
 		for (String tag : tags)
 			groups.add(Group.create(tag, Type.TAG));
@@ -106,7 +107,7 @@ public abstract class Test {
 				System.out.println("first run failed, not rebuilding filesystem");
 			return;
 		}
-		expect_nocopy(new Filesystem(new DataProvider(source)), files, dirs);
+		expect_nocopy(new Filesystem(new Manager(source)), files, dirs);
 	}
 
 	protected void expect_nocopy(Filesystem fs, String[] files, String[] dirs) {

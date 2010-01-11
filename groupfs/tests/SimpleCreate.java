@@ -1,10 +1,11 @@
 package groupfs.tests;
 
-import groupfs.backend.*;
+import groupfs.storage.*;
 
 import fuse.FuseException;
 
 import groupfs.*;
+import groupfs.state.Manager;
 
 // MIME subclassing
 // TAG subclassing
@@ -13,7 +14,7 @@ import groupfs.*;
 // mknod of dotfile
 public class SimpleCreate extends Test {
 	public void run() {
-		DataProvider backend = getNewBackend();
+		Manager backend = getNewBackend();
 		syn(backend, "sed.txt", "Manual", "Readable");
 		syn(backend, "Random Book.txt", "Book", "Readable");
 		syn(backend, "trashed.txt");

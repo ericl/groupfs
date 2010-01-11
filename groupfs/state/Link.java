@@ -1,4 +1,4 @@
-package groupfs;
+package groupfs.state;
 
 import java.util.Map;
 import java.util.Set;
@@ -7,7 +7,9 @@ import fuse.FuseException;
 import fuse.FuseFtype;
 import fuse.FuseGetattrSetter;
 
-import groupfs.backend.DataProvider;
+import groupfs.Group;
+
+import groupfs.state.Manager;
 
 /**
  * Hard link for directories. The target directory provides the name mapper
@@ -20,7 +22,7 @@ import groupfs.backend.DataProvider;
 public class Link extends SubDirectory {
 	private final SubDirectory link;
 
-	public Link(DataProvider backend, BaseDirectory parent, Group group, SubDirectory link) {
+	public Link(Manager backend, BaseDirectory parent, Group group, SubDirectory link) {
 		super(backend, parent, group);
 		this.link = link;
 		mapper = link.mapper;

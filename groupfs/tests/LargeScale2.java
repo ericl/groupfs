@@ -1,15 +1,16 @@
 package groupfs.tests;
 
-import groupfs.backend.*;
+import groupfs.storage.*;
 
 import fuse.FuseException;
 
 import groupfs.*;
+import groupfs.state.Manager;
 
 // shows validation in deleting tag
 public class LargeScale2 extends Test {
 	public void run() {
-		DataProvider backend = getNewBackend();
+		Manager backend = getNewBackend();
 		syn(backend, "old.jpg");
 		syn(backend, "old2.jpg");
 		syn(backend, "1.jpg", "Concert", "jpg");

@@ -1,6 +1,4 @@
-Non-hierarchial filesystem for organizing large file collections. Unlike other
-implementations of the concept, it is designed to act as much like a "normal"
-filesystem as possible, and so works well with standard file browsing.
+Non-hierarchical filesystem for organizing large file collections. Unlike other implementations of the concept, it is designed to act as much like a "normal" filesystem as possible and can provide a complementary "view" of existing hierarchical trees.
 
 In short, the file
 	/origin/dir/A/B/name-of-file.png
@@ -21,6 +19,7 @@ Usage: groupfs_mount.sh [-o options] /origin/dir /mount/point
 
 Examples:
 	./groupfs_mount.sh ~/Pictures ~/Desktop/groupfs_Pictures
+	./groupfs_mount.sh ~/Music ~/Desktop/groupfs_Music
 	./groupfs_mount.sh /usr/share/icons ~/Desktop/groupfs_icons
 	./groupfs_mount.sh . ~/Desktop/groupfs_groupfs
 
@@ -37,7 +36,7 @@ Filesystem "axioms":
 	Let F be the set of all existing files.
 	Let G be all possible sets of groups.
 
-	The files of a directory d are {f in F : groups of f ⊆ groups of d}
+	The files of a directory d are {f in F : groups of d ⊆ groups of f}
 
 	The child dirs of a directory d represent the set of groups
 	{x in G : g ⊂ x, |x| = 1 + |groups of d|, files of x ⊂ files of d}

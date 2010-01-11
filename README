@@ -1,6 +1,55 @@
-FUSE filesystem for organizing file collections.
+Non-hierarchial filesystem for organizing large file collections. Unlike other
+implementations of the concept, it is designed to act as much like a "normal"
+filesystem as possible, and so works well with standard file browsing.
 
+In short, the file
+	/origin/dir/A/B/name-of-file.png
+can be found, once mounted, in
+	/mount/point/.png
+	/mount/point/A
+	/mount/point/B
+Further subdirectories will appear to narrow
+down the query if possible.
+
+=== Usage ===
 Depends on FUSE-J (java bindings for FUSE)
 	http://sourceforge.net/projects/fuse-j/
 
+Run 'ant' to compile.
+
 Usage: groupfs_mount.sh [-o options] /origin/dir /mount/point
+
+Examples:
+	./groupfs_mount.sh ~/Pictures ~/Desktop/groupfs_Pictures
+	./groupfs_mount.sh /usr/share/icons ~/Desktop/groupfs_icons
+	./groupfs_mount.sh . ~/Desktop/groupfs_groupfs
+
+=== Details ===
+Filesystem "axioms":
+
+	The root directory has no group and no parent.
+	The groups of a directory are its group and the groups of its parent.
+
+	The groups of a file is a set of 1 group representing its mimetype
+	and any number of tag groups.
+	Any file with only no tag groups will be assigned the mimetype group "trashed".
+
+	Let F be the set of all existing files.
+	Let G be all possible sets of groups.
+
+	The files of a directory d are {f in F : groups of f ⊆ groups of d}
+
+	The child dirs of a directory d represent the set of groups
+	{x in G : g ⊂ x, |x| = 1 + |groups of d|, files of x ⊂ files of d}
+	if d's group exists and does not represent a mimetype.
+
+Standard filesystem operations like moving, deleting, and creating files and directories
+are supported as well as possible while maintaining the logical consistency.
+EX:
+	- unlink() moves the file to the "trash"
+	- rmdir() removes the dir's group from the files of the dir
+	- rename() on a directory changes the groups of its contents
+	- rename() on a file simply changes its name
+
+The current storage mechanism represents groups with traditional directories,
+so any existing directory tree can be mounted with immediate benefits.

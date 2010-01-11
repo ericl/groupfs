@@ -15,14 +15,24 @@ public final class Path {
 		}
 	}
 
+	/**
+	 * Computes canonical path of parent.
+	 */
 	public Path parent() {
 		return new Path(parent(value), false);
 	}
 
+	/**
+	 * @param path Not null.
+	 * @return Canonical representation of path.
+	 */
 	public static Path get(String path) {
 		return new Path(path, true);
 	}
 
+	/**
+	 * @return Last segment of path.
+	 */
 	public String name() {
 		int index = value.lastIndexOf('/');
 		if (index < 1)
@@ -39,6 +49,10 @@ public final class Path {
 		return value.hashCode();
 	}
 
+	/**
+	 * Determines canonical value of path through array operations.
+	 * parse(path) should always equal reference_parse(path)
+	 */
 	private static String parse(String path) {
 		final int len = path.length();
 		final char[] output = new char[len+2];
@@ -72,6 +86,9 @@ public final class Path {
 		return new String(output, 0, index);
 	}
 
+	/**
+	 * Slower but more certainly bug-free version of parse(path).
+	 */
 	private static String reference_parse(String path) {
 		String[] parts = path.split("/");
 		Stack<String> stack = new Stack<String>();

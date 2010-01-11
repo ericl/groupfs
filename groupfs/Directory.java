@@ -20,9 +20,21 @@ public interface Directory extends Inode {
 	public void mkdir(Group group);
 }
 
+/**
+ * What filesystem operations are permissible for a directory.
+ */
 class Permissions {
 	private boolean cd, cmn, cr, cmi, cmo, cmd, cdn;
 
+	/**
+	 * @param cd Can it be deleted?
+	 * @param cmn Can new files be created in it?
+	 * @param cr Can it be renamed?
+	 * @param cmi Can files be moved into it?
+	 * @param cmo Can files be moved out of it?
+	 * @param cmd Can subdirectores be created in it?
+	 * @param cdn Can files be deleted in it?
+	 */
 	public Permissions(boolean cd, boolean cmn, boolean cr, boolean cmi, boolean cmo, boolean cmd, boolean cdn) {
 		this.cd = cd;
 		this.cmn = cmn;

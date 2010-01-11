@@ -124,13 +124,13 @@ public class SubDirectory extends BaseDirectory {
 		if (group.type == Type.MIME)
 			return fuse.Errno.EPERM;
 		if (getPool().isEmpty()) {
-			this.parent.getMapper().unmap(group);
+			this.parent.mapper.unmap(group);
 			// reassigning these directly is ok
 			// because empty dirs still around are
 			// not created cached
 			this.group = Group.create(to.name(), Type.TAG);
 			this.parent = (BaseDirectory)dest;
-			this.parent.getMapper().map(this);
+			this.parent.mapper.map(this);
 			return 0;
 		}
 		Set<Group> add = new HashSet<Group>();

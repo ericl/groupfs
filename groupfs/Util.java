@@ -18,6 +18,11 @@ public final class Util {
 
 	private Util() {}
 
+	/**
+	 * Checks that the mountpoint and origin directories exist and
+	 * do not overlap. This would be very bad if the DirectoryFileSource
+	 * was being used.
+	 */
 	public static void validate(File origin, File mount) throws IOException {
 		if (!origin.exists() || !origin.isDirectory())
 			throw new IllegalArgumentException("Origin is invalid.");
@@ -33,17 +38,19 @@ public final class Util {
 			throw new IllegalArgumentException("Mount point overlaps origin.");
 	}
 
+	/**
+	 * @return True if all groups represented by a path are unique.
+	 */
 	public static boolean allUnique(Path path) {
-		List<String> tags = Arrays.asList(path.value.split("/"));
-		Set<String> tmp = new HashSet<String>();
-		for (String tag : tags) {
-			if (tmp.contains(tag))
-				return false;
-			tmp.add(tag);
-		}
-		return true;
+		List<String> list = Arrays.asList(path.value.split("/"));
+		Set<String> set = new HashSet<String>(list);
+		return set.size() == list.size();
 	}
 
+	/**
+	 * Recursively removes directories upwards until a non-empty one is found.
+	 * @param f Any value.
+	 */
 	public static void rmdirs(File f) {
 		if (f == null || !f.isDirectory() || f.list().length != 0)
 			return;
@@ -51,6 +58,9 @@ public final class Util {
 		rmdirs(f.getParentFile());
 	}
 
+	/**
+	 * @return Set of all tags represented by a path.
+	 */
 	public static Set<String> tagsOf(String parent) {
 		Set<String> tags = new HashSet<String>(
 			Arrays.asList(parent.split("/"))
@@ -59,6 +69,9 @@ public final class Util {
 		return tags;
 	}
 
+	/**
+	 * @return All groups of a path.
+	 */
 	public static Set<Group> groupsOf(Path path) {
 		Set<Group> groups = new HashSet<Group>();
 		for (String tag : tagsOf(path.parent().value))
@@ -69,21 +82,33 @@ public final class Util {
 		return groups;
 	}
 
+	/**
+	 * @param name String of any form.
+	 * @return "{name}" if name matches "{name}.[0-9]+"
+	 */
 	public static String unNumbered(String name) {
 		if (name.matches(".*\\.[0-9]+"))
 			name = name.substring(0, name.lastIndexOf("."));
 		return name;
 	}
 
+	/**
+	 * @param name Non-null string of any form.
+	 * @return "{ext}" if unNumbered(name) matches "name.{ext}" else "undefined"
+	 */
 	public static String extensionOf(String name) {
-		if (name.matches(".*\\.[0-9]+"))
-			name = name.substring(0, name.lastIndexOf("."));
+		name = unNumbered(name);
 		if (!name.contains(".") || name.endsWith("."))
 			return "undefined";
 		String[] parts = name.split("\\.");
 		return parts[parts.length-1].toLowerCase();
 	}
 
+	/**
+	 * @param root The root directory from which to build a path.
+	 * @param groups Groups to be represented in a new path.
+	 * @return Path of directory that represents groups.
+	 */
 	public static String newPath(File root, Set<Group> groups) {
 		String path = root.getAbsolutePath();
 		for (Group group : groups)
@@ -92,6 +117,11 @@ public final class Util {
 		return path;
 	}
 
+	/**
+	 * @return True if groups has a group of type "tag".
+	 * @param groups Any value.
+	 * A return value of false means that groups is inconsistent.
+	 */
 	public static boolean hasCategory(Set<Group> groups) {
 		if (groups != null) {
 			for (Group group : groups)
@@ -101,6 +131,11 @@ public final class Util {
 		return false;
 	}
 
+	/**
+	 * @return True if groups has a group of type "mime".
+	 * @param groups Any value.
+	 * A return value of false means that groups is inconsistent.
+	 */
 	public static boolean hasMime(Set<Group> groups) {
 		if (groups != null) {
 			for (Group group : groups)
@@ -110,6 +145,10 @@ public final class Util {
 		return false;
 	}
 
+	/**
+	 * @return True if groups has has at max one group of type "mime".
+	 * A return value of false means that groups is inconsistent.
+	 */
 	public static boolean maxOneMimeGroup(Set<Group> groups) {
 		int count = 0;
 		for (Group q : groups)
@@ -119,6 +158,11 @@ public final class Util {
 		return count <= 1;
 	}
 
+	/**
+	 * @return An unoccupied file path such that name == unNumbered(path.getName())
+	 * @param name Name of file such that name == unNumbered(name)
+	 * @param path Directory name the new file path should be in.
+	 */
 	public static File getDestination(String path, String name) throws IOException {
 		File dir = new File(path);
 		if (dir.exists() && !dir.isDirectory())

@@ -3,3 +3,4 @@
 8146 ms		End of optimizing.
 8814 ms		Refactored link class.
 7615 ms		Misc cleanup.
+7394 ms		Use set-size counting for directory updates.

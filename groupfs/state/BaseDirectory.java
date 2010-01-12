@@ -201,6 +201,66 @@ public class BaseDirectory implements Directory {
 		}
 	}
 
+	/**
+	 * Reads log of recent filesystem operations and modifies
+	 * directory contents to maintain logical consistency.
+	 * No-op if up-to-date.
+	 */
+	protected void replayJournal() {
+		assert head != null;
+		boolean subdirsChanged = false;
+		Set<Group> affected = new HashSet<Group>();
+		while (head != backend.journal.head()) {
+			Entry next = head.getNext();
+			head = next;
+			if (head != null && head.node != null)
+				subdirsChanged = processEntry(head, affected);
+		}
+		if (subdirsChanged && (getGroup() == null || getGroup().type != Type.MIME))
+			syncSubdirsToCounterState(affected);
+	}
+
+	private boolean processEntry(Entry entry, Set<Group> affected) {
+		affected.addAll(entry.prev);
+		affected.addAll(entry.current);
+		boolean root = (getGroup() == null);
+		boolean node_was_here = analyze_was_here(entry);
+		boolean node_now_here = analyze_now_here(entry);
+		Set<Group> new_groups = analyze_new_groups(entry);
+		Set<Group> removed_groups = analyze_removed_groups(entry);
+		if (node_was_here) {
+			if (node_now_here) {
+				if (!root) {
+					mapper.unmap(entry.node);
+					mapper.map(entry.node);
+				}
+				counter.consider(new_groups, removed_groups, entry.node, 0);
+				return true;
+			} else {
+				if (!root)
+					mapper.unmap(entry.node);
+				counter.consider(new_groups, removed_groups, entry.node, -1);
+				return true;
+			}
+		} else if (node_now_here) {
+			if (!root)
+				mapper.map(entry.node);
+			counter.consider(entry.node.getGroups(), Group.SET_EMPTY_SET, entry.node, +1);
+			return true;
+		}
+		return false;
+	}
+
+	private void syncSubdirsToCounterState(Set<Group> affected) {
+		Set<Group> allowed = getGroup() == null ? counter.positiveGroups() : counter.visibleGroups();
+		for (Group g : new HashSet<Group>(mapper.getGroups()))
+			if (!allowed.contains(g) && affected.contains(g))
+				mapper.unmap(g);
+		for (Group g : allowed)
+			if (!mapper.contains(g))
+				mapper.map(backend.directoryInstance(this, g));
+	}
+
 	private boolean analyze_was_here(Entry e) {
 		return e.prev.containsAll(getGroups());
 	}
@@ -219,54 +279,5 @@ public class BaseDirectory implements Directory {
 		Set<Group> p = new HashSet<Group>(e.prev);
 		p.removeAll(e.current);
 		return p;
-	}
-
-	/**
-	 * Reads log of recent filesystem operations and modifies
-	 * directory contents to maintain logical consistency.
-	 * No-op if up-to-date.
-	 */
-	protected void replayJournal() {
-		assert head != null;
-		boolean counter_changed = false, root = getGroup() == null;
-		while (head != backend.journal.head()) {
-			Entry next = head.getNext();
-			head = next;
-			if (head != null && head.node != null) {
-				boolean node_was_here = analyze_was_here(head);
-				boolean node_now_here = analyze_now_here(head);
-				Set<Group> new_groups = analyze_new_groups(head);
-				Set<Group> removed_groups = analyze_removed_groups(head);
-				if (node_was_here) {
-					if (node_now_here) {
-						if (!root) {
-							mapper.unmap(head.node);
-							mapper.map(head.node);
-						}
-						counter.consider(new_groups, removed_groups, head.node, 0);
-						counter_changed = true;
-					} else {
-						if (!root)
-							mapper.unmap(head.node);
-						counter.consider(new_groups, removed_groups, head.node, -1);
-						counter_changed = true;
-					}
-				} else if (node_now_here) {
-					if (!root)
-						mapper.map(head.node);
-					counter.consider(head.node.getGroups(), Group.SET_EMPTY_SET, head.node, +1);
-					counter_changed = true;
-				}
-			}
-		}
-		if (counter_changed && (root || getGroup().type != Type.MIME)) {
-			Set<Group> allowed = root ? counter.positiveGroups() : counter.visibleGroups();
-			for (Group g : new HashSet<Group>(mapper.getGroups()))
-				if (!allowed.contains(g))
-					mapper.unmap(g);
-			for (Group g : allowed)
-				if (!mapper.contains(g))
-					mapper.map(backend.directoryInstance(this, g));
-		}
 	}
 }

@@ -173,6 +173,7 @@ public class MkdirRenamed extends Test {
 			},
 			new String[] {
 				".",
+				"./a",
 				"./b",
 				"./c",
 				"./d",

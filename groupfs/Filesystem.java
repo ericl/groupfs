@@ -118,6 +118,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 			return fuse.Errno.ENOENT;
 		else if (!parent.getPerms().canMkdir())
 			return fuse.Errno.EPERM;
+		parent.update();
 		Group group = Group.create(name, Type.TAG);
 		if (parent.getGroups().contains(group))
 			return fuse.Errno.EPERM;

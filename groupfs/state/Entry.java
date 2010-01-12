@@ -5,22 +5,14 @@ import groupfs.Group;
 import java.util.*;
 
 public class Entry {
-	private final Node node;
-	private final Set<Group> updates;
-	private long UUID = System.nanoTime() % 10000;
 	private Entry next;
+	public final Node node;
+	public final Set<Group> prev, current;
 
-	public Entry(Node node, Set<Group> updates) {
+	public Entry(Node node, Set<Group> prev, Set<Group> current) {
 		this.node = node;
-		this.updates = Collections.unmodifiableSet(new HashSet<Group>(updates));
-	}
-
-	public Set<Group> getGroups() {
-		return updates;
-	}
-
-	public Node getNode() {
-		return node;
+		this.prev = Collections.unmodifiableSet(new HashSet<Group>(prev));
+		this.current = Collections.unmodifiableSet(new HashSet<Group>(current));
 	}
 
 	public void setNext(Entry next) {
@@ -32,6 +24,6 @@ public class Entry {
 	}
 
 	public String toString() {
-		return "{\n uuid: " + UUID + ",\n node: " + node.getName() + ",\n groups: " + updates + "\n}";
+		return node + " " + prev + " " + current;
 	}
 }

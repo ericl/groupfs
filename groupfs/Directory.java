@@ -18,4 +18,5 @@ public interface Directory extends Inode {
 	public Map<String,Inode> list();
 	public Permissions getPerms();
 	public void mkdir(Group group);
+	public void update();
 }

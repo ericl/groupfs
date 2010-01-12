@@ -83,24 +83,11 @@ public class SubDirectory extends BaseDirectory {
 	protected boolean populateSelf() {
 		if (!populated) {
 			Set<Node> pool = filter(group, parent.getPool());
-			Set<Group> output = new HashSet<Group>();
-			Set<Group> groups = getGroups();
-			if (group.type != Type.MIME) {
-				Map<Group,Integer> gcount = new HashMap<Group,Integer>();
-				for (Node node : pool) {
-					for (Group group : node.getGroups()) {
-						Integer n = gcount.get(group);
-						gcount.put(group, n == null ? 1 : n + 1);
-					}
-				}
-				for (Entry<Group,Integer> entry : gcount.entrySet()) {
-					Group g = entry.getKey();
-					if (!groups.contains(g) && (groups.isEmpty() || entry.getValue() < pool.size()))
-						output.add(g);
-				}
-			}
-			for (Group group : output)
-				mapper.map(backend.get(this, group));
+			for (Node n : pool)
+				counter.consider(n);
+			if (group.type != Type.MIME)
+				for (Group g : counter.visibleGroups())
+					mapper.map(backend.directoryInstance(this, g));
 			for (Node node : pool)
 				mapper.map(node);
 			populated = true;

@@ -32,7 +32,7 @@ import static groupfs.Util.*;
 public class BaseDirectory implements Directory {
 	protected Entry head;
 	protected Manager backend;
-	protected Set<Group> queued = new HashSet<Group>();
+	protected GroupCounter counter = new GroupCounter();
 	protected NameMapper mapper;
 	protected long time = System.currentTimeMillis();
 	protected boolean populated;
@@ -90,8 +90,11 @@ public class BaseDirectory implements Directory {
 	 */
 	protected boolean populateSelf() {
 		if (!populated) {
-			for (Group group : backend.findAllGroups())
-				mapper.map(backend.get(this, group));
+			long x = System.currentTimeMillis();
+			for (Node n : getPoolDirect())
+				counter.consider(n);
+			for (Group g : counter.positiveGroups())
+				mapper.map(backend.directoryInstance(this, g));
 			populated = true;
 			time = System.currentTimeMillis();
 			head = backend.journal.head(); // we're up to date
@@ -191,11 +194,31 @@ public class BaseDirectory implements Directory {
 	 * Guarantees that the directory contents are consistent in light of
 	 * recent filesystem operations.
 	 */
-	protected void update() {
+	public void update() {
 		if (!populateSelf() && head != backend.journal.head()) {
 			replayJournal();
 			time = System.currentTimeMillis();
 		}
+	}
+
+	private boolean analyze_was_here(Entry e) {
+		return e.prev.containsAll(getGroups());
+	}
+
+	private boolean analyze_now_here(Entry e) {
+		return e.current.containsAll(getGroups());
+	}
+
+	private Set<Group> analyze_new_groups(Entry e) {
+		Set<Group> p = new HashSet<Group>(e.current);
+		p.removeAll(e.prev);
+		return p;
+	}
+
+	private Set<Group> analyze_removed_groups(Entry e) {
+		Set<Group> p = new HashSet<Group>(e.prev);
+		p.removeAll(e.current);
+		return p;
 	}
 
 	/**
@@ -205,109 +228,45 @@ public class BaseDirectory implements Directory {
 	 */
 	protected void replayJournal() {
 		assert head != null;
+		boolean counter_changed = false, root = getGroup() == null;
 		while (head != backend.journal.head()) {
 			Entry next = head.getNext();
 			head = next;
-			if (isPertinent(head))
-				process(head);
-		}
-		process_queued();
-	}
-
-	/**
-	 * @return True if a filesystem operations possibly affect directory contents.
-	 * @param e Any value.
-	 */
-	protected boolean isPertinent(Entry e) {
-		return e != null && e.getNode() != null && e.getGroups().containsAll(getGroups());
-	}
-
-	/**
-	 * Updates contents to be logically consistent following operation e.
-	 * Directory changes will be queued; file changes applied immediately.
-	 * @param e Not null.
-	 */
-	protected void process(Entry e) {
-		if (getGroup() == null) {
-			queue_dirs(e);
-		} else if (getGroup().type == Type.MIME) {
-			process_file(e);
-		} else {
-			process_file(e);
-			queue_dirs(e);
-		}
-	}
-
-	/**
-	 * Apply all queued directory flags.
-	 */
-	protected void process_queued() {
-		if (!queued.isEmpty())
-			process_dirs(queued);
-		queued.clear();
-	}
-
-	/**
-	 * Flag directories that may need to be created/deleted.
-	 * @param e Filesystem operation to consider, not null.
-	 */
-	protected void queue_dirs(Entry e) {
-		queued.addAll(e.getGroups());
-	}
-
-	/**
-	 * Considers creation/deletion of subdirectories as flagged
-	 * by queue_dirs to ensure logical consistency of directory contents
-	 * with respect to recent filesystem operations.
-	 * Will only produce correct results after all file changes
-	 * have been applied, since getPoolDirect() is used.
-	 */
-	protected void process_dirs(Set<Group> e) {
-		int current = getPoolDirect().size();
-		Set<Group> groups = getGroups();
-		for (Group u : e) {
-			if (!groups.contains(u)) {
-				int next = 0;
-				for (Node n : getPoolDirect())
-					if (n.getGroups().contains(u))
-						next++;
-				if (next > 0 && (next < current || getGroups().isEmpty())) {
-					if (!mapper.contains(u))
-						mapper.map(backend.get(this, u));
-				} else {
-					if (mapper.contains(u))
-						mapper.unmap(u);
+			if (head != null && head.node != null) {
+				boolean node_was_here = analyze_was_here(head);
+				boolean node_now_here = analyze_now_here(head);
+				Set<Group> new_groups = analyze_new_groups(head);
+				Set<Group> removed_groups = analyze_removed_groups(head);
+				if (node_was_here) {
+					if (node_now_here) {
+						if (!root) {
+							mapper.unmap(head.node);
+							mapper.map(head.node);
+						}
+						counter.consider(new_groups, removed_groups, head.node, 0);
+						counter_changed = true;
+					} else {
+						if (!root)
+							mapper.unmap(head.node);
+						counter.consider(new_groups, removed_groups, head.node, -1);
+						counter_changed = true;
+					}
+				} else if (node_now_here) {
+					if (!root)
+						mapper.map(head.node);
+					counter.consider(head.node.getGroups(), Group.SET_EMPTY_SET, head.node, +1);
+					counter_changed = true;
 				}
 			}
 		}
-		// hide/unhide dirs that do not narrow the query
-		Set<Group> others = new HashSet<Group>();
-		for (Node node : getPoolDirect())
-			others.addAll(node.getGroups());
-		others.removeAll(e);
-		for (Group g : others) {
-			if (mapper.count(g) == current) {
-				mapper.unmap(g);
-			} else {
+		if (counter_changed && (root || getGroup().type != Type.MIME)) {
+			Set<Group> allowed = root ? counter.positiveGroups() : counter.visibleGroups();
+			for (Group g : new HashSet<Group>(mapper.getGroups()))
+				if (!allowed.contains(g))
+					mapper.unmap(g);
+			for (Group g : allowed)
 				if (!mapper.contains(g))
-					mapper.map(backend.get(this, g));
-			}
-		}
-	}
-
-	/**
-	 * Updates file in contents to have new name.
-	 * @param e Filesystem operation describing change, not null.
-	 */
-	protected void process_file(Entry e) {
-		Node node = e.getNode();
-		if (node.getGroups().containsAll(getGroups())) {
-			if (mapper.contains(node))
-				mapper.unmap(node);
-			mapper.map(node);
-		} else {
-			if (mapper.contains(node))
-				mapper.unmap(node);
+					mapper.map(backend.directoryInstance(this, g));
 		}
 	}
 }

@@ -26,14 +26,13 @@ public class Link extends SubDirectory {
 		super(backend, parent, group);
 		this.link = link;
 		mapper = link.mapper;
-		queued = null; // not used
 		head = null; // not used
 	}
 
 	/**
 	 * Delegates the update() operation to the link target.
 	 */
-	protected void update() {
+	public void update() {
 		link.update();
 	}
 }

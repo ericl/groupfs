@@ -41,7 +41,7 @@ public class Manager {
 			nodes.add(makeNode(fh));
 	}
 
-	public SubDirectory get(BaseDirectory parent, Group group) {
+	public SubDirectory directoryInstance(BaseDirectory parent, Group group) {
 		Set<Group> key = new HashSet<Group>(parent.getGroups());
 		key.add(group);
 		SubDirectory link = cache.get(key);
@@ -68,19 +68,12 @@ public class Manager {
 		return nodes_ro;
 	}
 
-	public Set<Group> findAllGroups() {
-		Set<Group> output = new HashSet<Group>();
-		for (Node node : getAll())
-			output.addAll(node.getGroups());
-		return output;
-	}
-
 	public Node create(Set<Group> groups, String name) throws FuseException {
 		assert maxOneMimeGroup(groups);
 		FileHandler fh = source.create(name, groups);
 		Node node = new JournalingNode(this, fh);
 		nodes.add(node);
-		journal.log(node, groups);
+		journal.log(node, Group.SET_EMPTY_SET, groups);
 		return node;
 	}
 
@@ -169,7 +162,7 @@ class JournalingNode extends Node {
 
 	public int deleteFromBackingMedia() {
 		backend.unref(this);
-		backend.journal.log(this, groups);
+		backend.journal.log(this, groups, Group.SET_EMPTY_SET);
 		raw_groups.clear();
 		fh.delete();
 		return 0;
@@ -237,9 +230,7 @@ class JournalingNode extends Node {
 		assert maxOneMimeGroup(groups);
 	}
 
-	protected void logDifference(Set<Group> original, Set<Group> current) {
-		Set<Group> all = new HashSet<Group>(original);
-		all.addAll(current);
-		backend.journal.log(this, all);
+	protected void logDifference(Set<Group> original, Set<Group> next) {
+		backend.journal.log(this, original, next);
 	}
 }

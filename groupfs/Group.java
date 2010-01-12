@@ -16,6 +16,8 @@ public final class Group {
 	public final Type type;
 	private static Map<String,Group> mimetypes = new HashMap<String,Group>();
 	private static Map<String,Group> tags = new HashMap<String,Group>();
+	private static int nextId;
+	private int id = nextId++;
 
 	/**
 	 * The group that must be assigned to nodes with no other groups.
@@ -75,5 +77,13 @@ public final class Group {
 
 	public String toString() {
 		return "<" + type + " " + value + ">";
+	}
+
+	public boolean equals(Object other) {
+		return other instanceof Group && ((Group)other).id == id;
+	}
+
+	public int hashCode() {
+		return id;
 	}
 }

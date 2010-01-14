@@ -85,16 +85,20 @@ public class DirectoryFileSource implements FileSource {
 		return fh;
 	}
 
-	public long getFreeSpace() {
-		return root.getFreeSpace();
-	}
+	public StorageInfo getInfo() {
+		return new StorageInfo() {
+			public int getBlocks() {
+				return (int)(root.getTotalSpace() / getBlockSize());
+			}
 
-	public long getUsableSpace() {
-		return root.getUsableSpace();
-	}
+			public int getBlocksFree() {
+				return (int)(root.getFreeSpace() / getBlockSize());
+			}
 
-	public long getTotalSpace() {
-		return root.getTotalSpace();
+			public int getBlocksAvail() {
+				return (int)(root.getUsableSpace() / getBlockSize());
+			}
+		};
 	}
 }
 

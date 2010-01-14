@@ -29,6 +29,7 @@ import groupfs.state.BaseDirectory;
 import groupfs.state.Manager;
 import groupfs.state.Node;
 import groupfs.storage.DirectoryFileSource;
+import groupfs.storage.StorageInfo;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,7 +38,6 @@ import static groupfs.Util.*;
 
 public class Filesystem implements Filesystem3, XattrSupport {
 	public static final Log log = LogFactory.getLog(Filesystem.class);
-	public static final int blksize = 1024;
 	private Manager backend;
 	private PathMapper mapper;
 
@@ -204,11 +204,12 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	}
 
 	public int statfs(FuseStatfsSetter statfsSetter) throws FuseException {
+		StorageInfo info = backend.getInfo();
 		statfsSetter.set(
-			blksize, // blockSize
-			(int)(backend.getTotalSpace() / blksize), // blocks
-			(int)(backend.getFreeSpace() / blksize), // blocksFree
-			(int)(backend.getUsableSpace() / blksize), // blocksAvail
+			info.getBlockSize(), // blockSize
+			info.getBlocks(),
+			info.getBlocksFree(),
+			info.getBlocksAvail(),
 			0, // files
 			0, // filesFree
 			0 // namelen

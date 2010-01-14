@@ -17,6 +17,7 @@ import fuse.FuseGetattrSetter;
 import groupfs.Group;
 import groupfs.storage.FileSource;
 import groupfs.storage.FileHandler;
+import groupfs.storage.StorageInfo;
 
 import static groupfs.Group.Type.*;
 
@@ -81,16 +82,8 @@ public class Manager {
 		nodes.remove(n);
 	}
 
-	public long getFreeSpace() {
-		return source.getFreeSpace();
-	}
-
-	public long getTotalSpace() {
-		return source.getTotalSpace();
-	}
-
-	public long getUsableSpace() {
-		return source.getUsableSpace();
+	public StorageInfo getInfo() {
+		return source.getInfo();
 	}
 }
 

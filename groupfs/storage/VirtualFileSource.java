@@ -24,16 +24,8 @@ public class VirtualFileSource implements FileSource {
 		return fh;
 	}
 
-	public long getFreeSpace() {
-		return Integer.MAX_VALUE;
-	}
-
-	public long getUsableSpace() {
-		return Integer.MAX_VALUE;
-	}
-
-	public long getTotalSpace() {
-		return Integer.MAX_VALUE;
+	public StorageInfo getInfo() {
+		return new StorageInfo();
 	}
 }
 

@@ -38,6 +38,10 @@ public final class Util {
 			throw new IllegalArgumentException("Mount point overlaps origin.");
 	}
 
+	public static boolean isReservedName(String name) {
+		return name.startsWith(".");
+	}
+
 	/**
 	 * @return True if all groups represented by a path are unique.
 	 */

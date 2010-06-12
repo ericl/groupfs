@@ -89,7 +89,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 
 	public int mknod(String input, int mode, int rdev) throws FuseException {
 		Path path = Path.get(input);
-		if (!canMknod(path.parent()) || path.name().startsWith("."))
+		if (!canMknod(path.parent()) || isReservedName(path.name()))
 			return fuse.Errno.EPERM;
 		mapper.notifyLatest(path, backend.create(groupsOf(path), path.name()));
 		return 0;
@@ -111,7 +111,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 	public int mkdir(String input, int mode) throws FuseException {
 		Path path = Path.get(input);
 		String name = path.name();
-		if (name.startsWith("."))
+		if (isReservedName(name))
 			return fuse.Errno.EPERM;
 		Directory parent = mapper.getDir(path.parent());
 		if (parent == null)
@@ -168,7 +168,7 @@ public class Filesystem implements Filesystem3, XattrSupport {
 		else if (orig != dest && (!orig.getPerms().canMoveOut() || !dest.getPerms().canMoveIn()))
 			return fuse.Errno.EPERM;
 		// forbid creation of mime-type dirs or nodes
-		else if (to.name().startsWith("."))
+		else if (isReservedName(to.name()))
 			return fuse.Errno.EPERM;
 		if (!allUnique(to))
 			return fuse.Errno.EPERM;

@@ -104,6 +104,8 @@ public final class Util {
 		name = unNumbered(name);
 		if (!name.contains(".") || name.endsWith("."))
 			return "undefined";
+        if (name.startsWith("."))
+            return "dotfiles";
 		String[] parts = name.split("\\.");
 		return parts[parts.length-1].toLowerCase();
 	}

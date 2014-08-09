@@ -21,7 +21,7 @@ public class ExtensionRenaming extends Test {
 		Filesystem fs = new Filesystem(backend);
 		try {
 			fs.mkdir("/Perl", 0);
-			int ret = fs.rename("/.pl/perl.pl", "/Perl/perl.pl");
+			int ret = fs.rename("/.pl/perl.pl #Manual", "/Perl/perl.pl");
 			if (ret != 0)
 				throw new FuseException(
 					"\nexpected: " + 0 +
@@ -33,7 +33,7 @@ public class ExtensionRenaming extends Test {
 			return;
 		}
 		try {
-			int ret = fs.rename("/Manual/doc.txt","/Manual/.pl/doc.txt");
+			int ret = fs.rename("/Manual/doc.txt #Manual", "/Manual/.pl/doc.txt");
 			if (ret != fuse.Errno.EPERM)
 				throw new FuseException(
 					"\nexpected: " + fuse.Errno.EPERM +
@@ -45,7 +45,7 @@ public class ExtensionRenaming extends Test {
 			return;
 		}
 		try {
-			fs.unlink("/.txt/doc2.txt");
+			fs.unlink("/.txt/doc2.txt #Manual");
 			int ret = fs.rmdir("/.txt");
 			if (ret != fuse.Errno.EPERM)
 				throw new FuseException(
@@ -59,14 +59,14 @@ public class ExtensionRenaming extends Test {
 		}
 		expect(fs,
 			new String[] {
-				"./Manual/perl.pl",
-				"./Manual/doc.txt",
-				"./Manual/Perl/perl.pl",
-				"./Manual/.txt/doc.txt",
-				"./Manual/.pl/perl.pl",
-				"./Perl/perl.pl",
-				"./.pl/perl.pl",
-				"./.txt/doc.txt",
+				"./Manual/perl.pl #Manual #Perl",
+				"./Manual/doc.txt #Manual",
+				"./Manual/Perl/perl.pl #Manual #Perl",
+				"./Manual/.txt/doc.txt #Manual",
+				"./Manual/.pl/perl.pl #Manual #Perl",
+				"./Perl/perl.pl #Manual #Perl",
+				"./.pl/perl.pl #Manual #Perl",
+				"./.txt/doc.txt #Manual",
 				"./.Trash/doc2.txt",
 			},
 			new String[] {
@@ -82,7 +82,7 @@ public class ExtensionRenaming extends Test {
 			}
 		);
 		try {
-			fs.rename("/.txt/doc.txt","/.txt/Official Document.pdf");
+			fs.rename("/.txt/doc.txt #Manual","/.txt/Official Document.pdf");
 		} catch (FuseException e) {
 			log += e;
 			error = true;
@@ -90,14 +90,14 @@ public class ExtensionRenaming extends Test {
 		}
 		expect(fs,
 			new String[] {
-				"./Manual/perl.pl",
-				"./Manual/Official Document.pdf",
-				"./Manual/Perl/perl.pl",
-				"./Manual/.pdf/Official Document.pdf",
-				"./Manual/.pl/perl.pl",
-				"./Perl/perl.pl",
-				"./.pl/perl.pl",
-				"./.pdf/Official Document.pdf",
+				"./Manual/perl.pl #Manual #Perl",
+				"./Manual/Official Document.pdf #Manual",
+				"./Manual/Perl/perl.pl #Manual #Perl",
+				"./Manual/.pdf/Official Document.pdf #Manual",
+				"./Manual/.pl/perl.pl #Manual #Perl",
+				"./Perl/perl.pl #Manual #Perl",
+				"./.pl/perl.pl #Manual #Perl",
+				"./.pdf/Official Document.pdf #Manual",
 				"./.Trash/doc2.txt",
 			},
 			new String[] {

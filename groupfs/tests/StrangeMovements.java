@@ -40,11 +40,11 @@ public class StrangeMovements extends Test {
 		}
 		expect(fs,
 			new String[] {
-				"./Perl/foo",
-				"./Foo/node",
-				"./Bar/node",
-				"./.undefined/node",
-				"./.undefined/foo",
+				"./Perl/foo #Perl",
+				"./Foo/node #Bar #Foo",
+				"./Bar/node #Bar #Foo",
+				"./.undefined/node #Bar #Foo",
+				"./.undefined/foo #Perl",
 			},
 			new String[] {
 				".",
@@ -55,8 +55,8 @@ public class StrangeMovements extends Test {
 			}
 		);
 		try {
-			fs.unlink("/Foo/node");
-			fs.unlink("/Perl/foo");
+			fs.unlink("/Foo/node #Bar #Foo");
+			fs.unlink("/Perl/foo #Perl");
 			fs.mkdir("/Foo", 0);
 		} catch (FuseException e) {
 			log += e;
@@ -92,11 +92,11 @@ public class StrangeMovements extends Test {
 		}
 		expect(fs,
 			new String[] {
-				"./Perl/foo",
-				"./Foo/node",
-				"./Bar/node",
-				"./.undefined/node",
-				"./.undefined/foo",
+				"./Perl/foo #Perl",
+				"./Foo/node #Bar #Foo",
+				"./Bar/node #Bar #Foo",
+				"./.undefined/node #Bar #Foo",
+				"./.undefined/foo #Perl",
 			},
 			new String[] {
 				".",
@@ -115,12 +115,12 @@ public class StrangeMovements extends Test {
 		}
 		expect_nocopy(fs,
 			new String[] {
-				"./Perl/foo",
-				"./Foo/node",
-				"./Foo/Bar/node",
-				"./Bar/node",
-				"./.undefined/node",
-				"./.undefined/foo",
+				"./Perl/foo #Perl",
+				"./Foo/node #Bar #Foo",
+				"./Foo/Bar/node #Bar #Foo",
+				"./Bar/node #Bar #Foo",
+				"./.undefined/node #Bar #Foo",
+				"./.undefined/foo #Perl",
 			},
 			new String[] {
 				".",
@@ -146,9 +146,9 @@ public class StrangeMovements extends Test {
 		}
 		expect_nocopy(fs,
 			new String[] {
-				"./Perl/x",
-				"./one/x",
-				"./.undefined/x",
+				"./Perl/x #Perl #one",
+				"./one/x #Perl #one",
+				"./.undefined/x #Perl #one",
 			},
 			new String[] {
 				".",
@@ -176,9 +176,9 @@ public class StrangeMovements extends Test {
 		}
 		expect_nocopy(fs,
 			new String[] {
-				"./Perl/x",
-				"./one/x",
-				"./.undefined/x",
+				"./Perl/x #Perl #one",
+				"./one/x #Perl #one",
+				"./.undefined/x #Perl #one",
 			},
 			new String[] {
 				".",

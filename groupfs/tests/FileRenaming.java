@@ -18,12 +18,12 @@ public class FileRenaming extends Test {
 		Filesystem fs = new Filesystem(backend);
 		expect(fs,
 			new String[] {
-				"./Manual/perl-in-perl.pl",
-				"./Random/perl-in-perl.pl",
-				"./Random/x.pl",
-				"./Random/Manual/perl-in-perl.pl",
-				"./.pl/perl-in-perl.pl",
-				"./.pl/x.pl",
+				"./Manual/perl-in-perl.pl #Manual #Random",
+				"./Random/perl-in-perl.pl #Manual #Random",
+				"./Random/x.pl #Random",
+				"./Random/Manual/perl-in-perl.pl #Manual #Random",
+				"./.pl/perl-in-perl.pl #Manual #Random",
+				"./.pl/x.pl #Random",
 			},
 			new String[] {
 				".",
@@ -34,7 +34,9 @@ public class FileRenaming extends Test {
 			}
 		);
 		try {
-			fs.rename("/Manual/perl-in-perl.pl", "/Manual/perl-in-english.man");
+			fs.rename(
+				"/Manual/perl-in-perl.pl #Manual #Random",
+				"/Manual/perl-in-english.man");
 		} catch (FuseException e) {
 			log += e;
 			error = true;
@@ -42,14 +44,14 @@ public class FileRenaming extends Test {
 		}
 		expect(fs,
 			new String[] {
-				"./Manual/perl-in-english.man",
-				"./Random/perl-in-english.man",
-				"./Random/x.pl",
-				"./Random/Manual/perl-in-english.man",
-				"./Random/.man/perl-in-english.man",
-				"./Random/.pl/x.pl",
-				"./.man/perl-in-english.man",
-				"./.pl/x.pl",
+				"./Manual/perl-in-english.man #Manual #Random",
+				"./Random/perl-in-english.man #Manual #Random",
+				"./Random/x.pl #Random",
+				"./Random/Manual/perl-in-english.man #Manual #Random",
+				"./Random/.man/perl-in-english.man #Manual #Random",
+				"./Random/.pl/x.pl #Random",
+				"./.man/perl-in-english.man #Manual #Random",
+				"./.pl/x.pl #Random",
 			},
 			new String[] {
 				".",

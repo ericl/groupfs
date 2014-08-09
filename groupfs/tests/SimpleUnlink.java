@@ -17,8 +17,8 @@ public class SimpleUnlink extends Test {
 		syn(backend, "sed2.txt", "Manual", "Doc");
 		Filesystem fs = new Filesystem(backend);
 		try {
-			fs.unlink("/Manual/sed.txt");
-			fs.unlink("/.txt/sed2.txt");
+			fs.unlink("/Manual/sed.txt #Doc #Manual");
+			fs.unlink("/.txt/sed2.txt #Doc #Manual");
 		} catch (FuseException e) {
 			log += e;
 			error = true;

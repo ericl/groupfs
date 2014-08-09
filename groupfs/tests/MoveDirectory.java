@@ -23,8 +23,8 @@ public class MoveDirectory extends Test {
 		}
 		expect(fs,
 			new String[] {
-				"./Perl/perl-in-perl.pl",
-				"./.pl/perl-in-perl.pl",
+				"./Perl/perl-in-perl.pl #Perl",
+				"./.pl/perl-in-perl.pl #Perl",
 			},
 			new String[] {
 				".",
@@ -45,16 +45,16 @@ public class MoveDirectory extends Test {
 		}
 		expect(fs,
 			new String[] {
-				"./.pl/perl-in-perl.pl",
-				"./.sh/bash-in-bash.sh",
-				"./Bash/bash-in-bash.sh",
-				"./Manual/.pl/perl-in-perl.pl",
-				"./Manual/.sh/bash-in-bash.sh",
-				"./Manual/Bash/bash-in-bash.sh",
-				"./Manual/Perl/perl-in-perl.pl",
-				"./Manual/bash-in-bash.sh",
-				"./Manual/perl-in-perl.pl",
-				"./Perl/perl-in-perl.pl",
+				"./.pl/perl-in-perl.pl #Manual #Perl",
+				"./.sh/bash-in-bash.sh #Bash #Manual",
+				"./Bash/bash-in-bash.sh #Bash #Manual",
+				"./Manual/.pl/perl-in-perl.pl #Manual #Perl",
+				"./Manual/.sh/bash-in-bash.sh #Bash #Manual",
+				"./Manual/Bash/bash-in-bash.sh #Bash #Manual",
+				"./Manual/Perl/perl-in-perl.pl #Manual #Perl",
+				"./Manual/bash-in-bash.sh #Bash #Manual",
+				"./Manual/perl-in-perl.pl #Manual #Perl",
+				"./Perl/perl-in-perl.pl #Manual #Perl",
 			},
 			new String[] {
 				".",

@@ -28,15 +28,15 @@ public class SimpleCreate extends Test {
 		}
 		expect(fs,
 			new String[] {
-				"./Book/Random Book.txt",
-				"./.txt/sed.txt",
-				"./.txt/Random Book.txt",
+				"./Book/Random Book.txt #Book #Readable",
+				"./.txt/sed.txt #Manual #Readable",
+				"./.txt/Random Book.txt #Book #Readable",
 				"./.Trash/trashed.txt",
-				"./Manual/sed.txt",
-				"./Readable/Book/Random Book.txt",
-				"./Readable/sed.txt",
-				"./Readable/Manual/sed.txt",
-				"./Readable/Random Book.txt",
+				"./Manual/sed.txt #Manual #Readable",
+				"./Readable/Book/Random Book.txt #Book #Readable",
+				"./Readable/sed.txt #Manual #Readable",
+				"./Readable/Manual/sed.txt #Manual #Readable",
+				"./Readable/Random Book.txt #Book #Readable",
 			},
 			new String[] {
 				".",

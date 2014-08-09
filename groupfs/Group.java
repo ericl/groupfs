@@ -10,7 +10,7 @@ import java.util.Set;
  * Either a tag or a mime type.
  * Groups are associated with file nodes, and represented by directories.
  */
-public final class Group {
+public final class Group implements Comparable<Group> {
 	public enum Type { TAG, MIME }
 	public final String value;
 	public final Type type;
@@ -81,6 +81,13 @@ public final class Group {
 
 	public boolean equals(Object other) {
 		return other instanceof Group && ((Group)other).id == id;
+	}
+
+	public int compareTo(Group other) {
+		if (type != other.type) {
+			return type.compareTo(other.type);
+		}
+		return value.compareTo(other.value);
 	}
 
 	public int hashCode() {

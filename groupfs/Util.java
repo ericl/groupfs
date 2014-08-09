@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.HashSet;
+import java.util.TreeSet;
 import java.util.Set;
 
 import com.sun.security.auth.module.UnixSystem;
@@ -201,7 +202,7 @@ public final class Util {
 	 */
 	public static String recomputeHashTags(String name, Set<Group> groups) {
 		String base = name.split(" #")[0];
-		for (Group g : groups) {
+		for (Group g : new TreeSet<Group>(groups)) {
 			if (g.type == Type.TAG) {
 				base += " #" + g.value;
 			}
@@ -214,11 +215,14 @@ public final class Util {
 	 * @param name Name of file.
 	 */
 	public static Set<Group> groupsFromHashTags(String name) {
-		String[] tags = name.split(" ");
+		String[] tags = name.split(" #", 2);
 		Set<Group> groupsFound = new HashSet<Group>();
-		for (String tag : tags) {
-			if (tag.startsWith("#") && tag.length() > 1) {
-				groupsFound.add(Group.create(tag.substring(1), Type.TAG));
+		if (tags.length > 1) {
+			assert tags.length == 2;
+			for (String tag : tags[1].split(" #")) {
+				if (!tag.isEmpty()) {
+					groupsFound.add(Group.create(tag, Type.TAG));
+				}
 			}
 		}
 		String ext = extensionOf(name);

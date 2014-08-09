@@ -18,8 +18,8 @@ public class SimpleMove extends Test {
 		Filesystem fs = new Filesystem(backend);
 		try {
 			fs.mkdir("/Manual/Readable", 0);
-			fs.rename("/Manual/perl-in-perl.pl", "/Manual/Readable/perl-in-perl.pl");
-			fs.rename("/Manual/perl-in-perl.pl", "/Readable/perl-in-perl.pl");
+			fs.rename("/Manual/perl-in-perl.pl #Manual", "/Manual/Readable/perl-in-perl.pl");
+			fs.rename("/Manual/perl-in-perl.pl #Manual #Readable", "/Readable/perl-in-perl.pl");
 		} catch (FuseException e) {
 			log += e;
 			error = true;
@@ -27,8 +27,8 @@ public class SimpleMove extends Test {
 		}
 		expect(fs,
 			new String[] {
-				"./Readable/perl-in-perl.pl",
-				"./.pl/perl-in-perl.pl",
+				"./Readable/perl-in-perl.pl #Readable",
+				"./.pl/perl-in-perl.pl #Readable",
 			},
 			new String[] {
 				".",
@@ -40,7 +40,7 @@ public class SimpleMove extends Test {
 		syn(backend, "perl-in-perl.pl", "Manual");
 		fs = new Filesystem(backend);
 		try {
-			fs.rename("/Manual/perl-in-perl.pl", "/perl-in-perl.pl");
+			fs.rename("/Manual/perl-in-perl.pl #Manual", "/perl-in-perl.pl");
 		} catch (FuseException e) {
 			log += e;
 			error = true;

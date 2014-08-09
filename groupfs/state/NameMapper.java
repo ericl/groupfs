@@ -10,6 +10,8 @@ import groupfs.Group;
 import groupfs.Inode;
 import groupfs.Directory;
 
+import static groupfs.Util.*;
+
 /**
  * Maps "filenames" to their backing inodes in each directory.
  * The following operations are guaranteed fast:
@@ -82,6 +84,7 @@ public class NameMapper {
 				num++;
 			key += "." + num;
 		}
+		key = recomputeHashTags(key, file.getGroups());
 		names.put(key, file);
 		assert !files.containsKey(file);
 		files.put(file, key);

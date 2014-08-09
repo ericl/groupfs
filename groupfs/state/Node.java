@@ -51,11 +51,18 @@ public abstract class Node implements Inode {
 			}
 			// if not a node then probably root dir
 		}
-		if (!dest.getGroups().equals(orig.getGroups()))
+		if (!dest.getGroups().equals(orig.getGroups())) {
 			changeGroups(dest.getGroups(), orig.getGroups());
-		else
-			logDifference(original, groups);
-		setName(to.name(), hadMime);
+		} else {
+			Set<Group> fromHashTags = groupsFromHashTags(to.name());
+			if (fromHashTags.size() > 1 /* hack to ignore files without hashtags */
+					&& !original.equals(fromHashTags)) {
+				changeGroups(fromHashTags, original);
+			} else {
+				logDifference(original, groups);
+			}
+		}
+		setName(stripHashTags(to.name()), hadMime);
 		return 0;
 	}
 

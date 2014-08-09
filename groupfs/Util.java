@@ -186,4 +186,45 @@ public final class Util {
 		}
 		return dest;
 	}
+
+	/**
+	 * @return Filename modified to have no hash tags.
+	 * @param name Name of file.
+	 */
+	public static String stripHashTags(String name) {
+		return name.split(" #")[0];
+	}
+
+	/**
+	 * @return Filename modified to have hash tags as specified by groups.
+	 * @param name Name of file.
+	 */
+	public static String recomputeHashTags(String name, Set<Group> groups) {
+		String base = name.split(" #")[0];
+		for (Group g : groups) {
+			if (g.type == Type.TAG) {
+				base += " #" + g.value;
+			}
+		}
+		return base;
+	}
+
+	/**
+	 * @return The set of groups represented by the specified filename.
+	 * @param name Name of file.
+	 */
+	public static Set<Group> groupsFromHashTags(String name) {
+		String[] tags = name.split(" ");
+		Set<Group> groupsFound = new HashSet<Group>();
+		for (String tag : tags) {
+			if (tag.startsWith("#") && tag.length() > 1) {
+				groupsFound.add(Group.create(tag.substring(1), Type.TAG));
+			}
+		}
+		String ext = extensionOf(name);
+		if (ext != null) {
+			groupsFound.add(Group.create(ext, Type.MIME));
+		}
+		return groupsFound;
+	}
 }

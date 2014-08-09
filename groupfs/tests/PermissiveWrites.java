@@ -11,6 +11,7 @@ import groupfs.*;
 // mknod 2x in nested new dirs
 public class PermissiveWrites extends Test {
 	public void run() {
+		Util.setHashTagsEnabled(false);
 		Manager backend = getNewBackend();
 		Filesystem fs = new Filesystem(backend);
 		try {

@@ -12,6 +12,7 @@ import groupfs.*;
  */
 public class UnTrash extends Test {
 	public void run() {
+		Util.setHashTagsEnabled(false);
 		Manager backend = getNewBackend();
 		syn(backend, "foo.png");
 		Filesystem fs = new Filesystem(backend);

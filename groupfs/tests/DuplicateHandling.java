@@ -12,6 +12,7 @@ import groupfs.*;
 // node moved to have same name
 public class DuplicateHandling extends Test {
 	public void run() {
+		Util.setHashTagsEnabled(false);
 		Manager backend = getNewBackend();
 		syn(backend, "perl-in-perl.pl", "Manual", "Random");
 		syn(backend, "perl-in-perl.pl", "Random");

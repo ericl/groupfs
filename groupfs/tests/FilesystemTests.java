@@ -10,6 +10,7 @@ public class FilesystemTests {
 			new SimpleCreate(),
 			new SimpleMove(),
 			new SimpleUnlink(),
+			new SimpleHashTagRename(),
 			new MovingEmptyDirs(),
 			new FileRenaming(),
 			new ExtensionRenaming(),
@@ -33,6 +34,7 @@ public class FilesystemTests {
 		for (Test test : tests) {
 			if (SHOWERR)
 				System.out.println("Running test: " + test);
+			groupfs.Util.setHashTagsEnabled(true);
 			test.run();
 			if (test.error) {
 				if (SHOWERR)

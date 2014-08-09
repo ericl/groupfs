@@ -17,6 +17,9 @@ public final class Util {
 	public final static int UID = (int)new UnixSystem().getUid();
 	public final static int GID = (int)new UnixSystem().getGid();
 
+	// XXX this should be scoped to each state manager
+	private static boolean hashTagsEnabled = true;
+
 	private Util() {}
 
 	/**
@@ -188,11 +191,22 @@ public final class Util {
 		return dest;
 	}
 
+	public static void setHashTagsEnabled(boolean enabled) {
+		hashTagsEnabled = enabled;
+	}
+
+	public static boolean hashTagsEnabled() {
+		return hashTagsEnabled;
+	}
+
 	/**
 	 * @return Filename modified to have no hash tags.
 	 * @param name Name of file.
 	 */
 	public static String stripHashTags(String name) {
+		if (!hashTagsEnabled()) {
+			return name;
+		}
 		return name.split(" #")[0];
 	}
 
@@ -201,6 +215,9 @@ public final class Util {
 	 * @param name Name of file.
 	 */
 	public static String recomputeHashTags(String name, Set<Group> groups) {
+		if (!hashTagsEnabled()) {
+			return name;
+		}
 		String base = name.split(" #")[0];
 		for (Group g : new TreeSet<Group>(groups)) {
 			if (g.type == Type.TAG) {
@@ -215,8 +232,11 @@ public final class Util {
 	 * @param name Name of file.
 	 */
 	public static Set<Group> groupsFromHashTags(String name) {
-		String[] tags = name.split(" #", 2);
 		Set<Group> groupsFound = new HashSet<Group>();
+		if (!hashTagsEnabled()) {
+			return groupsFound;
+		}
+		String[] tags = name.split(" #", 2);
 		if (tags.length > 1) {
 			assert tags.length == 2;
 			for (String tag : tags[1].split(" #")) {

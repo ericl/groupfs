@@ -30,6 +30,7 @@ import static groupfs.Util.*;
  * logical consistency of the filesystem.
  */
 public class Manager {
+	public final boolean enableHashTags;
 	public final Journal journal = new Journal();
 	private final Set<Node> nodes = new HashSet<Node>();
 	private final FileSource source;
@@ -37,6 +38,11 @@ public class Manager {
 	protected Map<Set<Group>,SubDirectory> cache = new HashMap<Set<Group>,SubDirectory>();
 
 	public Manager(FileSource source) {
+		this(source, true);
+	}
+
+	public Manager(FileSource source, boolean enableHashTags) {
+		this.enableHashTags = enableHashTags;
 		this.source = source;
 		for (FileHandler fh : source.getAll())
 			nodes.add(makeNode(fh));

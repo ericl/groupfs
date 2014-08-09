@@ -10,6 +10,7 @@ import groupfs.state.Manager;
 // shows validation in deleting tag
 public class LargeScale2 extends Test {
 	public void run() {
+		Util.setHashTagsEnabled(false);
 		Manager backend = getNewBackend();
 		syn(backend, "old.jpg");
 		syn(backend, "old2.jpg");

@@ -73,11 +73,19 @@ public abstract class Test {
 		}
 	}
 
+	protected void expect_alternatives_ignoreHashTags(Filesystem fs, String[] dirs, String[] ... files) {
+		expect_alternatives(fs, dirs, true, files);
+	}
+
 	protected void expect_alternatives(Filesystem fs, String[] dirs, String[] ... files) {
+		expect_alternatives(fs, dirs, false, files);
+	}
+
+	private void expect_alternatives(Filesystem fs, String[] dirs, boolean stripTags, String[] ... files) {
 		SortedSet<String> de = new TreeSet<String>(Arrays.asList(dirs));
 		SortedSet<String> f = new TreeSet<String>();
 		SortedSet<String> d = new TreeSet<String>();
-		buildFileSet(fs, f, d, ".");
+		buildFileSet(fs, f, d, ".", stripTags);
 		boolean ok = false;
 		for (int i=0; i < files.length; i++) {
 			SortedSet<String> fe = new TreeSet<String>(Arrays.asList(files[i]));
@@ -100,22 +108,38 @@ public abstract class Test {
 		}
 	}
 
+	protected void expect_ignoreHashTags(Filesystem fs, String[] files, String[] dirs) {
+		expect(fs, files, dirs, true);
+	}
+
 	protected void expect(Filesystem fs, String[] files, String[] dirs) {
-		expect_nocopy(fs, files, dirs);
+		expect(fs, files, dirs, false);
+	}
+
+	private void expect(Filesystem fs, String[] files, String[] dirs, boolean stripTags) {
+		expect_nocopy(fs, files, dirs, stripTags);
 		if (error) {
 			if (FilesystemTests.SHOWERR)
 				System.out.println("first run failed, not rebuilding filesystem");
 			return;
 		}
-		expect_nocopy(new Filesystem(new Manager(source)), files, dirs);
+		expect_nocopy(new Filesystem(new Manager(source)), files, dirs, stripTags);
 	}
 
 	protected void expect_nocopy(Filesystem fs, String[] files, String[] dirs) {
+		expect_nocopy(fs, files, dirs, false);
+	}
+
+	protected void expect_nocopy_ignoreHashTags(Filesystem fs, String[] files, String[] dirs) {
+		expect_nocopy(fs, files, dirs, true);
+	}
+
+	private void expect_nocopy(Filesystem fs, String[] files, String[] dirs, boolean stripTags) {
 		SortedSet<String> fe = new TreeSet<String>(Arrays.asList(files));
 		SortedSet<String> de = new TreeSet<String>(Arrays.asList(dirs));
 		SortedSet<String> f = new TreeSet<String>();
 		SortedSet<String> d = new TreeSet<String>();
-		buildFileSet(fs, f, d, ".");
+		buildFileSet(fs, f, d, ".", stripTags);
 		if (!fe.equals(f)) {
 			log += "expected: " + fe + "\n";
 			log += "found:    " + f + "\n";
@@ -129,6 +153,10 @@ public abstract class Test {
 	}
 
 	protected void buildFileSet(Filesystem fs, Set<String> f, Set<String> d, String path) {
+		buildFileSet(fs, f, d, path, false);
+	}
+
+	protected void buildFileSet(Filesystem fs, Set<String> f, Set<String> d, String path, boolean stripTags) {
 		TestDirFiller filler = new TestDirFiller();
 		d.add(path);
 		try {
@@ -136,9 +164,9 @@ public abstract class Test {
 			for (Node n : filler) {
 				String realpath = path + "/" + n.name;
 				if (n.dir) {
-					buildFileSet(fs, f, d, realpath);
+					buildFileSet(fs, f, d, realpath, stripTags);
 				} else {
-					f.add(realpath);
+					f.add(stripTags ? stripHashTags(realpath) : realpath);
 				}
 			}
 		} catch (FuseException e) {

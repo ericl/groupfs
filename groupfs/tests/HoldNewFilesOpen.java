@@ -10,6 +10,7 @@ import groupfs.*;
 // test a hack to allow new files to survive disappearing directories
 public class HoldNewFilesOpen extends Test {
 	public void run() {
+		Util.setHashTagsEnabled(false);
 		Manager backend = getNewBackend();
 		Filesystem fs = new Filesystem(backend);
 		expect(fs,

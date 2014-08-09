@@ -11,6 +11,7 @@ import groupfs.*;
 // empty dir keeping correct groups after moving
 public class MkdirRenamed extends Test {
 	public void run() {
+		Util.setHashTagsEnabled(false);
 		Manager backend = getNewBackend();
 		syn(backend, "fish recipe.txt", "fish", "recipe");
 		syn(backend, "pizza recipe.txt", "recipe");

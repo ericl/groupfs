@@ -10,6 +10,7 @@ import groupfs.*;
 // shows necessity of fine-grained invalidation of groups
 public class LargeScaleValidation extends Test {
 	public void run() {
+		Util.setHashTagsEnabled(false);
 		Manager backend = getNewBackend();
 		syn(backend, "1.jpg", "Concert", "Art");
 		syn(backend, "2.jpg", "Concert", "Art");
